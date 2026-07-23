@@ -15,8 +15,8 @@ return new class extends Migration
             //
 
 
-            $table->foreignId('ajupengab_model_id')->constrained('ajupengabdian')->onDelete('cascade');
-            $table->foreignId('ajupenel_model_id')->constrained('ajuan_penelitian_models')->onDelete('cascade');
+            $table->foreignId('ajupengab_model_id')->nullable()->constrained('ajupengabdian')->onDelete('cascade');
+            $table->foreignId('ajupenel_model_id')->nullable()->constrained('ajuan_penelitian_models')->onDelete('cascade');
         });
     }
 
@@ -26,7 +26,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('anggotap3m_models', function (Blueprint $table) {
-            //
+            $table->dropForeign(['ajupengab_model_id']);
+            $table->dropForeign(['ajupenel_model_id']);
+            $table->dropColumn(['ajupengab_model_id', 'ajupenel_model_id']);
         });
     }
 };

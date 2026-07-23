@@ -7,17 +7,19 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Membuat tabel kum_pengabdian_models.
      */
     public function up(): void
     {
         Schema::create('kum_pengabdian_models', function (Blueprint $table) {
             $table->id();
+
             $table->string('judul');
             $table->string('bidang');
             $table->string('jeniskategori');
             $table->string('ketua');
             $table->enum('jeniskelamin', ['L', 'P']);
+
             $table->string('nidn')->nullable();
             $table->string('jabatan')->nullable();
             $table->string('prodi')->nullable();
@@ -26,20 +28,25 @@ return new class extends Migration
 
             $table->string('lokasi')->nullable();
             $table->string('lamapenelitian')->nullable();
-            $table->float('biaya')->nullable();
 
-            $table->string('uppdf')->nullable(); // untuk file PDF
-            $table->string('foto')->nullable(); // untuk foto
+            // Decimal lebih aman untuk data nominal daripada float.
+            $table->decimal('biaya', 15, 2)->nullable();
 
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->string('uppdf')->nullable();
+            $table->string('foto')->nullable();
+
+            $table
+                ->foreignId('user_id')
+                ->nullable()
+                ->constrained('users')
+                ->cascadeOnDelete();
 
             $table->timestamps();
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Menghapus tabel kum_pengabdian_models.
      */
     public function down(): void
     {

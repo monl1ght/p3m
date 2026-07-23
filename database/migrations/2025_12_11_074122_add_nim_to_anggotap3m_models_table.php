@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('anggotap3m_models', function (Blueprint $table) {
-            //
+            $table->dropColumn('nim');
         });
     }
 };

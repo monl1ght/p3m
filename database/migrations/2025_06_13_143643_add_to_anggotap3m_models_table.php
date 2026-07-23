@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('anggotap3m_models', function (Blueprint $table) {
             //
-            $table->foreignId('kpengab_model_id')->constrained('kum_pengabdian_models')->onDelete('cascade');
-            $table->foreignId('kpenel_model_id')->constrained('kum_penelitian_models')->onDelete('cascade');
+            $table->foreignId('kpengab_model_id')->nullable()->constrained('kum_pengabdian_models')->onDelete('cascade');
+            $table->foreignId('kpenel_model_id')->nullable()->constrained('kum_penelitian_models')->onDelete('cascade');
         });
     }
 
@@ -24,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('anggotap3m_models', function (Blueprint $table) {
-            //
+            $table->dropForeign(['kpengab_model_id']);
+            $table->dropForeign(['kpenel_model_id']);
+            $table->dropColumn(['kpengab_model_id', 'kpenel_model_id']);
         });
     }
 };

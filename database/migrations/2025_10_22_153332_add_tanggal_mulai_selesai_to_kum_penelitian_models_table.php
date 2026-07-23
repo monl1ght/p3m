@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('kum_penelitian_models', function (Blueprint $table) {
-            //
+            $table->dropColumn(['tanggal_mulai', 'tanggal_selesai']);
         });
     }
 };

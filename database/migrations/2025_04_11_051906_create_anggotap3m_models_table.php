@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('anggotap3m_models', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('p3m_model_id')->constrained('p3m_models')->onDelete('cascade');
+            $table->foreignId('p3m_model_id')->nullable()->constrained('p3m_models')->onDelete('cascade');
             $table->string('nama');
             $table->string('prodi')->nullable();
             $table->string('jabatan')->nullable();

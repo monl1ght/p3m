@@ -11,17 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (! Schema::hasColumn('m_news', 'user_id')) {
-            Schema::table('m_news', function (Blueprint $table) {
-                $table->unsignedBigInteger('user_id')->nullable();
-
-                $table
-                    ->foreign('user_id')
-                    ->references('id')
-                    ->on('users')
-                    ->nullOnDelete();
-            });
-        }
+        Schema::table('m_news', function (Blueprint $table) {
+            $table
+                ->foreignId('user_id')
+                ->nullable()
+                ->after('category_id')
+                ->constrained('users')
+                ->nullOnDelete();
+        });
     }
 
     /**
@@ -29,11 +26,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasColumn('m_news', 'user_id')) {
-            Schema::table('m_news', function (Blueprint $table) {
-                $table->dropForeign(['user_id']);
-                $table->dropColumn('user_id');
-            });
-        }
+        Schema::table('m_news', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropColumn('user_id');
+        });
     }
 };
