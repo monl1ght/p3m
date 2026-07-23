@@ -1,39 +1,18 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * Seluruh kolom kum_pengabdian_models telah dibuat
+     * pada migration create_kum_pengabdian_models_table.
      */
     public function up(): void
     {
-        Schema::table('kum_pengabdian_models', function (Blueprint $table) {
-            //
-            $table->string('judul')->after('id');
-            $table->string('bidang');
-            $table->string('jeniskategori');
-            $table->string('ketua');
-            $table->enum('jeniskelamin', ['L', 'P']);
-            $table->string('nidn')->nullable();
-            $table->string('jabatan')->nullable();
-            $table->string('prodi')->nullable();
-            $table->string('telp')->nullable();
-            $table->text('alamat')->nullable();
-
-            $table->string('lokasi')->nullable();
-            $table->string('lamapenelitian')->nullable();
-            $table->float('biaya')->nullable();
-
-            $table->string('uppdf')->nullable(); // untuk file PDF
-            $table->string('foto')->nullable(); // untuk foto
-
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
+        // Tidak ada perubahan struktur yang diperlukan.
     }
 
     /**
@@ -41,8 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('kum_pengabdian_models', function (Blueprint $table) {
-            //
-        });
+        // Tidak ada perubahan struktur yang perlu dibatalkan.
     }
 };
