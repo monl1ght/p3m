@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 
 class MainController extends Controller
 {
@@ -43,7 +44,7 @@ class MainController extends Controller
     public function buat(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'image' => 'required|mimes:png,jpg,jpeg|max:2048',
+            'image' => 'required|mimes:png,jpg,jpeg,webp,gif|max:5120',
             'title' => 'required',
             'instansi' => 'required',
         ]);
@@ -52,11 +53,9 @@ class MainController extends Controller
 
         // dd($request->all());
         $image = $request->file('image');
-        $filename = date('Y-m-d') . $image->getClientOriginalName();
-        $path = 'photo-dash/' . $filename;
+        $imageService = app(\App\Services\ImageService::class);
+        $filename = $imageService->processAndStore($image, 'photo-dash');
         $user = Auth::user();
-
-        Storage::disk('public')->put($path, file_get_contents($image));
 
         $data['title']      = $request->title;
         $data['instansi']       = $request->instansi;
@@ -70,7 +69,7 @@ class MainController extends Controller
     }
     public function edit_dash(Request $request, $id)
     {
-        $data = m_dashboard::find($id);
+        $data = m_dashboard::findOrFail($id);
         $user = Auth::user();
         return view('dashboard.editdash', compact('user', 'data'));
     }
@@ -80,12 +79,12 @@ class MainController extends Controller
         $validator = Validator::make($request->all(), [
             'title'     => 'required',
             'instansi'      => 'required',
-            'image'     => 'nullable|mimes:png,jpg,jpeg|max:2048',
+            'image'     => 'nullable|mimes:png,jpg,jpeg,webp,gif|max:5120',
         ]);
 
         if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
 
-        $find = m_dashboard::find($id);
+        $find = m_dashboard::findOrFail($id);
 
         $data['title']          = $request->title;
         $data['instansi']       = $request->instansi;
@@ -94,17 +93,12 @@ class MainController extends Controller
         $image = $request->file('image');
 
         if ($image) {
-
-            $filename = date('Y-m-d') . $image->getClientOriginalName();
-            $path = 'photo-dash/' . $filename;
+            $imageService = app(\App\Services\ImageService::class);
+            $filename = $imageService->processAndStore($image, 'photo-dash');
 
             if ($find->image) {
-
-                // $image->storeAs('public/photo-user/', $image->hashName());
                 Storage::disk('public')->delete('photo-dash/' . $find->image);
             }
-
-            Storage::disk('public')->put($path, file_get_contents($image));
 
             $data['image'] = $filename;
         }

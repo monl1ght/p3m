@@ -1,386 +1,2114 @@
 @extends('layout.doslayout')
+
+@section('body_class', 'page-dosen-edit-kpenelitian')
+
+@section('css')
+
+    <style>
+        /* =========================================================================
+                               P3M DOSEN â€” EDIT LAPORAN PENELITIAN
+                               Visual master: Admin P3M / Dosen workspace.
+                               Backend contract preserved from the original Blade:
+                               route, CSRF, field names, member array structure and dynamic rows.
+                               ========================================================================= */
+
+        :root {
+            --research-report-forest: #003d2d;
+            --research-report-forest-deep: #002e22;
+            --research-report-forest-mid: #00573b;
+            --research-report-forest-soft: #eaf5ee;
+
+            --research-report-gold: #b99835;
+
+            --research-report-ink: #0d1f1a;
+            --research-report-ink-2: #1e3328;
+            --research-report-text: #3b4f47;
+            --research-report-muted: #6b7f78;
+            --research-report-light: #9caaa4;
+
+            --research-report-border: #e4ede8;
+            --research-report-border-2: #d3e0d9;
+
+            --research-report-surface: #ffffff;
+            --research-report-surface-alt: #f7faf8;
+
+            --research-report-danger: #d94b4b;
+            --research-report-danger-soft: #fef2f2;
+            --research-report-danger-border: #f5c0c0;
+
+            --research-report-radius-sm: 8px;
+            --research-report-radius-md: 12px;
+            --research-report-radius-lg: 16px;
+            --research-report-radius-2xl: 24px;
+        }
+
+        /* -------------------------------------------------------------------------
+                               PAGE
+                               ------------------------------------------------------------------------- */
+
+        .page-dosen-edit-kpenelitian .content-wrapper {
+            min-height: calc(100vh - 66px);
+
+            background:
+                radial-gradient(ellipse 70% 40% at 100% 0%,
+                    rgba(0, 93, 59, .06),
+                    transparent),
+                linear-gradient(180deg,
+                    #f2f8f5 0%,
+                    #f7faf8 100%) !important;
+        }
+
+        .research-report-shell {
+            width: min(1320px, calc(100% - 44px));
+            margin: 0 auto;
+        }
+
+        .page-dosen-edit-kpenelitian .content-header {
+            padding: 26px 0 10px !important;
+        }
+
+        .page-dosen-edit-kpenelitian section.content {
+            padding: 6px 0 36px !important;
+        }
+
+        /* -------------------------------------------------------------------------
+                               HEADING
+                               ------------------------------------------------------------------------- */
+
+        .research-report-heading {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .research-report-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            margin-bottom: 9px;
+
+            color: var(--research-report-forest-mid);
+
+            font-size: 10.5px;
+            font-weight: 800;
+
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        .research-report-eyebrow::before {
+            content: "";
+
+            width: 20px;
+            height: 2.5px;
+
+            border-radius: 99px;
+
+            background: var(--research-report-gold);
+        }
+
+        .research-report-heading h1 {
+            margin: 0;
+
+            color: var(--research-report-ink);
+
+            font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+            font-size: clamp(28px, 3vw, 36px);
+            line-height: 1.12;
+            font-weight: 800;
+
+            letter-spacing: -.045em;
+        }
+
+        .research-report-heading p {
+            margin: 7px 0 0;
+
+            color: var(--research-report-muted);
+
+            font-size: 12.5px;
+            line-height: 1.55;
+        }
+
+        .research-report-breadcrumb {
+            margin: 0;
+            padding: 0;
+
+            background: transparent;
+
+            font-size: 12px;
+            font-weight: 600;
+
+            white-space: nowrap;
+        }
+
+        .research-report-breadcrumb a {
+            color: var(--research-report-forest);
+            text-decoration: none;
+        }
+
+        .research-report-breadcrumb .active {
+            color: var(--research-report-muted);
+        }
+
+        .research-report-breadcrumb .breadcrumb-item+.breadcrumb-item::before {
+            content: "/";
+
+            padding: 0 8px;
+
+            color: var(--research-report-border-2);
+        }
+
+        /* -------------------------------------------------------------------------
+                               CARD
+                               ------------------------------------------------------------------------- */
+
+        .research-report-card {
+            overflow: hidden;
+
+            border: 1px solid var(--research-report-border);
+            border-radius: var(--research-report-radius-2xl);
+
+            background: var(--research-report-surface);
+
+            box-shadow:
+                0 20px 56px rgba(3, 50, 33, .12),
+                0 4px 12px rgba(0, 0, 0, .06);
+        }
+
+        .research-report-card-head {
+            position: relative;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 20px;
+
+            padding: 24px 30px;
+
+            overflow: hidden;
+
+            background:
+                linear-gradient(112deg,
+                    #ffffff 55%,
+                    #f0faf5 100%);
+
+            border-bottom: 1px solid var(--research-report-border);
+        }
+
+        .research-report-card-head::after {
+            content: "";
+
+            position: absolute;
+
+            top: -55px;
+            right: -55px;
+
+            width: 220px;
+            height: 220px;
+
+            border-radius: 50%;
+
+            background:
+                radial-gradient(circle,
+                    rgba(0, 93, 59, .055),
+                    transparent 70%);
+
+            pointer-events: none;
+        }
+
+        .research-report-title-group {
+            position: relative;
+            z-index: 1;
+        }
+
+        .research-report-card-title {
+            margin: 0;
+
+            color: var(--research-report-ink);
+
+            font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+            font-size: 18px;
+            line-height: 1.25;
+            font-weight: 800;
+
+            letter-spacing: -.025em;
+        }
+
+        .research-report-card-subtitle {
+            margin: 5px 0 0;
+
+            color: var(--research-report-muted);
+
+            font-size: 11.5px;
+            line-height: 1.45;
+        }
+
+        .research-report-secure {
+            position: relative;
+            z-index: 1;
+
+            display: inline-flex;
+            align-items: center;
+
+            gap: 7px;
+
+            padding: 8px 12px;
+
+            border: 1px solid var(--research-report-border);
+            border-radius: var(--research-report-radius-md);
+
+            background: rgba(255, 255, 255, .78);
+
+            color: var(--research-report-forest-mid);
+
+            font-size: 10px;
+            font-weight: 800;
+
+            white-space: nowrap;
+        }
+
+        .research-report-card-body {
+            padding: 28px 30px 8px;
+        }
+
+        /* -------------------------------------------------------------------------
+                               SECTION
+                               ------------------------------------------------------------------------- */
+
+        .research-report-section {
+            margin-bottom: 28px;
+        }
+
+        .research-report-section-head {
+            display: flex;
+            align-items: center;
+
+            gap: 11px;
+
+            margin-bottom: 18px;
+        }
+
+        .research-report-section-head .research-report-section-number {
+            width: 32px;
+            height: 32px;
+            flex: 0 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9px;
+            background: #eef6f1;
+            color: var(--research-report-forest);
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
+        }
+
+        .research-report-section-head strong {
+            display: block;
+
+            color: var(--research-report-ink-2);
+
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: 13px;
+            line-height: 1.2;
+            font-weight: 800;
+        }
+
+        .research-report-section-head span {
+            display: block;
+
+            margin-top: 3px;
+
+            color: var(--research-report-muted);
+
+            font-size: 10px;
+            line-height: 1.35;
+        }
+
+        /* -------------------------------------------------------------------------
+                               FORM GRID
+                               ------------------------------------------------------------------------- */
+
+        .research-report-grid {
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr) minmax(0, 1fr);
+
+            gap: 30px;
+        }
+
+        .research-report-column {
+            min-width: 0;
+
+            padding: 0 2px;
+        }
+
+        .research-report-column+.research-report-column {
+            padding-left: 28px;
+
+            border-left: 1px solid #eaf0ed;
+        }
+
+        .research-report-field {
+            margin-bottom: 18px;
+        }
+
+        .research-report-field:last-child {
+            margin-bottom: 0;
+        }
+
+        .research-report-label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            color: var(--research-report-ink-2);
+
+            font-size: 11px;
+            line-height: 1.3;
+            font-weight: 800;
+        }
+
+        .research-report-label .req {
+            margin-left: 2px;
+
+            color: var(--research-report-danger);
+        }
+
+        .research-report-input,
+        .research-report-select {
+            width: 100%;
+
+            min-height: 42px;
+
+            padding: 9px 12px;
+
+            border: 1px solid var(--research-report-border-2);
+            border-radius: var(--research-report-radius-md);
+
+            outline: none;
+
+            background: #fff;
+            color: var(--research-report-ink);
+
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 500;
+
+            transition:
+                border-color .18s ease,
+                box-shadow .18s ease,
+                background .18s ease;
+        }
+
+        .research-report-input::placeholder {
+            color: var(--research-report-light);
+        }
+
+        .research-report-input:hover,
+        .research-report-select:hover {
+            border-color: #c5d6cd;
+        }
+
+        .research-report-input:focus,
+        .research-report-select:focus {
+            border-color: var(--research-report-forest-mid);
+
+            box-shadow:
+                0 0 0 3px rgba(0, 87, 59, .09);
+        }
+
+        .research-report-input[readonly] {
+            background: #f4f7f6;
+            color: #667a72;
+            cursor: default;
+        }
+
+        .research-report-help {
+            display: block;
+
+            margin-top: 6px;
+
+            color: var(--research-report-light);
+
+            font-size: 9.5px;
+            line-height: 1.4;
+        }
+
+        .research-report-error {
+            display: flex;
+            align-items: flex-start;
+
+            gap: 6px;
+
+            margin-top: 6px;
+
+            color: var(--research-report-danger);
+
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .research-report-error i {
+            margin-top: 1px;
+
+            font-size: 9px;
+        }
+
+        /* -------------------------------------------------------------------------
+                               DATE RANGE
+                               ------------------------------------------------------------------------- */
+
+        .research-report-date-group {
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1fr) auto minmax(0, 1fr);
+
+            gap: 8px;
+
+            align-items: center;
+        }
+
+        .research-report-date-separator {
+            color: var(--research-report-muted);
+
+            font-size: 10px;
+            font-weight: 700;
+
+            white-space: nowrap;
+        }
+
+        /* -------------------------------------------------------------------------
+                               CURRENT FILE UI
+                               ------------------------------------------------------------------------- */
+        
+        .research-report-current-file {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-height: 46px;
+            padding: 8px 11px;
+            border: 1px solid var(--research-report-border);
+            border-radius: var(--research-report-radius-md);
+            background: var(--research-report-surface-alt);
+            margin-bottom: 12px;
+        }
+
+        .research-report-current-file-copy {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-width: 0;
+        }
+
+        .research-report-file-icon-sm {
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9px;
+            background: var(--research-report-forest-soft);
+            color: var(--research-report-forest-mid);
+            font-size: 12px;
+        }
+
+        .research-report-file-name-sm {
+            min-width: 0;
+            overflow: hidden;
+            color: var(--research-report-text);
+            font-size: 12px;
+            font-weight: 700;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .research-report-file-status {
+            flex: 0 0 auto;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: #eef6f1;
+            color: var(--research-report-forest-mid);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        /* -------------------------------------------------------------------------
+                               UPLOAD
+                               ------------------------------------------------------------------------- */
+
+        .research-report-file-input {
+            position: absolute;
+
+            width: 1px;
+            height: 1px;
+
+            overflow: hidden;
+
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .research-report-file-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 10px;
+
+            min-height: 46px;
+
+            padding: 8px 10px 8px 12px;
+
+            border: 1px dashed #bfd4c8;
+            border-radius: var(--research-report-radius-md);
+
+            background: #f8fbf9;
+
+            cursor: pointer;
+
+            transition:
+                border-color .18s ease,
+                background .18s ease,
+                transform .18s ease;
+        }
+
+        .research-report-file-label:hover {
+            border-color: #9fbead;
+            background: #f0f7f3;
+
+            transform: translateY(-1px);
+        }
+
+        .research-report-file-copy {
+            display: flex;
+            align-items: center;
+
+            gap: 9px;
+
+            min-width: 0;
+        }
+
+        .research-report-file-icon {
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 9px;
+
+            background: var(--research-report-forest-soft);
+            color: var(--research-report-forest-mid);
+
+            font-size: 12px;
+        }
+
+        .research-report-file-name {
+            min-width: 0;
+            overflow: hidden;
+
+            color: var(--research-report-text);
+
+            font-size: 10.5px;
+            font-weight: 700;
+
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .research-report-file-browse {
+            display: inline-flex;
+            align-items: center;
+
+            gap: 6px;
+
+            padding: 7px 10px;
+
+            border: 1px solid var(--research-report-border-2);
+            border-radius: 9px;
+
+            background: #fff;
+            color: var(--research-report-forest);
+
+            font-size: 9.5px;
+            font-weight: 800;
+
+            white-space: nowrap;
+        }
+
+        /* -------------------------------------------------------------------------
+                               MEMBERS
+                               ------------------------------------------------------------------------- */
+
+        .research-report-team {
+            padding-top: 23px;
+
+            border-top: 1px solid #eaf0ed;
+        }
+
+        .research-report-team-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 16px;
+
+            margin-bottom: 14px;
+        }
+
+        .research-report-team-title {
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+        }
+
+        .research-report-team-title .research-report-team-icon {
+            width: 32px;
+            height: 32px;
+            flex: 0 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9px;
+            background: #eef6f1;
+            color: var(--research-report-forest);
+            font-size: 12px;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
+        }
+
+        .research-report-team-title strong {
+            color: var(--research-report-ink-2);
+
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .research-report-team-title span {
+            display: block;
+
+            margin-top: 2px;
+
+            color: var(--research-report-muted);
+
+            font-size: 9.5px;
+        }
+
+        .research-report-add-member {
+            display: inline-flex;
+            align-items: center;
+
+            gap: 7px;
+
+            min-height: 34px;
+
+            padding: 0 11px;
+
+            border: 1px solid #c7ddd0;
+            border-radius: 9px;
+
+            background: #fff;
+            color: var(--research-report-forest);
+
+            font-size: 10px;
+            font-weight: 800;
+
+            cursor: pointer;
+
+            transition: .18s ease;
+        }
+
+        .research-report-add-member:hover {
+            background: var(--research-report-forest-soft);
+            border-color: #aec9bb;
+
+            transform: translateY(-1px);
+        }
+
+        .research-report-member-list {
+            display: flex;
+            flex-direction: column;
+
+            gap: 10px;
+        }
+
+        .research-report-member-card {
+            padding: 15px 16px;
+
+            border: 1px solid var(--research-report-border);
+            border-radius: 14px;
+
+            background: #fbfdfc;
+        }
+
+        .research-report-member-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 12px;
+
+            margin-bottom: 13px;
+        }
+
+        .research-report-member-label {
+            display: flex;
+            align-items: center;
+
+            gap: 8px;
+
+            color: var(--research-report-ink-2);
+
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .research-report-member-label .research-report-member-index {
+            width: 23px;
+            height: 23px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            background: #eaf5ee;
+            color: var(--research-report-forest);
+            font-size: 9px;
+            font-weight: 800;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
+        }
+
+        .research-report-remove {
+            width: 28px;
+            height: 28px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 1px solid var(--research-report-danger-border);
+            border-radius: 8px;
+
+            background: var(--research-report-danger-soft);
+            color: var(--research-report-danger);
+
+            font-size: 10px;
+
+            cursor: pointer;
+
+            transition: .18s ease;
+        }
+
+        .research-report-remove:hover {
+            background: #fdeaea;
+            transform: translateY(-1px);
+        }
+
+        .research-report-member-grid {
+            display: grid;
+
+            grid-template-columns:
+                1.15fr 1fr .85fr .95fr;
+
+            gap: 12px;
+        }
+
+        /* -------------------------------------------------------------------------
+                               FOOTER
+                               ------------------------------------------------------------------------- */
+
+        .research-report-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 18px;
+
+            padding: 17px 30px;
+
+            border-top: 1px solid var(--research-report-border);
+
+            background: var(--research-report-surface-alt);
+        }
+
+        .research-report-footer-note {
+            display: inline-flex;
+            align-items: center;
+
+            gap: 8px;
+
+            color: var(--research-report-muted);
+
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .research-report-footer-note i {
+            color: var(--research-report-forest-mid);
+        }
+
+        .research-report-submit {
+            min-height: 41px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+
+            padding: 0 17px;
+
+            border: 1px solid var(--research-report-forest);
+            border-radius: var(--research-report-radius-md);
+
+            background: var(--research-report-forest);
+            color: #fff;
+
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: 11px;
+            font-weight: 800;
+
+            cursor: pointer;
+
+            box-shadow: 0 6px 16px rgba(0, 61, 45, .18);
+
+            transition: .18s ease;
+        }
+
+        .research-report-submit:hover {
+            background: var(--research-report-forest-deep);
+            border-color: var(--research-report-forest-deep);
+
+            transform: translateY(-1px);
+
+            box-shadow: 0 9px 20px rgba(0, 61, 45, .23);
+        }
+
+        /* -------------------------------------------------------------------------
+                               RESPONSIVE
+                               ------------------------------------------------------------------------- */
+
+        @media (max-width: 991.98px) {
+
+            .research-report-shell {
+                width: calc(100% - 34px);
+            }
+
+            .research-report-heading {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 9px;
+            }
+
+            .research-report-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .research-report-column+.research-report-column {
+                padding-left: 0;
+                padding-top: 24px;
+
+                border-left: 0;
+                border-top: 1px solid #eaf0ed;
+            }
+
+            .research-report-member-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 767.98px) {
+
+            .research-report-shell {
+                width: calc(100% - 24px);
+            }
+
+            .research-report-card {
+                border-radius: var(--research-report-radius-lg);
+            }
+
+            .research-report-card-head {
+                align-items: flex-start;
+                flex-direction: column;
+
+                padding: 20px 19px 17px;
+            }
+
+            .research-report-card-body {
+                padding: 22px 19px 7px;
+            }
+
+            .research-report-footer {
+                align-items: stretch;
+                flex-direction: column;
+
+                padding: 15px 19px 18px;
+            }
+
+            .research-report-submit {
+                width: 100%;
+            }
+
+            .research-report-team-head {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .research-report-add-member {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .research-report-file-label {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .research-report-file-browse {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+
+            .research-report-shell {
+                width: calc(100% - 18px);
+            }
+
+            .research-report-heading h1 {
+                font-size: 28px;
+            }
+
+            .research-report-date-group {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+
+            .research-report-date-separator {
+                text-align: center;
+            }
+
+            .research-report-member-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .page-dosen-edit-kpenelitian *,
+            .page-dosen-edit-kpenelitian *::before,
+            .page-dosen-edit-kpenelitian *::after {
+                transition: none !important;
+            }
+        }
+
+        /* FILE VALIDATION MODAL â€” Reuses the existing P3M modal visual language. */
+        .research-report-file-modal .modal-content {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 28px 70px rgba(0, 30, 20, .18);
+            overflow: hidden;
+        }
+
+        .research-report-file-modal .modal-header {
+            padding: 24px 26px 20px;
+            background: #fff;
+            border-bottom: 1px solid var(--research-report-border);
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .research-report-file-modal .modal-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--research-report-danger-soft);
+            color: var(--research-report-danger);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .research-report-file-modal .modal-head-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .research-report-file-modal .modal-head-text h5 {
+            margin: 0 0 4px;
+            color: var(--research-report-ink);
+            font-size: 17px;
+            line-height: 1.3;
+            font-weight: 800;
+            letter-spacing: -.02em;
+        }
+
+        .research-report-file-modal .modal-head-text p {
+            margin: 0;
+            color: var(--research-report-muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .research-report-file-modal .modal-close-btn {
+            margin-left: auto;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: var(--research-report-light);
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .research-report-file-modal .modal-close-btn:hover {
+            color: var(--research-report-ink);
+        }
+
+        .research-report-file-modal .modal-body {
+            padding: 22px 26px;
+            background: #fff;
+        }
+
+        .research-report-file-modal .modal-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 0;
+            padding: 13px 14px;
+            border: 1px solid var(--research-report-danger-border);
+            border-radius: 12px;
+            background: var(--research-report-danger-soft);
+            color: var(--research-report-danger);
+            font-size: 12.5px;
+            line-height: 1.55;
+            font-weight: 600;
+        }
+
+        .research-report-file-modal .modal-alert i {
+            margin-top: 2px;
+            flex: 0 0 auto;
+        }
+
+        .research-report-file-modal .modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 16px 26px;
+            gap: 10px;
+            border-top: 1px solid var(--research-report-border);
+            background: var(--research-report-surface-alt);
+        }
+
+        .research-report-file-modal .btn-modal-close {
+            min-height: 38px;
+            padding: 0 15px;
+            border: 1px solid var(--research-report-forest);
+            border-radius: 9px;
+            background: var(--research-report-forest);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .research-report-file-modal .btn-modal-close:hover {
+            background: var(--research-report-forest-deep);
+            border-color: var(--research-report-forest-deep);
+        }
+
+        @media (max-width: 575.98px) {
+
+            .research-report-file-modal .modal-header,
+            .research-report-file-modal .modal-body,
+            .research-report-file-modal .modal-footer {
+                padding-left: 19px;
+                padding-right: 19px;
+            }
+        }
+    </style>
+
+@endsection
+
+
 @section('content')
 
-<style>
-    .img-preview {
-        max-width: 150px;
-        height: auto;
-        display: block;
-        margin: 0 auto;
-        object-fit: contain;
-    }
-</style>
+    <div class="content-wrapper">
 
-<div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <div class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="m-0">{{ $pagetitle }}</h1>
-                </div><!-- /.col -->
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="">Home</a></li>
-                        <li class="breadcrumb-item active">{{ $pagetitle }}</li>
+        <div class="content-header">
+
+            <div class="research-report-shell">
+
+                <div class="research-report-heading">
+
+                    <div>
+
+                        <span class="research-report-eyebrow">
+                            Penelitian
+                        </span>
+
+                        <h1>
+                            {{ $pagetitle }}
+                        </h1>
+
+                        <p>
+                            Lengkapi data laporan penelitian dan informasi ketua sebelum mengirimkan laporan.
+                        </p>
+
+                    </div>
+
+
+                    <ol class="breadcrumb research-report-breadcrumb">
+
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('dosen.dash') }}">
+                                Home
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item active">
+                            {{ $pagetitle }}
+                        </li>
+
                     </ol>
-                </div><!-- /.col -->
-            </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
-    </div>
-    <!-- /.content-header -->
-    <section class="content">
-        <div class="container-fluid">
-            <form action="{{ route('dosen.updatekumpulanpenelitian' , ['id' => $penelitian->id]) }}" method="post" enctype="multipart/form-data">
-                @csrf
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card card-warning">
-                            <div class="card-header">
-                                <h3 class="card-title">P3M Polibang Jepara</h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <section class="content">
+
+            <div class="research-report-shell">
+
+                <form action="{{ url('/dosdash/up_kpenliti/' . $penelitian->id) }}" method="post" enctype="multipart/form-data"
+                    id="addKpenelitianForm">
+
+                    @csrf
+                                    @method('POST')
+
+
+                    <div class="research-report-card">
+
+                        <div class="research-report-card-head">
+
+                            <div class="research-report-title-group">
+
+                                <h2 class="research-report-card-title">
+                                    Laporan Penelitian Masyarakat
+                                </h2>
+
+                                <p class="research-report-card-subtitle">
+                                    Form pengumpulan laporan penelitian untuk dikelola melalui P3M.
+                                </p>
+
                             </div>
-                            <!-- /.card-header -->
-                            <form style="align-content: center;">
-                                <div class="card-body">
-                                    <form>
-                                        <div class="row">
-                                            <div class="col-sm-6">
-                                                <div class="form-group">
-                                                    <label>Pengabdian Masyarakat</label> <br>
-                                                    <div class="form-group ">
-                                                        <small>Judul Pengabdian :</small>
-                                                        <input type="text" name="judul" class="form-control" placeholder="Enter ..." value="{{ $penelitian->judul }}">
-                                                        @error('judul')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="form-group ">
-                                                        <small>Bidang Ilmu :</small>
-                                                        <input type="text" name="bidang" class="form-control" placeholder="Enter ..." value="{{ $penelitian->bidang }}">
-                                                        @error('bidang')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <small>Kategori</small>
-                                                        <input type="text" class="form-control" value="Laporan Penelitian" name="jeniskategori" value="{{ $penelitian->jeniskategori }}" readonly>
-                                                        <!-- <input type=" hidden" name="jeniskategori" value="Proposal Pengabdian"> -->
-                                                    </div>
-                                                    <div class="form-group ">
-                                                        <small>Lokasi :</small>
-                                                        <input type="text" name="lokasi" class="form-control" placeholder="Enter ..." value="{{ $penelitian->lokasi }}">
-                                                        @error('lokasi')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="form-group ">
-                                                        <small>Lama Penelitian :</small>
-                                                        <!-- <div class="input-group mb-3">
-                                                            <input type="text" class="form-control" name="lamapenelitian" placeholder="Enter ..." value="{{ $penelitian->lamapenelitian }}">
-                                                            <div class="input-group-append">
-                                                                <span class="input-group-text">Hari</span>
-                                                            </div>
-                                                        </div> -->
-                                                        <div class="d-flex">
-                                                            <input type="date" name="tanggal_mulai" class="form-control me-2" value="{{ $penelitian->tanggal_mulai }}" required>
-                                                            <span class="align-self-center">sampai</span>
-                                                            <input type="date" name="tanggal_selesai" class="form-control ms-2" value="{{ $penelitian->tanggal_selesai }}" required>
-                                                        </div>
-                                                        @error('tanggal_mulai' && 'tanggal_selesai')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="form-group ">
-                                                        <small>Biaya :</small>
-                                                        <input type="text" name="biaya" class="form-control" placeholder="Enter ..." value="{{ $penelitian->biaya }}">
-                                                        <sup>*contoh (1500000)</sup>
-                                                        @error('biaya')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                    <small>Unggah Laporan</small>
-                                                    <div class="form-group mb-3">
-                                                        <div class="custom-file">
-                                                            <input type="file" name="uppdf" class="custom-file-input" id="uploadLaporan" value="{{ $penelitian->uppdf }}">
-                                                            <label class="custom-file-label" for="uppdf">{{ $penelitian->uppdf ?? 'Unggah File' }}</label>
-                                                        </div>
-                                                        <small>Maks. 2 Mb</small>
-                                                        @error('uppdf')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="form-group mb-3">
-                                                        @if($penelitian->foto)
-                                                        <img src="{{ asset('storage/photo-upp3m/'.$penelitian->foto) }}" alt="preview-image" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px;" id="preview-image">
-                                                        @endif
-                                                        <div class="form-group-prepend">
-                                                            <small for="image">Unggah Gambar/Foto</small>
-                                                        </div>
-                                                        <div class="custom-file">
-                                                            <input type="file" name="foto" class="custom-file-input" id="foto">
-                                                            <label class="custom-file-label" for="foto">{{ $penelitian->foto ?? 'Unggah File' }}</label>
-                                                        </div>
-                                                        @error('foto')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <div class="form-group">
-                                                    <label>Biodata Ketua</label> <br>
-                                                    <div class="form-group ">
-                                                        <small>Nama Ketua :</small>
-                                                        <input type="text" name="ketua" class="form-control" placeholder="Enter ..." value="{{ $penelitian->ketua }}">
-                                                        @error('ketua')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="form-group ">
-                                                        <small>Jenis Kelamin :</small>
-                                                        <select class="custom-select form-control-border" id="exampleSelectBorder" name="jeniskelamin">
 
-                                                            <option value="">---Pilih---</option>
-                                                            <option value="L" {{ (isset($penelitian) && $penelitian->jeniskelamin == 'L') ? 'selected' : '' }}>Laki - Laki</option>
-                                                            <option value="P" {{ (isset($penelitian) && $penelitian->jeniskelamin == 'P') ? 'selected' : '' }}>Perempuan</option>
 
-                                                        </select>
-                                                    </div>
-                                                    <div class="form-group ">
-                                                        <small>NIDN :</small>
-                                                        <input type="text" name="nidn" class="form-control" placeholder="Enter ..." value="{{ $penelitian->nidn }}">
-                                                        @error('nidn')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="form-group ">
-                                                        <small>Jabatan Fungsional :</small>
-                                                        <!-- <input type="text" name="jabatan" class="form-control" placeholder="Enter ..." value="{{ $penelitian->jabatan }}"> -->
-                                                        <select class="custom-select form-control-border" id="exampleSelectBorder" name="jabatan">
+                            <div class="research-report-secure">
 
-                                                            <option value="">---Pilih---</option>
-                                                            <option value="DR" {{ (isset($penelitian) && $penelitian->jabatan == 'DR') ? 'selected' : '' }}>Direktur</option>
-                                                            <option value="LT" {{ (isset($penelitian) && $penelitian->jabatan == 'LT') ? 'selected' : '' }}>Wakil Direktur</option>
-                                                            <option value="KP" {{ (isset($penelitian) && $penelitian->jabatan == 'KP') ? 'selected' : '' }}>Ketua Program Studi</option>
-                                                            <option value="DS" {{ (isset($penelitian) && $penelitian->jabatan == 'DS') ? 'selected' : '' }}>Dosen Polibang</option>
+                                <i class="fas fa-shield-alt"></i>
 
-                                                        </select>
-                                                        @error('jabatan')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="form-group ">
-                                                        <small>Program Studi :</small>
-                                                        <select class="custom-select form-control-border" id="exampleSelectBorder" name="prodi">
+                                Data tersimpan secara aman
 
-                                                            <option value="">---Pilih---</option>
-                                                            <option value="R" {{ (isset($penelitian) && $penelitian->prodi == 'R') ? 'selected' : '' }}>Rekayasa Perangkat Lunak</option>
-                                                            <option value="A" {{ (isset($penelitian) && $penelitian->prodi == 'A') ? 'selected' : '' }}>Administrasi Bisnis Internasional</option>
-                                                            <option value="AK" {{ (isset($penelitian) && $penelitian->prodi == 'AK') ? 'selected' : '' }}>Akutansi Keuangan Publik</option>
-                                                            <option value="AB" {{ (isset($penelitian) && $penelitian->prodi == 'AB') ? 'selected' : '' }}>Bisnis Digital</option>
-                                                            <option value="AP" {{ (isset($penelitian) && $penelitian->prodi == 'AP') ? 'selected' : '' }}>Agri Bisnis Perternakan</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="form-group ">
-                                                        <small>No. Telepon :</small>
-                                                        <input type="text" name="telp" class="form-control" placeholder="Enter ..." value="{{ $penelitian->telp }}">
-                                                        @error('telp')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                    <div class="form-group ">
-                                                        <small>Alamat :</small>
-                                                        <input type="text" name="alamat" class="form-control" placeholder="Enter ..." value="{{ $penelitian->alamat }}">
-                                                        @error('alamat')
-                                                        <small>{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <label class="col-form-label" for="">Anggota Penelitian</label>
-                                            <div class="form-group mb-3">
-                                                <label class="col-form-label" for="">Anggota Penelitian</label>
-                                                <button type="button" onclick="addAnggota()" class="btn btn-success"> <b>+</b> </button> <br>
-                                                <div id="anggota-wrapper">
-                                                    @foreach($penelitian->anggotap3m as $i => $anggota)
-                                                    <div class="anggota-row border p-2 mb-2">
-                                                        <label class="col-form-label" for="">Anggota Penelitian</label>
-                                                        <button type="button" class="btn btn-danger btn-sm remove-anggota float-end">&times;</button>
-                                                        <input type="hidden" name="id" id="anggota_dihapus">
-                                                        <!-- <div class="form-group">
-                                                            <small>Nama :</small>
-                                                            <input type="text" class="form-control" name="anggota[0][nama]" placeholder="Nama" value="{{ old('nama') }}">
-                                                            @error('nama')
-                                                            <small>{{ $message }}</small>
-                                                            @enderror
-                                                        </div> -->
-                                                        <div class="form-group">
-                                                            <small>Nama :</small>
-                                                            <input type="text" class="form-control" name="anggota[{{ $i }}][nama]" placeholder="Nama" value="{{ $anggota->nama }}">
-                                                            @error('anggota.0.nama')
-                                                            <small>{{ $message }}</small>
-                                                            @enderror
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <small>Program Studi :</small>
-                                                            <!-- <input type="text" class="form-control" name="anggota[{{ $i }}][prodi]" placeholder="Prodi" value="{{ $anggota->prodi }}"> -->
-                                                            <select class="custom-select form-control-border" id="exampleSelectBorder" name="anggota[{{ $i }}][prodi]">
+                            </div>
 
-                                                                <option value="">---Pilih---</option>
-                                                                <option value="R" {{ (isset($anggota) && $anggota->prodi == 'R') ? 'selected' : '' }}>Rekayasa Perangkat Lunak</option>
-                                                                <option value="A" {{ (isset($anggota) && $anggota->prodi == 'A') ? 'selected' : '' }}>Administrasi Bisnis Internasional</option>
-                                                                <option value="AK" {{ (isset($anggota) && $anggota->prodi == 'AK') ? 'selected' : '' }}>Akutansi Keuangan Publik</option>
-                                                                <option value="AB" {{ (isset($anggota) && $anggota->prodi == 'AB') ? 'selected' : '' }}>Bisnis Digital</option>
-                                                                <option value="AP" {{ (isset($anggota) && $anggota->prodi == 'AP') ? 'selected' : '' }}>Agri Bisnis Perternakan</option>
-                                                            </select>
-                                                            @error('prodi')
-                                                            <small>{{ $message }}</small>
-                                                            @enderror
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <small>NIM / NIDN :</small>
-                                                            <input type="text" class="form-control" name="anggota[{{ $i }}][nim]" placeholder="NIM/NIDn" value="{{ $anggota->nim }}">
-                                                            @error('nim')
-                                                            <small>{{ $message }}</small>
-                                                            @enderror
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <small>Jabatan :</small>
-                                                            <!-- <input type="text" class="form-control" name="anggota[{{ $i }}][jabatan]" placeholder="Jabatan" value="{{ $anggota->jabatan }}"> -->
-                                                            <select class="custom-select form-control-border" id="exampleSelectBorder" name="anggota[{{ $i }}][jabatan]">
+                        </div>
 
-                                                                <option value="">---Pilih---</option>
-                                                                <option value="DR" {{ (isset($anggota) && $anggota->jabatan == 'DR') ? 'selected' : '' }}>Direktur</option>
-                                                                <option value="LT" {{ (isset($anggota) && $anggota->jabatan == 'LT') ? 'selected' : '' }}>Wakil Direktur</option>
-                                                                <option value="KP" {{ (isset($anggota) && $anggota->jabatan == 'KP') ? 'selected' : '' }}>Ketua Program Studi</option>
-                                                                <option value="DS" {{ (isset($anggota) && $anggota->jabatan == 'DS') ? 'selected' : '' }}>Dosen Polibang</option>
-                                                                <option value="MHS" {{ (isset($anggota) && $anggota->jabatan == 'MHS') ? 'selected' : '' }}>Mahasiswa</option>
-                                                            </select>
-                                                            @error('jabatan')
-                                                            <small>{{ $message }}</small>
-                                                            @enderror
-                                                        </div>
-                                                        <!-- <button type="button" class="btn btn-danger btn-sm remove-anggota float-end">&times;</button> -->
-                                                    </div>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                            <div class="card-footer">
-                                                <button type="submit" class="btn btn-primary" style="float: right;">Submit</button>
-                                            </div>
-                                        </div>
-                                    </form>
+
+                        <div class="research-report-card-body">
+
+                            {{-- =====================================================
+                             MAIN INFORMATION
+                        ====================================================== --}}
+
+                            <section class="research-report-section">
+
+                                <div class="research-report-section-head">
+
+                                    <span class="research-report-section-number">
+                                        01
+                                    </span>
+
+                                    <div>
+                                        <strong>
+                                            Informasi Laporan
+                                        </strong>
+
+                                        <span>
+                                            Detail utama laporan penelitian masyarakat.
+                                        </span>
+                                    </div>
+
                                 </div>
-                            </form>
+
+
+                                <div class="research-report-grid">
+
+                                    {{-- LEFT --}}
+                                    <div class="research-report-column">
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Judul Penelitian
+                                            </label>
+
+                                            <input type="text" name="judul" class="research-report-input"
+                                                placeholder="Masukkan judul penelitian" value="{{ old('judul', $penelitian->judul) }}">
+
+                                            @error('judul')
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $message }}
+                                                </span>
+                                            @enderror
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Bidang Ilmu
+                                            </label>
+
+                                            <input type="text" name="bidang" class="research-report-input"
+                                                placeholder="Contoh: Teknologi Informasi" value="{{ old('bidang', $penelitian->bidang) }}">
+
+                                            @error('bidang')
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $message }}
+                                                </span>
+                                            @enderror
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Kategori
+                                            </label>
+
+                                            <input type="text" name="jeniskategori" class="research-report-input"
+                                                value="{{ old('jeniskategori', $penelitian->jeniskategori ?? 'Laporan Penelitian Masyarakat') }}" readonly>
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Lokasi
+                                            </label>
+
+                                            <input type="text" name="lokasi" class="research-report-input"
+                                                placeholder="Masukkan lokasi penelitian" value="{{ old('lokasi', $penelitian->lokasi) }}">
+
+                                            @error('lokasi')
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $message }}
+                                                </span>
+                                            @enderror
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Lama Penelitian
+                                            </label>
+
+                                            <div class="research-report-date-group">
+
+                                                <input type="date" name="tanggal_mulai" class="research-report-input"
+                                                    value="{{ old('tanggal_mulai', $penelitian->tanggal_mulai) }}" required>
+
+                                                <span class="research-report-date-separator">
+                                                    <i class="fas fa-minus"></i>
+                                                </span>
+
+                                                <input type="date" name="tanggal_selesai" class="research-report-input"
+                                                    value="{{ old('tanggal_selesai', $penelitian->tanggal_selesai) }}" required>
+
+                                            </div>
+
+                                            @if ($errors->has('tanggal_mulai') || $errors->has('tanggal_selesai'))
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $errors->first('tanggal_mulai') ?: $errors->first('tanggal_selesai') }}
+                                                </span>
+                                            @endif
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Biaya
+                                            </label>
+
+                                            <input type="number" name="biaya" class="research-report-input"
+                                                placeholder="Contoh 1500000" min="0" step="any"
+                                                value="{{ old('biaya', $penelitian->biaya) }}">
+
+                                            <span class="research-report-help">
+                                                Contoh penulisan nominal: 1500000.
+                                            </span>
+
+                                            @error('biaya')
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $message }}
+                                                </span>
+                                            @enderror
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Unggah Laporan
+                                            </label>
+
+                                            @if ($penelitian->uppdf)
+                                                <div class="research-report-current-file">
+                                                    <div class="research-report-current-file-copy">
+                                                        <span class="research-report-file-icon-sm">
+                                                            <i class="fas fa-file-pdf"></i>
+                                                        </span>
+                                                        <span class="research-report-file-name-sm" title="{{ $penelitian->uppdf }}">
+                                                            {{ $penelitian->uppdf }}
+                                                        </span>
+                                                    </div>
+                                                    <span class="research-report-file-status">File saat ini</span>
+                                                </div>
+                                            @endif
+
+                                            <input type="file" name="uppdf" class="research-report-file-input"
+                                                id="uploadLaporanPenelitian" accept=".pdf,application/pdf"
+                                                data-p3m-upload-preserve-accept
+                                                data-p3m-upload-name-id="uploadLaporanPenelitianName">
+
+                                            <label for="uploadLaporanPenelitian" class="research-report-file-label">
+
+                                                <span class="research-report-file-copy">
+
+                                                    <span class="research-report-file-icon">
+                                                        <i class="fas fa-file-upload"></i>
+                                                    </span>
+
+                                                    <span class="research-report-file-name"
+                                                        id="uploadLaporanPenelitianName">
+                                                        Pilih file laporan baru
+                                                    </span>
+
+                                                </span>
+
+
+                                                <span class="research-report-file-browse">
+                                                    <i class="fas fa-folder-open"></i>
+                                                    Pilih File
+                                                </span>
+
+                                            </label>
+
+                                            <span class="research-report-help">
+                                                Hanya PDF · Maksimal ukuran file 5 MB. Biarkan kosong bila tidak ingin mengganti file.
+                                            </span>
+
+                                            @error('uppdf')
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $message }}
+                                                </span>
+                                            @enderror
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Unggah Gambar / Foto
+                                            </label>
+
+                                            @if ($penelitian->foto)
+                                                <div class="research-report-current-file">
+                                                    <div class="research-report-current-file-copy">
+                                                        <span class="research-report-file-icon-sm">
+                                                            <i class="fas fa-image"></i>
+                                                        </span>
+                                                        <span class="research-report-file-name-sm" title="{{ $penelitian->foto }}">
+                                                            {{ $penelitian->foto }}
+                                                        </span>
+                                                    </div>
+                                                    <span class="research-report-file-status">Foto saat ini</span>
+                                                </div>
+                                            @endif
+
+                                            <input type="file" name="foto" class="research-report-file-input"
+                                                id="uploadFotoPenelitian" accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                                                data-p3m-upload
+                                                data-p3m-upload-preserve-accept
+                                                data-p3m-upload-name-id="uploadFotoPenelitianName"
+                                                data-p3m-upload-label="Foto kegiatan"
+                                                data-p3m-upload-empty-label="Pilih gambar / foto baru"
+                                                data-p3m-upload-formats="JPG atau PNG"
+                                                data-p3m-upload-extensions="jpg,jpeg,png"
+                                                data-p3m-upload-mime-types="image/jpeg,image/png"
+                                                data-p3m-upload-max-bytes="2097152"
+                                                @if ($errors->has('foto')) data-p3m-upload-error="{{ $errors->first('foto') }}" @endif>
+
+                                            <label for="uploadFotoPenelitian" class="research-report-file-label">
+
+                                                <span class="research-report-file-copy">
+
+                                                    <span class="research-report-file-icon">
+                                                        <i class="fas fa-image"></i>
+                                                    </span>
+
+                                                    <span class="research-report-file-name" id="uploadFotoPenelitianName">
+                                                        Pilih gambar / foto baru
+                                                    </span>
+
+                                                </span>
+
+
+                                                <span class="research-report-file-browse">
+                                                    <i class="fas fa-camera"></i>
+                                                    Pilih Gambar
+                                                </span>
+
+                                            </label>
+
+                                            <span class="research-report-help">
+                                                JPG atau PNG · Maksimal ukuran file 2 MB. Biarkan kosong bila tidak ingin mengganti foto.
+                                            </span>
+
+                                            @error('foto')
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $message }}
+                                                </span>
+                                            @enderror
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {{-- RIGHT --}}
+                                    <div class="research-report-column">
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Nama Ketua
+                                            </label>
+
+                                            <input type="text" name="ketua" class="research-report-input"
+                                                placeholder="Masukkan nama ketua" value="{{ old('ketua', $penelitian->ketua) }}">
+
+                                            @error('ketua')
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $message }}
+                                                </span>
+                                            @enderror
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Jenis Kelamin
+                                            </label>
+
+                                            <select class="research-report-select" name="jeniskelamin">
+
+                                                <option value="">
+                                                    --- Pilih ---
+                                                </option>
+
+                                                <option value="L" {{ old('jeniskelamin', $penelitian->jeniskelamin) == 'L' ? 'selected' : '' }}>
+                                                    Laki - Laki
+                                                </option>
+
+                                                <option value="P" {{ old('jeniskelamin', $penelitian->jeniskelamin) == 'P' ? 'selected' : '' }}>
+                                                    Perempuan
+                                                </option>
+
+                                            </select>
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                NIDN
+                                            </label>
+
+                                            <input type="text" name="nidn" class="research-report-input"
+                                                placeholder="Masukkan NIDN" value="{{ old('nidn', $penelitian->nidn) }}">
+
+                                            @error('nidn')
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $message }}
+                                                </span>
+                                            @enderror
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Jabatan Fungsional
+                                            </label>
+
+                                            <select class="research-report-select" name="jabatan">
+
+                                                <option value="">
+                                                    --- Pilih ---
+                                                </option>
+
+                                                <option value="DR" {{ old('jabatan', $penelitian->jabatan) == 'DR' ? 'selected' : '' }}>
+                                                    Direktur
+                                                </option>
+
+                                                <option value="LT" {{ old('jabatan', $penelitian->jabatan) == 'LT' ? 'selected' : '' }}>
+                                                    Wakil Direktur
+                                                </option>
+
+                                                <option value="KP" {{ old('jabatan', $penelitian->jabatan) == 'KP' ? 'selected' : '' }}>
+                                                    Ketua Program Studi
+                                                </option>
+
+                                                <option value="DS" {{ old('jabatan', $penelitian->jabatan) == 'DS' ? 'selected' : '' }}>
+                                                    Dosen Polibang
+                                                </option>
+
+                                            </select>
+
+                                            @error('jabatan')
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $message }}
+                                                </span>
+                                            @enderror
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Program Studi
+                                            </label>
+
+                                            <select class="research-report-select" name="prodi">
+
+                                                <option value="">
+                                                    --- Pilih ---
+                                                </option>
+
+                                                <option value="R" {{ old('prodi', $penelitian->prodi) == 'R' ? 'selected' : '' }}>
+                                                    Rekayasa Perangkat Lunak
+                                                </option>
+
+                                                <option value="A" {{ old('prodi', $penelitian->prodi) == 'A' ? 'selected' : '' }}>
+                                                    Administrasi Bisnis Internasional
+                                                </option>
+
+                                                <option value="AK" {{ old('prodi', $penelitian->prodi) == 'AK' ? 'selected' : '' }}>
+                                                    Akutansi Keuangan Publik
+                                                </option>
+
+                                                <option value="AB" {{ old('prodi', $penelitian->prodi) == 'AB' ? 'selected' : '' }}>
+                                                    Bisnis Digital
+                                                </option>
+
+                                                <option value="AP" {{ old('prodi', $penelitian->prodi) == 'AP' ? 'selected' : '' }}>
+                                                    Agribisnis Pertanian
+                                                </option>
+
+                                            </select>
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                No. Telepon
+                                            </label>
+
+                                            <input type="text" name="telp" class="research-report-input"
+                                                placeholder="Masukkan nomor telepon" value="{{ old('telp', $penelitian->telp) }}">
+
+                                            @error('telp')
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $message }}
+                                                </span>
+                                            @enderror
+
+                                        </div>
+
+
+                                        <div class="research-report-field">
+
+                                            <label class="research-report-label">
+                                                Alamat
+                                            </label>
+
+                                            <input type="text" name="alamat" class="research-report-input"
+                                                placeholder="Masukkan alamat" value="{{ old('alamat', $penelitian->alamat) }}">
+
+                                            @error('alamat')
+                                                <span class="research-report-error">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                    {{ $message }}
+                                                </span>
+                                            @enderror
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </section>
+
+
+                            {{-- =====================================================
+                             TEAM MEMBERS
+                        ====================================================== --}}
+
+                            @php
+                                $membersData = old('anggota');
+                                if ($membersData === null) {
+                                    $membersData = [];
+                                    if (isset($penelitian->anggotap3m) && $penelitian->anggotap3m->count() > 0) {
+                                        foreach ($penelitian->anggotap3m as $m) {
+                                            $membersData[] = [
+                                                'nama' => $m->nama,
+                                                'prodi' => $m->prodi,
+                                                'nim' => $m->nim,
+                                                'jabatan' => $m->jabatan,
+                                            ];
+                                        }
+                                    } elseif (isset($anggota) && count($anggota) > 0) {
+                                        foreach ($anggota as $m) {
+                                            $membersData[] = [
+                                                'nama' => $m->nama,
+                                                'prodi' => $m->prodi,
+                                                'nim' => $m->nim,
+                                                'jabatan' => $m->jabatan,
+                                            ];
+                                        }
+                                    }
+                                }
+                                if (empty($membersData)) {
+                                    $membersData = [
+                                        ['nama' => '', 'prodi' => '', 'nim' => '', 'jabatan' => '']
+                                    ];
+                                }
+                            @endphp
+
+                            <section class="research-report-team">
+
+                                <div class="research-report-team-head">
+
+                                    <div class="research-report-team-title">
+
+                                        <span class="research-report-team-icon">
+                                            <i class="fas fa-users"></i>
+                                        </span>
+
+                                        <div>
+                                            <strong>
+                                                Anggota Penelitian
+                                            </strong>
+
+                                            <span>
+                                                Tambahkan anggota yang terlibat dalam laporan penelitian.
+                                            </span>
+                                        </div>
+
+                                    </div>
+
+
+                                    <button type="button" onclick="addAnggota()" class="research-report-add-member">
+                                        <i class="fas fa-plus"></i>
+                                        Tambah Anggota
+                                    </button>
+
+                                </div>
+
+
+                                <div id="anggota-wrapper" class="research-report-member-list">
+
+                                    @foreach ($membersData as $i => $mem)
+                                        <div class="research-report-member-card anggota-row">
+
+                                            <div class="research-report-member-head">
+
+                                                <span class="research-report-member-label">
+
+                                                    <span class="research-report-member-index">
+                                                        {{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
+                                                    </span>
+
+                                                    Identitas Anggota
+
+                                                </span>
+
+
+                                                <button type="button" class="research-report-remove remove-anggota"
+                                                    aria-label="Hapus anggota" title="Hapus anggota">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+
+                                            </div>
+
+
+                                            <div class="research-report-member-grid">
+
+                                                <div class="research-report-field">
+
+                                                    <label class="research-report-label">
+                                                        Nama
+                                                    </label>
+
+                                                    <input type="text" class="research-report-input"
+                                                        name="anggota[{{ $i }}][nama]" placeholder="Nama anggota"
+                                                        value="{{ $mem['nama'] ?? '' }}">
+
+                                                    @error("anggota.$i.nama")
+                                                        <span class="research-report-error">
+                                                            <i class="fas fa-exclamation-circle"></i>
+                                                            {{ $message }}
+                                                        </span>
+                                                    @enderror
+
+                                                </div>
+
+
+                                                <div class="research-report-field">
+
+                                                    <label class="research-report-label">
+                                                        Program Studi
+                                                    </label>
+
+                                                    <select class="research-report-select" name="anggota[{{ $i }}][prodi]">
+
+                                                        <option value="">
+                                                            --- Pilih ---
+                                                        </option>
+
+                                                        <option value="R"
+                                                            {{ ($mem['prodi'] ?? '') == 'R' ? 'selected' : '' }}>
+                                                            Rekayasa Perangkat Lunak
+                                                        </option>
+
+                                                        <option value="A"
+                                                            {{ ($mem['prodi'] ?? '') == 'A' ? 'selected' : '' }}>
+                                                            Administrasi Bisnis Internasional
+                                                        </option>
+
+                                                        <option value="AK"
+                                                            {{ ($mem['prodi'] ?? '') == 'AK' ? 'selected' : '' }}>
+                                                            Akutansi Keuangan Publik
+                                                        </option>
+
+                                                        <option value="AB"
+                                                            {{ ($mem['prodi'] ?? '') == 'AB' ? 'selected' : '' }}>
+                                                            Bisnis Digital
+                                                        </option>
+
+                                                        <option value="AP"
+                                                            {{ ($mem['prodi'] ?? '') == 'AP' ? 'selected' : '' }}>
+                                                            Agribisnis Perternakan
+                                                        </option>
+
+                                                    </select>
+
+                                                    @error("anggota.$i.prodi")
+                                                        <span class="research-report-error">
+                                                            <i class="fas fa-exclamation-circle"></i>
+                                                            {{ $message }}
+                                                        </span>
+                                                    @enderror
+
+                                                </div>
+
+
+                                                <div class="research-report-field">
+
+                                                    <label class="research-report-label">
+                                                        NIM / NIDN
+                                                    </label>
+
+                                                    <input type="text" class="research-report-input"
+                                                        name="anggota[{{ $i }}][nim]" placeholder="NIM / NIDN"
+                                                        value="{{ $mem['nim'] ?? '' }}">
+
+                                                    @error("anggota.$i.nim")
+                                                        <span class="research-report-error">
+                                                            <i class="fas fa-exclamation-circle"></i>
+                                                            {{ $message }}
+                                                        </span>
+                                                    @enderror
+
+                                                </div>
+
+
+                                                <div class="research-report-field">
+
+                                                    <label class="research-report-label">
+                                                        Jabatan
+                                                    </label>
+
+                                                    <select class="research-report-select" name="anggota[{{ $i }}][jabatan]">
+
+                                                        <option value="">
+                                                            --- Pilih ---
+                                                        </option>
+
+                                                        <option value="DR"
+                                                            {{ ($mem['jabatan'] ?? '') == 'DR' ? 'selected' : '' }}>
+                                                            Direktur
+                                                        </option>
+
+                                                        <option value="LT"
+                                                            {{ ($mem['jabatan'] ?? '') == 'LT' ? 'selected' : '' }}>
+                                                            Wakil Direktur
+                                                        </option>
+
+                                                        <option value="KP"
+                                                            {{ ($mem['jabatan'] ?? '') == 'KP' ? 'selected' : '' }}>
+                                                            Ketua Program Studi
+                                                        </option>
+
+                                                        <option value="DS"
+                                                            {{ ($mem['jabatan'] ?? '') == 'DS' ? 'selected' : '' }}>
+                                                            Dosen
+                                                        </option>
+
+                                                        <option value="MHS"
+                                                            {{ ($mem['jabatan'] ?? '') == 'MHS' ? 'selected' : '' }}>
+                                                            Mahasiswa
+                                                        </option>
+
+                                                    </select>
+
+                                                    @error("anggota.$i.jabatan")
+                                                        <span class="research-report-error">
+                                                            <i class="fas fa-exclamation-circle"></i>
+                                                            {{ $message }}
+                                                        </span>
+                                                    @enderror
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                    @endforeach
+
+                                </div>
+
+                            </section>
+
+                        </div>
+
+
+                        <div class="research-report-footer">
+
+                            <div class="research-report-footer-note">
+
+                                <i class="fas fa-info-circle"></i>
+
+                                <span>
+                                    Periksa kembali informasi sebelum mengirim laporan penelitian.
+                                </span>
+
+                            </div>
+
+
+                            <button type="submit" class="research-report-submit">
+                                <i class="fas fa-paper-plane"></i>
+                                Submit Laporan
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+                {{-- P3M-style validation modal. No SweetAlert dependency required. --}}
+                <div class="modal fade p3m-modal research-report-file-modal" id="researchReportFileErrorModal"
+                    tabindex="-1" role="dialog" aria-labelledby="researchReportFileErrorTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content text-left">
+                            <div class="modal-header">
+                                <div class="modal-icon"><i class="fas fa-exclamation-circle"></i></div>
+                                <div class="modal-head-text">
+                                    <h5 id="researchReportFileErrorTitle">File Tidak Valid</h5>
+                                    <p id="researchReportFileErrorDescription">Periksa file yang dipilih sebelum
+                                        melanjutkan.</p>
+                                </div>
+                                <button type="button" class="modal-close-btn" data-dismiss="modal"
+                                    aria-label="Tutup">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="modal-alert">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span id="researchReportFileErrorMessage"></span>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn-modal-close" data-dismiss="modal">Mengerti</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </form>
-        </div>
-    </section>
-</div>
 
-<script>
-    let count = 1;
 
-    function addAnggota() {
-        const wrapper = document.getElementById('anggota-wrapper');
-        const html = `
-            <div class="anggota-row border p-2 mb-2">
-            <label class="col-form-label" for="">Identitas Anggota</label>
-            <button type="button" class="btn btn-danger btn-sm remove-anggota float-end mb-2">&times;</button>
-            <div class="form-group">
-                <small>Nama :</small>
-                <input type="text" class="form-control" name="anggota[${count}][nama]" placeholder="Nama">
             </div>
-            <div class="form-group">
-            <small>Program Studi :</small>
-            <select class="custom-select form-control-border" id="exampleSelectBorder" name="anggota[${count}][prodi]" required>
-                <option value="">---Pilih---</option>
-                <option value="R" {{ (isset($anggota) && $anggota->prodi == 'R') ? 'selected' : '' }}>Rekayasa Perangkat Lunak</option>
-                <option value="A" {{ (isset($anggota) && $anggota->prodi == 'A') ? 'selected' : '' }}>Administrasi Bisnis Internasional</option>
-                <option value="AK" {{ (isset($anggota) && $anggota->prodi == 'AK') ? 'selected' : '' }}>Akutansi Keuangan Publik</option>
-                <option value="AB" {{ (isset($anggota) && $anggota->prodi == 'AB') ? 'selected' : '' }}>Bisnis Digital</option>
-                <option value="AP" {{ (isset($anggota) && $anggota->prodi == 'AP') ? 'selected' : '' }}>Agri Bisnis Perternakan</option>
-                                                                
-            </select>
-            </div>
-            <div class="form-group">
-            <small>NIM / NIDN :</small>
-            <input type="text" class="form-control" name="anggota[${count}][nim]" placeholder="NIM/NIDN" value="{{ old('nim') }}">
-            </div>
-            <div class="form-group">
-            <small>Jabatan :</small>
-            <select class="custom-select form-control-border" id="exampleSelectBorder" name="anggota[${count}][jabatan]" required>
-                <option value="">---Pilih---</option>
-                <option value="DR" {{ (isset($anggota) && $anggota->jabatan == 'DR') ? 'selected' : '' }}>Direktur</option>
-                <option value="LT" {{ (isset($anggota) && $anggota->jabatan == 'LT') ? 'selected' : '' }}>Wakil Direktur</option>
-                <option value="KP" {{ (isset($anggota) && $anggota->jabatan == 'KP') ? 'selected' : '' }}>Ketua Program Studi</option>
-                <option value="DS" {{ (isset($anggota) && $anggota->jabatan == 'DS') ? 'selected' : '' }}>Dosen Polibang</option>
-                <option value="MHS" {{ (isset($anggota) && $anggota->jabatan == 'MHS') ? 'selected' : '' }}>Mahasiswa</option>
-            </select>
-            </div>
-            </div>
-        `;
-        wrapper.insertAdjacentHTML('beforeend', html);
-        count++;
-    }
-    document.getElementById('anggota-wrapper').addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-anggota')) {
-            e.target.closest('.anggota-row').remove();
-        }
-    });
-</script>
-<script>
-    document.querySelectorAll('.custom-file-input').forEach(function(input) {
-        input.addEventListener('change', function(e) {
-            var fileName = e.target.files[0].name;
-            e.target.nextElementSibling.innerText = fileName;
-        })
-    });
-</script>
-<script>
-    const inputFile = document.getElementById('foto');
-    const fileLabel = document.querySelector('.custom-file-label');
 
-    inputFile.addEventListener('change', (e) => {
-        if (file && file.type.startsWith('image/')) {
-            document.querySelector('.custom-file-label').textContent = file.name;
-            const fileName = e.target.files[0].name;
-            fileLabel.textContent = fileName;
-        }
-        reader.readAsDataURL(file);
-    });
-</script>
+        </section>
 
-<script>
-    // Function to preview image
+    </div>
 
-    function previewImage(event) {
-        var reader = new FileReader();
-        reader.onload = function() {
-            var output = document.getElementById('preview-image');
-            output.src = reader.result;
-        }
-        reader.readAsDataURL(event.target.files[0]);
-    }
 
-    // Add event listener to the image input
-    document.getElementById('foto').addEventListener('change', previewImage);
-</script>
-<!-- <script>
-    function previewImage() {
-        const input = document.getElementById('upload');
-        const preview = document.getElementById('preview');
+    <script>
+        (function() {
+            'use strict';
 
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
+            let count = {{ count($membersData) }};
+
+            function updateMemberNumbers() {
+                document.querySelectorAll('#anggota-wrapper .anggota-row').forEach(function(row, index) {
+                    const number = row.querySelector('.research-report-member-index');
+                    if (number) number.textContent = String(index + 1).padStart(2, '0');
+                });
             }
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-</script> -->
+
+            function addAnggota() {
+                const wrapper = document.getElementById('anggota-wrapper');
+                if (!wrapper) return;
+
+                const index = count;
+                const html = `
+                    <div class="research-report-member-card anggota-row">
+                        <div class="research-report-member-head">
+                            <span class="research-report-member-label">
+                                <span class="research-report-member-index">00</span>
+                                Identitas Anggota
+                            </span>
+                            <button type="button" class="research-report-remove remove-anggota" aria-label="Hapus anggota" title="Hapus anggota">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="research-report-member-grid">
+                            <div class="research-report-field">
+                                <label class="research-report-label">Nama</label>
+                                <input type="text" class="research-report-input" name="anggota[${index}][nama]" placeholder="Nama anggota">
+                            </div>
+                            <div class="research-report-field">
+                                <label class="research-report-label">Program Studi</label>
+                                <select class="research-report-select" name="anggota[${index}][prodi]">
+                                    <option value="">--- Pilih ---</option>
+                                    <option value="R">Rekayasa Perangkat Lunak</option>
+                                    <option value="A">Administrasi Bisnis Internasional</option>
+                                    <option value="AK">Akutansi Keuangan Publik</option>
+                                    <option value="AB">Bisnis Digital</option>
+                                    <option value="AP">Agribisnis Perternakan</option>
+                                </select>
+                            </div>
+                            <div class="research-report-field">
+                                <label class="research-report-label">NIM / NIDN</label>
+                                <input type="text" class="research-report-input" name="anggota[${index}][nim]" placeholder="NIM / NIDN">
+                            </div>
+                            <div class="research-report-field">
+                                <label class="research-report-label">Jabatan</label>
+                                <select class="research-report-select" name="anggota[${index}][jabatan]">
+                                    <option value="">--- Pilih ---</option>
+                                    <option value="DR">Direktur</option>
+                                    <option value="LT">Wakil Direktur</option>
+                                    <option value="KP">Ketua Program Studi</option>
+                                    <option value="DS">Dosen</option>
+                                    <option value="MHS">Mahasiswa</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>`;
+
+                wrapper.insertAdjacentHTML('beforeend', html);
+                count++;
+                updateMemberNumbers();
+            }
+
+            window.addAnggota = addAnggota;
+
+            if (!document.documentElement.dataset.researchReportRemoveBound) {
+                document.documentElement.dataset.researchReportRemoveBound = 'true';
+                document.addEventListener('click', function(event) {
+                    const removeButton = event.target.closest('.remove-anggota');
+                    if (!removeButton) return;
+
+                    const row = removeButton.closest('.anggota-row');
+                    if (!row) return;
+
+                    const rows = document.querySelectorAll('#anggota-wrapper .anggota-row');
+                    if (rows.length <= 1) return;
+
+                    row.remove();
+                    updateMemberNumbers();
+                });
+            }
+
+            document.addEventListener('turbo:load', updateMemberNumbers);
+            document.addEventListener('DOMContentLoaded', updateMemberNumbers, { once: true });
+        })();
+    </script>
+
 @endsection

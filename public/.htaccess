@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Submission PDFs are served only through an authorized Laravel route.
+    RewriteRule ^storage/uppdf(?:/|$) - [F,L,NC]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

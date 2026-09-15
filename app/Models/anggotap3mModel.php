@@ -17,14 +17,14 @@ class anggotap3mModel extends Model
     }
     public function ajupenel()
     {
-        return $this->belongsTo(p3mModel::class, 'ajupenel_model_id');
+        return $this->belongsTo(ajuan_penelitianModel::class, 'ajupenel_model_id');
     }
     public function kpengab()
     {
-        return $this->belongsTo(p3mModel::class, 'kpengab_model_id');
+        return $this->belongsTo(kum_pengabdianModel::class, 'kpengab_model_id');
     }
     public function kpeneliti()
     {
-        return $this->belongsTo(p3mModel::class, 'kpenel_model_id');
+        return $this->belongsTo(kum_penelitianModel::class, 'kpenel_model_id');
     }
 }

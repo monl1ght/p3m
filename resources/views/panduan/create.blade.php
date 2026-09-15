@@ -3,8 +3,8 @@
 @section('css')
 <style>
     :root {
-        --p3m-blue: #2563eb;
-        --p3m-blue-dark: #1d4ed8;
+        --p3m-blue: #003d2d;
+        --p3m-blue-dark: #002e22;
         --p3m-gold: #d5a72f;
         --p3m-slate-900: #0f172a;
         --p3m-slate-700: #334155;
@@ -108,7 +108,7 @@
     .panduan-form-group .form-control:focus,
     .panduan-file-input:focus {
         border-color: #93c5fd;
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, .08);
+        box-shadow: 0 0 0 4px rgba(0, 61, 45, .08);
     }
 
     .panduan-form-group small {
@@ -171,7 +171,7 @@
         background: var(--p3m-blue);
         border: 1px solid var(--p3m-blue);
         color: #ffffff;
-        box-shadow: 0 12px 24px rgba(37, 99, 235, .17);
+        box-shadow: 0 12px 24px rgba(0, 61, 45, .17);
     }
 
     .btn-panduan-submit:hover {
@@ -239,7 +239,7 @@
                                 <label for="original_name">Upload File</label>
                                 <div class="panduan-upload-box">
                                     <input type="file" name="original_name" id="original_name" class="form-control panduan-file-input" required>
-                                    <span class="panduan-help-text">Format yang didukung: PDF atau DOCX. Maksimal 2MB.</span>
+                                    <span class="panduan-help-text">Format yang didukung: PDF atau DOCX. Maksimal 5 MB.</span>
                                 </div>
                                 @error('original_name')
                                     <small>{{ $message }}</small>

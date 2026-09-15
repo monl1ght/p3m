@@ -1,0 +1,1896 @@
+/* ==========================================================================
+   P3M POLIBANG ADMIN — PROFESSIONAL UI SYSTEM
+   Revised from the existing public/css/p3m-admin.css
+
+   Fokus:
+   - clean and premium visual hierarchy
+   - consistent spacing and typography
+   - deep green P3M identity without excessive decoration
+   - strong active states
+   - responsive desktop/tablet/mobile behavior
+   - preserve existing AdminLTE structure and existing table utilities
+   ========================================================================== */
+
+:root {
+    /* Brand */
+    --p3m-green-950: #003d2d;
+    --p3m-green-900: #064b39;
+    --p3m-green-850: #075640;
+    --p3m-green-800: #0a614a;
+    --p3m-green-700: #0d6e53;
+    --p3m-green-600: #159269;
+    --p3m-green-500: #31b777;
+
+    /* Brand accents */
+    --p3m-gold: #b99835;
+    --p3m-gold-soft: rgba(185, 152, 53, 0.16);
+
+    /* Surfaces */
+    --p3m-page: #f5f8f7;
+    --p3m-surface: #ffffff;
+    --p3m-surface-soft: #f8fbf9;
+    --p3m-surface-hover: #f1f6f3;
+
+    /* Text */
+    --p3m-text: #18312a;
+    --p3m-text-strong: #10251f;
+    --p3m-muted: #6b7b74;
+    --p3m-subtle: #97a59f;
+
+    /* Borders */
+    --p3m-line: #e5ede9;
+    --p3m-line-strong: #d4e0da;
+    --p3m-sidebar-line: rgba(255, 255, 255, 0.095);
+
+    /* Feedback */
+    --p3m-danger: #ed6f7c;
+    --p3m-danger-soft: rgba(237, 111, 124, 0.10);
+
+    /* Layout */
+    --p3m-sidebar: 272px;
+    --p3m-header: 66px;
+    --p3m-content-max: 1600px;
+
+    /* Shape */
+    --p3m-radius-xs: 8px;
+    --p3m-radius-sm: 10px;
+    --p3m-radius-md: 12px;
+    --p3m-radius-lg: 15px;
+    --p3m-radius-xl: 18px;
+
+    /* Shadows */
+    --p3m-shadow-sm: 0 2px 8px rgba(16, 45, 35, 0.05);
+    --p3m-shadow-md: 0 8px 24px rgba(16, 45, 35, 0.08);
+    --p3m-shadow-lg: 0 18px 45px rgba(16, 45, 35, 0.12);
+
+    /* Typography */
+    --p3m-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --p3m-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+}
+
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body.p3m-admin-elegant {
+    margin: 0;
+    overflow-x: hidden;
+    background: var(--p3m-page) !important;
+    color: var(--p3m-text);
+    font-family: var(--p3m-font);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+body.p3m-admin-elegant .wrapper {
+    min-height: 100vh;
+    background: transparent !important;
+}
+
+body.p3m-admin-elegant a,
+body.p3m-admin-elegant button,
+body.p3m-admin-elegant input {
+    font-family: inherit;
+}
+
+body.p3m-admin-elegant :focus-visible {
+    outline: 2px solid rgba(49, 183, 119, 0.75);
+    outline-offset: 2px;
+}
+
+
+/* ==========================================================================
+   HEADER / TOPBAR
+   ========================================================================== */
+
+body.p3m-admin-elegant .main-header {
+    position: fixed !important;
+    top: 0;
+    right: 0;
+    left: var(--p3m-sidebar);
+
+    width: auto !important;
+    height: 60px !important;
+    min-height: 60px !important;
+
+    margin-left: 0 !important;
+    padding: 0 8px 0 24px !important;
+
+    display: flex;
+    align-items: center;
+
+    background: rgba(255, 255, 255, 0.93) !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(0, 61, 45, .08) !important;
+
+    box-shadow: 0 1px 16px rgba(0, 35, 22, .07) !important;
+
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    z-index: 1035;
+}
+
+body.p3m-admin-elegant .main-header .navbar-nav {
+    height: 100%;
+    align-items: center;
+}
+
+body.p3m-admin-elegant .main-header>.navbar-nav:first-child {
+    min-width: 0;
+}
+
+body.p3m-admin-elegant .main-header .nav-link {
+    color: #2b3e36 !important;
+}
+
+
+/* Hamburger — identical to dosen */
+
+body.p3m-admin-elegant .main-header .nav-link[data-widget="pushmenu"] {
+    width: 40px;
+    height: 40px;
+
+    margin: 0 12px 0 4px;
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1.5px solid rgba(0, 61, 45, .10);
+    border-radius: 11px;
+
+    background: transparent;
+    color: var(--p3m-green-950) !important;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+body.p3m-admin-elegant .main-header .nav-link[data-widget="pushmenu"]:hover {
+    background: rgba(0, 61, 45, .06);
+    border-color: rgba(0, 61, 45, .18);
+}
+
+body.p3m-admin-elegant .main-header .nav-link[data-widget="pushmenu"] i {
+    font-size: 14px;
+}
+
+/* Admin topbar breadcrumb — matches dosen style */
+body.p3m-admin-elegant .admin-topbar-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+body.p3m-admin-elegant .admin-topbar-workspace {
+    color: var(--p3m-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+body.p3m-admin-elegant .admin-topbar-sep {
+    color: var(--p3m-line);
+    font-size: 8px;
+}
+
+body.p3m-admin-elegant .admin-topbar-page {
+    color: var(--p3m-text-strong);
+    font-family: var(--p3m-display);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: -.01em;
+}
+
+body.p3m-admin-elegant .admin-topbar-actions {
+    gap: 6px;
+    padding-right: 4px;
+}
+
+body.p3m-admin-elegant .admin-topbar-divider {
+    width: 1px;
+    height: 26px;
+    margin: 0 2px;
+    background: rgba(0, 61, 45, .10);
+    border-radius: 99px;
+}
+
+body.p3m-admin-elegant .admin-topbar-caret {
+    color: var(--p3m-muted);
+    font-size: 8px;
+    margin-left: 2px;
+}
+
+
+body.p3m-admin-elegant .main-header .navbar-nav.ml-auto .nav-link {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 6px 11px;
+
+    border-radius: 10px;
+
+    color: #476057 !important;
+    font-size: 12px;
+    font-weight: 650;
+
+    transition:
+        background 0.18s ease,
+        color 0.18s ease,
+        border-color 0.18s ease;
+}
+
+body.p3m-admin-elegant .main-header .navbar-nav.ml-auto .nav-link:hover {
+    background: #f3f7f5;
+    color: var(--p3m-green-900) !important;
+}
+
+body.p3m-admin-elegant .main-header .navbar-nav.ml-auto .nav-link i {
+    color: currentColor;
+}
+
+
+/* Lihat website */
+
+/* Website btn — now outline style matching dosen */
+body.p3m-admin-elegant .admin-topbar-website {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 13px;
+    border: 1.5px solid rgba(0, 61, 45, .12);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--p3m-green-700) !important;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-decoration: none !important;
+    transition: .15s ease;
+}
+
+body.p3m-admin-elegant .admin-topbar-website:hover {
+    background: rgba(0, 61, 45, .06);
+    border-color: rgba(0, 61, 45, .20);
+    color: var(--p3m-green-950) !important;
+}
+
+
+
+/* Notification */
+
+body.p3m-admin-elegant .topbar-notif-btn {
+    position: relative;
+
+    width: 38px !important;
+    height: 38px !important;
+
+    padding: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #e2ebe6 !important;
+    border-radius: 10px !important;
+
+    background: #f7faf8 !important;
+    color: #496158 !important;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+}
+
+body.p3m-admin-elegant .topbar-notif-btn:hover {
+    background: #eef5f1 !important;
+    border-color: #d1dfd7 !important;
+    color: var(--p3m-green-900) !important;
+}
+
+body.p3m-admin-elegant .topbar-notif-btn i {
+    color: currentColor !important;
+    font-size: 15px !important;
+}
+
+body.p3m-admin-elegant .notif-dot,
+body.p3m-admin-elegant .navbar-badge {
+    position: absolute;
+    top: 7px !important;
+    right: 7px !important;
+
+    width: 7px !important;
+    height: 7px !important;
+
+    padding: 0 !important;
+    border: 2px solid #fff !important;
+    border-radius: 50% !important;
+
+    background: #e86b73 !important;
+    font-size: 0 !important;
+}
+
+
+/* Topbar user — aligned with dosen style */
+body.p3m-admin-elegant .topbar-user-chip,
+body.p3m-admin-elegant .topbar-user-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
+    height: 40px;
+    padding: 3px 10px 3px 4px;
+
+    border: 1.5px solid rgba(0, 61, 45, .10);
+    border-radius: 40px;
+
+    background: transparent;
+
+    text-decoration: none !important;
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+body.p3m-admin-elegant .topbar-user-chip:hover {
+    background: rgba(0, 61, 45, .05);
+    border-color: rgba(0, 61, 45, .18);
+}
+
+body.p3m-admin-elegant .topbar-user-avatar,
+body.p3m-admin-elegant .topbar-user-pill .avatar {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+    border-radius: 50%;
+
+    background: var(--p3m-green-950);
+    color: #fff;
+
+    font-size: 11px;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(0, 61, 45, .18);
+}
+
+body.p3m-admin-elegant .topbar-user-avatar img,
+body.p3m-admin-elegant .topbar-user-pill .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+body.p3m-admin-elegant .topbar-user-info,
+body.p3m-admin-elegant .topbar-user-pill .info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+
+    min-width: 0;
+}
+
+body.p3m-admin-elegant .topbar-user-name,
+body.p3m-admin-elegant .topbar-user-pill .name {
+    max-width: 145px;
+
+    overflow: hidden;
+
+    color: var(--p3m-text-strong);
+
+    font-family: var(--p3m-display);
+    font-size: 11.5px;
+    line-height: 1.2;
+    font-weight: 800;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.p3m-admin-elegant .topbar-user-role,
+body.p3m-admin-elegant .topbar-user-pill .role {
+    color: var(--p3m-muted);
+    font-size: 9.5px;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+body.p3m-admin-elegant .admin-topbar-caret {
+    color: var(--p3m-muted);
+    font-size: 8px;
+    margin-left: 2px;
+    transition: transform 0.2s ease;
+}
+
+body.p3m-admin-elegant .dropdown.show .admin-topbar-caret,
+body.p3m-admin-elegant .topbar-user-chip[aria-expanded="true"] .admin-topbar-caret {
+    transform: rotate(180deg);
+}
+
+body.p3m-admin-elegant .main-header .dosen-user-dropdown,
+body.p3m-admin-elegant .dosen-user-dropdown {
+    width: 190px !important;
+    min-width: 190px !important;
+    max-width: 200px !important;
+    margin-top: 6px !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(0, 61, 45, .12) !important;
+    box-shadow: 0 10px 28px rgba(0, 45, 33, .12), 0 2px 6px rgba(0, 0, 0, .03) !important;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-header {
+    padding: 9px 13px 8px;
+    background: #f9fbf9;
+    border-bottom: 1px solid #edf2ee;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    text-align: left;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-name {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    color: #0d1f1a;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-role {
+    font-size: 10px;
+    font-weight: 600;
+    color: #00573b;
+    line-height: 1.2;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-body {
+    padding: 4px 0;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 13px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: #243830 !important;
+    text-decoration: none !important;
+    transition: all .12s ease;
+    width: 100%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    line-height: 1.3;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-item i {
+    width: 14px;
+    font-size: 12px;
+    color: #00573b;
+    text-align: center;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-item:hover {
+    background: #f0f7f3 !important;
+    color: #003d2d !important;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-divider {
+    margin: 3px 0 !important;
+    border: none !important;
+    border-top: 1px solid #edf2ee !important;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-logout {
+    color: #dc2626 !important;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-logout i {
+    color: #dc2626 !important;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-logout:hover {
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+}
+
+body.p3m-admin-elegant .dosen-dropdown-logout:hover i {
+    color: #b91c1c !important;
+}
+
+/* Notification dropdown */
+
+body.p3m-admin-elegant .main-header .dropdown-menu {
+    min-width: 300px;
+
+    margin-top: 7px;
+    padding: 0 !important;
+
+    overflow: hidden;
+
+    border: 1px solid var(--p3m-line) !important;
+    border-radius: 14px !important;
+
+    background: #fff;
+
+    box-shadow: var(--p3m-shadow-lg) !important;
+}
+
+body.p3m-admin-elegant .main-header .dropdown-header {
+    padding: 13px 16px;
+
+    color: var(--p3m-muted);
+
+    font-size: 10.5px;
+    font-weight: 800;
+
+    text-transform: uppercase;
+    letter-spacing: .08em;
+
+    border-bottom: 1px solid #eef3f0;
+}
+
+body.p3m-admin-elegant .main-header .dropdown-item {
+    padding: 10px 16px;
+
+    color: var(--p3m-text);
+
+    font-size: 12.5px;
+    font-weight: 550;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+body.p3m-admin-elegant .main-header .dropdown-item:hover {
+    background: var(--p3m-surface-soft);
+    color: var(--p3m-green-900);
+}
+
+body.p3m-admin-elegant .main-header .dropdown-item i {
+    color: var(--p3m-green-900) !important;
+}
+
+/* Notification dropdown */
+body.p3m-admin-elegant .p3m-notif-dropdown {
+    border-radius: 16px !important;
+    border: 1px solid #eaeff4 !important;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, .12) !important;
+    overflow: hidden;
+    padding: 0 !important;
+    min-width: 300px;
+}
+
+body.p3m-admin-elegant .p3m-notif-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid #f0f4f8;
+}
+
+body.p3m-admin-elegant .p3m-notif-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: #7a899a;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+body.p3m-admin-elegant .p3m-notif-badge {
+    margin-left: 8px;
+    background: #003d2d;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 99px;
+}
+
+body.p3m-admin-elegant .p3m-notif-item {
+    padding: 12px 18px !important;
+    font-size: 13.5px !important;
+    font-weight: 600;
+    color: #1a2e3b;
+    transition: background .15s;
+}
+
+body.p3m-admin-elegant .p3m-notif-dot-icon {
+    font-size: 7px !important;
+    color: #003d2d !important;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+body.p3m-admin-elegant .p3m-notif-empty {
+    padding: 24px 18px;
+    text-align: center;
+    color: #a0aec0;
+    font-size: 13px;
+}
+
+body.p3m-admin-elegant .p3m-notif-empty i {
+    font-size: 22px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+body.p3m-admin-elegant .p3m-notif-footer {
+    padding: 10px 18px;
+    border-top: 1px solid #f0f4f8;
+    text-align: center;
+}
+
+body.p3m-admin-elegant .p3m-notif-footer a {
+    font-size: 13px;
+    font-weight: 700;
+    color: #003d2d;
+}
+
+
+/* ==========================================================================
+   SIDEBAR
+   ========================================================================== */
+
+body.p3m-admin-elegant .main-sidebar {
+    position: fixed !important;
+
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+
+    width: var(--p3m-sidebar) !important;
+    height: 100dvh !important;
+    min-height: 100vh !important;
+
+    margin: 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    overflow: hidden !important;
+
+    background:
+        radial-gradient(300px 240px at 110% 100%,
+            rgba(255, 255, 255, 0.045),
+            transparent 70%),
+        linear-gradient(160deg,
+            #064f3a 0%,
+            var(--p3m-green-950) 48%,
+            #002f23 100%) !important;
+
+    border: 0 !important;
+    border-right: 1px solid rgba(255, 255, 255, .04) !important;
+    border-radius: 0 28px 28px 0 !important;
+
+    box-shadow: 8px 0 30px rgba(0, 46, 34, 0.10) !important;
+
+    z-index: 1038 !important;
+}
+
+body.p3m-admin-elegant .main-sidebar::before {
+    content: "";
+
+    position: absolute;
+
+    right: -130px;
+    bottom: -140px;
+
+    width: 350px;
+    height: 350px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle,
+            rgba(49, 183, 119, 0.10) 0%,
+            rgba(49, 183, 119, 0) 70%);
+
+    pointer-events: none;
+}
+
+body.p3m-admin-elegant .main-sidebar .sidebar {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+
+    min-height: 0 !important;
+    height: auto !important;
+
+    padding: 0 15px 17px !important;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+
+/* Brand */
+
+body.p3m-admin-elegant .brand-link.p3m-brand {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    gap: 12px !important;
+
+    min-height: 0 !important;
+
+    margin: 0 19px 17px !important;
+    padding: 28px 6px 27px !important;
+
+    position: relative;
+    z-index: 4;
+
+    border-bottom: 1px solid rgba(255, 255, 255, .075) !important;
+
+    text-decoration: none !important;
+}
+
+body.p3m-admin-elegant .brand-link.p3m-brand img {
+    width: 52px !important;
+    height: 52px !important;
+
+    flex: 0 0 52px;
+
+    padding: 4px !important;
+
+    object-fit: contain !important;
+
+    border: 0 !important;
+    border-radius: 50% !important;
+
+    background: #fff !important;
+
+    box-shadow:
+        0 7px 18px rgba(0, 25, 17, 0.16) !important;
+}
+
+body.p3m-admin-elegant .brand-link.p3m-brand strong {
+    display: block !important;
+
+    color: #fff !important;
+
+    font-family: var(--p3m-display) !important;
+    font-size: 17px !important;
+    line-height: 1.15 !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.025em !important;
+
+    text-transform: uppercase;
+}
+
+body.p3m-admin-elegant .brand-link.p3m-brand>span>span {
+    display: block !important;
+
+    margin-top: 5px !important;
+
+    color: rgba(255, 255, 255, .63) !important;
+
+    font-size: 10.5px !important;
+    line-height: 1 !important;
+    font-weight: 700 !important;
+
+    letter-spacing: .13em !important;
+    text-transform: uppercase !important;
+}
+
+
+/* User panel — retained for pages/layouts that still render it */
+
+body.p3m-admin-elegant .user-panel {
+    display: flex !important;
+    align-items: center !important;
+
+    min-height: 62px !important;
+
+    margin: 0 4px 15px !important;
+    padding: 9px 11px !important;
+
+    background: rgba(255, 255, 255, .045) !important;
+    border: 1px solid rgba(255, 255, 255, .075) !important;
+    border-radius: 13px !important;
+}
+
+body.p3m-admin-elegant .user-panel .image {
+    padding-left: 0 !important;
+}
+
+body.p3m-admin-elegant .user-panel img,
+body.p3m-admin-elegant .admin-avatar {
+    width: 40px !important;
+    height: 40px !important;
+
+    border-radius: 11px !important;
+}
+
+body.p3m-admin-elegant .user-panel img {
+    object-fit: cover !important;
+    border: 1px solid rgba(255, 255, 255, .13) !important;
+}
+
+body.p3m-admin-elegant .admin-avatar {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    background: rgba(255, 255, 255, .10) !important;
+    border: 1px solid rgba(255, 255, 255, .12) !important;
+
+    color: #fff !important;
+
+    font-size: 14px !important;
+    font-weight: 800 !important;
+}
+
+body.p3m-admin-elegant .user-panel .info {
+    min-width: 0;
+    padding-left: 10px !important;
+}
+
+body.p3m-admin-elegant .user-panel .info a {
+    display: block;
+
+    overflow: hidden;
+
+    color: #fff !important;
+
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+
+    text-decoration: none !important;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+body.p3m-admin-elegant .user-panel .info a:hover {
+    color: rgba(255, 255, 255, .88) !important;
+}
+
+body.p3m-admin-elegant .user-role {
+    display: block;
+
+    margin-top: 3px;
+
+    color: rgba(255, 255, 255, .52) !important;
+
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+    font-weight: 600 !important;
+}
+
+
+/* Search */
+
+body.p3m-admin-elegant .main-sidebar>.sidebar>.form-inline {
+    width: 100% !important;
+    margin: 0 0 16px !important;
+}
+
+body.p3m-admin-elegant .main-sidebar .input-group {
+    width: 100% !important;
+    height: 44px !important;
+}
+
+body.p3m-admin-elegant .form-control-sidebar,
+body.p3m-admin-elegant .btn-sidebar {
+    height: 44px !important;
+
+    background: rgba(255, 255, 255, .055) !important;
+    border-color: rgba(255, 255, 255, .095) !important;
+
+    color: #fff !important;
+
+    box-shadow: none !important;
+}
+
+body.p3m-admin-elegant .form-control-sidebar {
+    border-radius: 12px 0 0 12px !important;
+    padding: 0 13px !important;
+
+    font-size: 12px !important;
+    font-weight: 500;
+}
+
+body.p3m-admin-elegant .form-control-sidebar::placeholder {
+    color: rgba(255, 255, 255, .46) !important;
+}
+
+body.p3m-admin-elegant .form-control-sidebar:focus {
+    background: rgba(255, 255, 255, .08) !important;
+    border-color: rgba(255, 255, 255, .18) !important;
+    color: #fff !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .035) !important;
+}
+
+body.p3m-admin-elegant .btn-sidebar {
+    width: 45px !important;
+    padding: 0 !important;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 0 12px 12px 0 !important;
+}
+
+body.p3m-admin-elegant .btn-sidebar:hover {
+    background: rgba(255, 255, 255, .09) !important;
+}
+
+
+/* Nav */
+
+body.p3m-admin-elegant .nav-sidebar {
+    width: 100% !important;
+    margin-top: 0 !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item {
+    width: 100% !important;
+    margin-bottom: 5px !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item>.nav-link {
+    width: 100% !important;
+    min-height: 46px !important;
+
+    margin: 0 !important;
+    padding: 9px 13px !important;
+
+    display: flex !important;
+    align-items: center !important;
+
+    border-radius: 12px !important;
+
+    background: transparent !important;
+    color: rgba(255, 255, 255, .76) !important;
+
+    font-family: var(--p3m-display);
+    font-size: 12.5px !important;
+    font-weight: 650 !important;
+
+    text-decoration: none !important;
+
+    transition:
+        background .18s ease,
+        color .18s ease,
+        transform .18s ease;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item>.nav-link .nav-icon {
+    width: 20px !important;
+    flex: 0 0 20px !important;
+
+    margin: 0 11px 0 0 !important;
+
+    text-align: center !important;
+
+    color: rgba(255, 255, 255, .58) !important;
+    font-size: 14px !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item>.nav-link:hover {
+    background: rgba(255, 255, 255, .07) !important;
+    color: #fff !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item>.nav-link:hover .nav-icon {
+    color: rgba(255, 255, 255, .92) !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item.menu-open>.nav-link.active,
+body.p3m-admin-elegant .nav-sidebar>.nav-item>.nav-link.active {
+    background: rgba(255, 255, 255, .08) !important;
+    color: #fff !important;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .025);
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item.menu-open>.nav-link.active .nav-icon,
+body.p3m-admin-elegant .nav-sidebar>.nav-item>.nav-link.active .nav-icon {
+    color: #fff !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item>.nav-link p {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.25 !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item>.nav-link p .right {
+    position: static !important;
+    margin-left: auto !important;
+    color: rgba(255, 255, 255, .42) !important;
+    font-size: 9.5px !important;
+    transform: none !important;
+    transition:
+        transform .20s ease,
+        color .18s ease;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item.menu-open>.nav-link p .right {
+    transform: rotate(90deg) !important;
+    color: rgba(255, 255, 255, .70) !important;
+}
+
+
+/* Submenu */
+
+body.p3m-admin-elegant .nav-sidebar .nav-treeview {
+    position: relative;
+
+    width: 100% !important;
+
+    margin: 3px 0 7px !important;
+    padding: 4px 0 4px 14px !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar .nav-treeview::before {
+    content: "";
+
+    position: absolute;
+
+    left: 6px;
+    top: 3px;
+    bottom: 4px;
+
+    width: 1px;
+
+    background: rgba(255, 255, 255, .11);
+}
+
+body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-item {
+    width: 100% !important;
+    margin-bottom: 2px !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link {
+    width: 100% !important;
+    min-height: 42px !important;
+
+    margin: 0 !important;
+    padding: 8px 10px 8px 13px !important;
+
+    display: flex !important;
+    align-items: center !important;
+
+    border-radius: 10px !important;
+
+    background: transparent !important;
+    color: rgba(255, 255, 255, .61) !important;
+
+    font-size: 11.8px !important;
+    font-weight: 600 !important;
+
+    text-decoration: none !important;
+
+    transition:
+        background .18s ease,
+        color .18s ease,
+        transform .18s ease;
+}
+
+body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link .nav-icon {
+    width: 18px !important;
+    flex: 0 0 18px !important;
+
+    margin: 0 9px 0 0 !important;
+
+    text-align: center !important;
+
+    color: rgba(255, 255, 255, .38) !important;
+    font-size: 11px !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link:hover {
+    background: rgba(255, 255, 255, .055) !important;
+    color: #fff !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link:hover .nav-icon {
+    color: rgba(255, 255, 255, .78) !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link.active {
+    position: relative;
+
+    background: #fff !important;
+    color: var(--p3m-green-950) !important;
+
+    font-weight: 800 !important;
+
+    box-shadow:
+        0 8px 20px rgba(0, 25, 17, 0.12) !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link.active::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+
+    width: 3px;
+
+    border-radius: 999px;
+
+    background: var(--p3m-green-500);
+}
+
+body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link.active .nav-icon {
+    color: var(--p3m-green-950) !important;
+}
+
+
+/* Logout */
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item:last-child {
+    margin-top: 12px !important;
+    margin-bottom: 0 !important;
+
+    padding-top: 12px;
+
+    border-top: 1px solid rgba(255, 255, 255, .08);
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item:last-child form {
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item:last-child .nav-link {
+    min-height: 43px !important;
+
+    width: 100% !important;
+
+    padding: 8px 13px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    border: 0 !important;
+    border-radius: 11px !important;
+
+    background: transparent !important;
+
+    color: rgba(255, 155, 164, .86) !important;
+
+    font-size: 12px !important;
+    font-weight: 650 !important;
+
+    cursor: pointer;
+
+    transition:
+        background .18s ease,
+        color .18s ease;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item:last-child .nav-link:hover {
+    background: var(--p3m-danger-soft) !important;
+    color: #ffb2bb !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item:last-child .nav-icon {
+    color: rgba(255, 155, 164, .78) !important;
+    font-size: 13px !important;
+}
+
+body.p3m-admin-elegant .nav-sidebar>.nav-item:last-child .nav-link:hover .nav-icon {
+    color: #ffb2bb !important;
+}
+
+
+/* Sidebar footer */
+
+body.p3m-admin-elegant .sidebar-reference-footer {
+    position: relative;
+
+    display: flex !important;
+    flex-direction: column;
+    gap: 4px;
+
+    margin-top: 18px !important;
+    padding: 16px 10px 2px !important;
+
+    border-top: 1px solid rgba(255, 255, 255, .08) !important;
+
+    pointer-events: none;
+}
+
+body.p3m-admin-elegant .sidebar-reference-footer strong {
+    display: block;
+
+    color: #fff;
+
+    font-family: var(--p3m-display);
+
+    font-size: 13px;
+    line-height: 1.45;
+    font-weight: 800;
+}
+
+body.p3m-admin-elegant .sidebar-reference-footer span {
+    display: block;
+
+    color: rgba(255, 255, 255, .48);
+
+    font-size: 10.5px;
+    line-height: 1.45;
+    font-weight: 500;
+}
+
+
+/* ==========================================================================
+   CONTENT AREA
+   ========================================================================== */
+
+body.p3m-admin-elegant .content-wrapper {
+    margin-left: var(--p3m-sidebar) !important;
+
+    min-height: calc(100vh - var(--p3m-header)) !important;
+
+    padding-top: var(--p3m-header);
+
+    background: var(--p3m-page) !important;
+}
+
+body.p3m-admin-elegant .content-wrapper::before {
+    display: none !important;
+}
+
+body.p3m-admin-elegant .content-header {
+    max-width: var(--p3m-content-max);
+
+    padding: 22px 30px 7px !important;
+}
+
+body.p3m-admin-elegant .content {
+    max-width: var(--p3m-content-max);
+
+    padding: 7px 30px 30px !important;
+}
+
+body.p3m-admin-elegant .breadcrumb {
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: transparent !important;
+
+    font-size: 11.5px !important;
+    font-weight: 500 !important;
+}
+
+body.p3m-admin-elegant .breadcrumb a {
+    color: var(--p3m-muted) !important;
+    text-decoration: none !important;
+}
+
+body.p3m-admin-elegant .breadcrumb a:hover {
+    color: var(--p3m-green-900) !important;
+}
+
+body.p3m-admin-elegant .breadcrumb-item.active {
+    color: var(--p3m-text) !important;
+    font-weight: 650 !important;
+}
+
+
+/* ==========================================================================
+   ICON FONT PROTECTION
+   ========================================================================== */
+
+body.p3m-admin-elegant i.fas,
+body.p3m-admin-elegant i.far,
+body.p3m-admin-elegant i.fab,
+body.p3m-admin-elegant .fa,
+body.p3m-admin-elegant .fas,
+body.p3m-admin-elegant .far,
+body.p3m-admin-elegant .fab {
+    font-family: "Font Awesome 5 Free", "Font Awesome 5 Brands" !important;
+}
+
+body.p3m-admin-elegant .fas,
+body.p3m-admin-elegant .far {
+    font-weight: 900 !important;
+}
+
+
+/* ==========================================================================
+   SIDEBAR COLLAPSE
+   ========================================================================== */
+
+@media (min-width: 992px) {
+
+    body.p3m-admin-elegant.sidebar-collapse .main-sidebar {
+        width: 4.6rem !important;
+    }
+
+    body.p3m-admin-elegant.sidebar-collapse .main-header {
+        left: 4.6rem !important;
+        margin-left: 0 !important;
+    }
+
+    body.p3m-admin-elegant.sidebar-collapse .content-wrapper {
+        margin-left: 4.6rem !important;
+    }
+
+    body.p3m-admin-elegant.sidebar-collapse .main-sidebar .sidebar {
+        padding-right: 10px !important;
+        padding-left: 10px !important;
+        overflow-x: hidden !important;
+    }
+
+    body.p3m-admin-elegant.sidebar-collapse .brand-link.p3m-brand {
+        justify-content: center !important;
+
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    body.p3m-admin-elegant.sidebar-collapse .brand-link.p3m-brand img {
+        width: 43px !important;
+        height: 43px !important;
+        flex-basis: 43px !important;
+    }
+
+    body.p3m-admin-elegant.sidebar-collapse .brand-link.p3m-brand strong,
+    body.p3m-admin-elegant.sidebar-collapse .brand-link.p3m-brand>span>span,
+    body.p3m-admin-elegant.sidebar-collapse .user-panel,
+    body.p3m-admin-elegant.sidebar-collapse .main-sidebar .form-inline,
+    body.p3m-admin-elegant.sidebar-collapse .nav-sidebar .nav-treeview,
+    body.p3m-admin-elegant.sidebar-collapse .nav-sidebar .nav-link p,
+    body.p3m-admin-elegant.sidebar-collapse .nav-sidebar .nav-link .right,
+    body.p3m-admin-elegant.sidebar-collapse .sidebar-reference-footer {
+        display: none !important;
+    }
+
+    body.p3m-admin-elegant.sidebar-collapse .nav-sidebar>.nav-item>.nav-link {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    body.p3m-admin-elegant.sidebar-collapse .nav-sidebar>.nav-item>.nav-link .nav-icon {
+        margin-right: 0 !important;
+    }
+
+    body.p3m-admin-elegant.sidebar-collapse .nav-sidebar>.nav-item:last-child .nav-link {
+        justify-content: center !important;
+    }
+
+    body.p3m-admin-elegant.sidebar-collapse .nav-sidebar>.nav-item:last-child .nav-icon {
+        margin-right: 0 !important;
+    }
+}
+
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 991.98px) {
+
+    body.p3m-admin-elegant .main-sidebar {
+        width: 280px !important;
+        height: 100dvh !important;
+
+        border-radius: 0 20px 20px 0 !important;
+    }
+
+    body.p3m-admin-elegant .main-sidebar .sidebar {
+        min-height: 0 !important;
+        height: auto !important;
+        padding-top: 0 !important;
+    }
+
+    body.p3m-admin-elegant .main-header {
+        left: 0;
+
+        height: 62px !important;
+        min-height: 62px !important;
+    }
+
+    body.p3m-admin-elegant .main-header .navbar-nav {
+        height: 62px !important;
+    }
+
+    body.p3m-admin-elegant .content-wrapper {
+        margin-left: 0 !important;
+        padding-top: 62px;
+        min-height: calc(100vh - 62px) !important;
+    }
+
+    body.p3m-admin-elegant .content-header {
+        padding: 18px 21px 6px !important;
+    }
+
+    body.p3m-admin-elegant .content {
+        padding: 6px 21px 24px !important;
+    }
+
+    body.p3m-admin-elegant .main-header .nav-link[data-widget="pushmenu"] {
+        margin-left: 2px;
+    }
+}
+
+@media (max-width: 767.98px) {
+
+    body.p3m-admin-elegant .main-sidebar .sidebar-reference-footer {
+        display: none !important;
+    }
+
+    body.p3m-admin-elegant .topbar-user-info,
+    body.p3m-admin-elegant .topbar-user-pill .info {
+        display: none !important;
+    }
+
+    body.p3m-admin-elegant .topbar-user-chip,
+    body.p3m-admin-elegant .topbar-user-pill {
+        padding-right: 5px;
+        border-radius: 10px;
+    }
+
+    body.p3m-admin-elegant .topbar-website-btn span {
+        display: none;
+    }
+
+    body.p3m-admin-elegant .topbar-website-btn {
+        width: 38px;
+        padding: 0;
+    }
+
+    body.p3m-admin-elegant .content-header,
+    body.p3m-admin-elegant .content {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+
+    body.p3m-admin-elegant .topbar-title strong {
+        font-size: 13px !important;
+    }
+
+    body.p3m-admin-elegant .topbar-title span {
+        display: none !important;
+    }
+
+    body.p3m-admin-elegant .main-header .navbar-nav.ml-auto {
+        gap: 3px;
+    }
+
+    body.p3m-admin-elegant .main-header .navbar-nav.ml-auto .nav-link {
+        min-height: 36px;
+        padding: 5px 7px;
+    }
+
+    body.p3m-admin-elegant .content-header,
+    body.p3m-admin-elegant .content {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    body.p3m-admin-elegant *,
+    body.p3m-admin-elegant *::before,
+    body.p3m-admin-elegant *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
+    }
+}
+
+
+/* ==========================================================================
+   EXISTING TABLE / STATUS / ACTION UTILITIES
+   Preserved from the supplied stylesheet
+   ========================================================================== */
+
+/* ── Modern Table Styles ───── */
+body.p3m-admin-elegant .table-wrapper {
+    background: #ffffff;
+    border: 1px solid #eaeff4;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, .03);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+body.p3m-admin-elegant .table-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #eaeff4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafcfb;
+}
+
+body.p3m-admin-elegant .table-title {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f1f2e;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+body.p3m-admin-elegant .table-title i {
+    color: #003d2d;
+}
+
+body.p3m-admin-elegant .table-actions {
+    display: flex;
+    gap: 10px;
+}
+
+body.p3m-admin-elegant .table {
+    margin: 0;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+body.p3m-admin-elegant .table thead th {
+    background: #ffffff;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 14px 20px;
+    border-bottom: 1px solid #eaeff4;
+    border-top: none;
+    white-space: nowrap;
+}
+
+body.p3m-admin-elegant .table tbody td {
+    padding: 16px 20px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+body.p3m-admin-elegant .table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+body.p3m-admin-elegant .table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+/* Specific Cell Types */
+body.p3m-admin-elegant .td-bold {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 700 !important;
+    color: #0f1f2e !important;
+}
+
+body.p3m-admin-elegant .td-sub {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+body.p3m-admin-elegant .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+body.p3m-admin-elegant .status-approve {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #d1fae5;
+}
+
+body.p3m-admin-elegant .status-proses {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fef3c7;
+}
+
+body.p3m-admin-elegant .status-non {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fee2e2;
+}
+
+/* Table Action Buttons */
+body.p3m-admin-elegant .action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all .2s;
+    color: #64748b;
+    background: #f8fafc;
+}
+
+body.p3m-admin-elegant .action-btn:hover {
+    color: #0f1f2e;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+body.p3m-admin-elegant .action-btn.edit:hover {
+    color: #0284c7;
+    background: #f0f9ff;
+    border-color: #e0f2fe;
+}
+
+body.p3m-admin-elegant .action-btn.delete:hover {
+    color: #e11d48;
+    background: #fff1f2;
+    border-color: #ffe4e6;
+}
+
+body.p3m-admin-elegant .action-btn.detail:hover {
+    color: #059669;
+    background: #ecfdf5;
+    border-color: #d1fae5;
+}
+
+/* ============================================================
+   GLOBAL PRIMARY COLOR OVERRIDES (Replace AdminLTE Blue)
+   ============================================================ */
+body.p3m-admin-elegant .btn-primary,
+body.p3m-admin-elegant .bg-primary {
+    background-color: #003d2d !important;
+    border-color: #003d2d !important;
+    color: #ffffff !important;
+}
+
+body.p3m-admin-elegant .btn-primary:hover,
+body.p3m-admin-elegant .btn-primary:focus,
+body.p3m-admin-elegant .btn-primary:active {
+    background-color: #002e22 !important;
+    border-color: #002e22 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(0, 46, 34, 0.25) !important;
+}
+
+body.p3m-admin-elegant .card-primary.card-outline {
+    border-top-color: #003d2d !important;
+}
+
+body.p3m-admin-elegant .card-primary:not(.card-outline)>.card-header {
+    background-color: #003d2d !important;
+    color: #ffffff !important;
+}
+
+/* ============================================================================
+   SHELL STABILITY + SCROLL BEHAVIOR
+   ----------------------------------------------------------------------------
+   Single source of truth for navigation stability. Keeps Turbo/AdminLTE shell
+   geometry stable, hides scrollbar chrome, and preserves mouse/touch scrolling.
+   ============================================================================ */
+
+body.p3m-admin-elegant {
+    overflow-x: hidden !important;
+    overscroll-behavior-x: none;
+}
+
+body.p3m-admin-elegant .main-header,
+body.p3m-admin-elegant .main-sidebar,
+body.p3m-admin-elegant .content-wrapper {
+    box-sizing: border-box;
+}
+
+/* Prevent fractional compositing/repaint jumps on the fixed shell. */
+body.p3m-admin-elegant .main-header,
+body.p3m-admin-elegant .main-sidebar {
+    backface-visibility: hidden;
+}
+
+/* Keep content replacement from creating horizontal shell reflow. */
+body.p3m-admin-elegant .content-wrapper {
+    width: auto !important;
+    min-width: 0 !important;
+    overflow-x: clip;
+}
+
+@supports not (overflow: clip) {
+    body.p3m-admin-elegant .content-wrapper {
+        overflow-x: hidden;
+    }
+}
+
+/* Nav anchors with href="#" must not create a visual scroll offset. */
+body.p3m-admin-elegant .main-sidebar a[href="#"] {
+    scroll-margin-top: 0;
+}
+
+/* Only deliberate shell changes should animate. Content navigation itself is
+   handled by Turbo and should not animate the persistent shell. */
+body.p3m-admin-elegant .main-header,
+body.p3m-admin-elegant .main-sidebar,
+body.p3m-admin-elegant .content-wrapper {
+    transition-duration: .18s;
+    transition-timing-function: ease;
+}
+
+body.p3m-admin-elegant .main-sidebar {
+    transition-property: width, left;
+}
+
+body.p3m-admin-elegant .main-header,
+body.p3m-admin-elegant .content-wrapper {
+    transition-property: left, margin-left, width;
+}
+
+/* Sidebar is the only scroll container. The brand/header remain geometrically
+   stable while navigation content can be wheeled/touched/keyboard-scrolled. */
+body.p3m-admin-elegant .main-sidebar .sidebar {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    min-height: 0 !important;
+    overscroll-behavior-y: contain !important;
+    overflow-anchor: none;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    scrollbar-gutter: auto !important;
+    scroll-behavior: auto !important;
+}
+
+body.p3m-admin-elegant .main-sidebar .sidebar::-webkit-scrollbar,
+body.p3m-admin-elegant .main-sidebar .sidebar::-webkit-scrollbar-track,
+body.p3m-admin-elegant .main-sidebar .sidebar::-webkit-scrollbar-thumb {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+/* OverlayScrollbars, when present in AdminLTE, should not create a second
+   visual scrollbar over the custom P3M navigation. */
+body.p3m-admin-elegant .main-sidebar .os-scrollbar,
+body.p3m-admin-elegant .main-sidebar .os-scrollbar-vertical,
+body.p3m-admin-elegant .main-sidebar .os-scrollbar-horizontal,
+body.p3m-admin-elegant .main-sidebar .os-scrollbar-track,
+body.p3m-admin-elegant .main-sidebar .os-scrollbar-handle {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+body.p3m-admin-elegant .main-sidebar .os-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Submenus should never animate as a side effect of a Turbo route change. */
+body.p3m-admin-elegant .main-sidebar .nav-treeview,
+body.p3m-admin-elegant .main-sidebar .nav-treeview .nav-link {
+    scroll-behavior: auto !important;
+}
+
+/* Brand spacing is defined once here by the base rule above; only responsive
+   collapse adjustments are allowed below. */
+@media (min-width: 992px) {
+    body.p3m-admin-elegant.sidebar-collapse .main-sidebar {
+        transform: none !important;
+        backface-visibility: visible !important;
+    }
+
+    body.p3m-admin-elegant.sidebar-collapse .brand-link.p3m-brand {
+        margin: 0 0 14px !important;
+        padding: 24px 0 22px !important;
+    }
+}
+
+@media (max-width: 991.98px) {
+
+    /* Let AdminLTE own the drawer interaction; only keep the shell stable. */
+    body.p3m-admin-elegant .main-sidebar {
+        backface-visibility: hidden;
+    }
+
+    body.p3m-admin-elegant .brand-link.p3m-brand {
+        margin-bottom: 15px !important;
+        padding-top: 24px !important;
+        padding-bottom: 23px !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    body.p3m-admin-elegant .main-header,
+    body.p3m-admin-elegant .main-sidebar,
+    body.p3m-admin-elegant .content-wrapper,
+    body.p3m-admin-elegant .main-sidebar .nav-treeview,
+    body.p3m-admin-elegant .main-sidebar .nav-treeview .nav-link {
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}

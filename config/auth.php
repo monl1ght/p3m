@@ -112,4 +112,14 @@ return [
 
     'password_timeout' => 10800,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Kode Akses / Passcode Registrasi Dosen P3M
+    |--------------------------------------------------------------------------
+    |
+    | Digunakan sebagai gerbang verifikasi sebelum dosen dapat mendaftarkan akun.
+    |
+    */
+    'dosen_registration_passcode' => env('DOSEN_REGISTRATION_PASSCODE', 'V7#qLp2!oZ9@xR4$kP8'),
+
 ];

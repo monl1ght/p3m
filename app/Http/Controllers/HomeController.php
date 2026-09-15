@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 // use Spatie\FlareClient\View;
 
 class HomeController extends Controller
@@ -144,11 +146,22 @@ class HomeController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'image'     => 'required|mimes:png,jpg,jpeg|max:2048',
-            'email'     => 'required|email',
-            'name'      => 'required',
-            'password'  => 'required',
-            'role'      => 'required|in:admin,dosen',
+            'image'        => 'nullable|mimes:png,jpg,jpeg,webp,gif|max:5120',
+            'image_base64' => 'nullable|string',
+            'email'        => 'required|email|max:255|unique:users,email',
+            'name'         => 'required|string|max:255|unique:users,name',
+            'password'     => 'required|min:6',
+            'role'         => 'required|in:admin,dosen',
+        ], [
+            'email.required'    => 'Email wajib diisi.',
+            'email.email'       => 'Format email tidak valid.',
+            'email.unique'      => 'Email sudah terdaftar.',
+            'name.required'     => 'Nama lengkap wajib diisi.',
+            'name.unique'       => 'Nama pengguna sudah terdaftar.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min'      => 'Password minimal 6 karakter.',
+            'role.required'     => 'Role wajib dipilih.',
+            'role.in'           => 'Role yang dipilih tidak valid.',
         ]);
 
         if ($validator->fails()) {
@@ -160,25 +173,42 @@ class HomeController extends Controller
         }
 
         $image = $request->file('image');
-        $filename = date('Y-m-d') . $image->getClientOriginalName();
-        $path = 'photo-user/' . $filename;
+        $imageBase64 = $request->input('image_base64');
+        $imageService = app(\App\Services\ImageService::class);
+        
+        if ($imageBase64) {
+            $filename = $imageService->storeBase64($imageBase64, 'photo-user');
+        } else if ($image) {
+            $filename = $imageService->processAndStore($image, 'photo-user');
+        } else {
+            return redirect()->back()->withInput()->withErrors(['image' => 'Foto profil wajib diisi.'])->with('form_context', 'create_user');
+        }
 
-        Storage::disk('public')->put($path, file_get_contents($image));
-
-        $data['email']      = $request->email;
-        $data['name']       = $request->name;
-        $data['password']   = Hash::make($request->password);
-        $data['image']      = $filename;
-        $data['role']       = $request->role;
-
-        User::create($data);
+        try {
+            $user = User::create([
+                'email'    => $request->email,
+                'name'     => $request->name,
+                'password' => Hash::make($request->password),
+                'image'    => $filename,
+            ]);
+            // role diset secara eksplisit — bukan melalui fillable
+            $user->role = $request->role;
+            $user->save();
+        } catch (\Illuminate\Database\QueryException $e) {
+            report($e);
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors(['email' => 'Gagal menambahkan user. Email atau nama pengguna sudah terdaftar.'])
+                ->with('form_context', 'create_user');
+        }
 
         return redirect()->route('index')->with('success', 'Data user berhasil ditambahkan!');
     }
 
     public function update(Request $request, $id)
     {
-        $data = User::find($id);
+        $data = User::findOrFail($id);
         $user = Auth::user();
 
         return view('update', compact('data', 'user'));
@@ -186,12 +216,28 @@ class HomeController extends Controller
 
     public function edit(Request $request, $id)
     {
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $find = User::findOrFail($id);
+
         $validator = Validator::make($request->all(), [
-            'email'     => 'required|email',
-            'name'      => 'required',
-            'password'  => 'nullable',
-            'image'     => 'nullable|mimes:png,jpg,jpeg|max:2048',
-            'role'      => 'required|in:admin,dosen',
+            'email'        => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($find->id)],
+            'name'         => ['required', 'string', 'max:255', Rule::unique('users', 'name')->ignore($find->id)],
+            'password'     => 'nullable|min:6',
+            'image'        => 'nullable|mimes:png,jpg,jpeg,webp,gif|max:5120',
+            'image_base64' => 'nullable|string',
+            'role'         => 'required|in:admin,dosen',
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email'    => 'Format email tidak valid.',
+            'email.unique'   => 'Email sudah digunakan oleh akun lain.',
+            'name.required'  => 'Nama lengkap wajib diisi.',
+            'name.unique'    => 'Nama pengguna sudah digunakan oleh akun lain.',
+            'password.min'   => 'Password minimal 6 karakter.',
+            'role.required'  => 'Role wajib dipilih.',
+            'role.in'        => 'Role yang dipilih tidak valid.',
         ]);
 
         if ($validator->fails()) {
@@ -202,36 +248,45 @@ class HomeController extends Controller
                 ->with('form_context', 'edit_user_' . $id);
         }
 
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.');
-        }
+        $data['email'] = $request->email;
+        $data['name']  = $request->name;
 
-        $find = User::findOrFail($id);
-
-        $data['email']      = $request->email;
-        $data['name']       = $request->name;
-        $data['role']       = $request->role;
-
-        if ($request->password) {
+        if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
 
         $image = $request->file('image');
+        $imageBase64 = $request->input('image_base64');
 
-        if ($image) {
-            $filename = date('Y-m-d') . $image->getClientOriginalName();
-            $path = 'photo-user/' . $filename;
+        if ($imageBase64 || $image) {
+            $imageService = app(\App\Services\ImageService::class);
+            
+            if ($imageBase64) {
+                $filename = $imageService->storeBase64($imageBase64, 'photo-user');
+            } else {
+                $filename = $imageService->processAndStore($image, 'photo-user');
+            }
 
             if ($find->image) {
                 Storage::disk('public')->delete('photo-user/' . $find->image);
             }
 
-            Storage::disk('public')->put($path, file_get_contents($image));
-
             $data['image'] = $filename;
         }
 
-        $find->update($data);
+        try {
+            $find->update($data);
+            // Set role secara eksplisit karena bukan di $fillable
+            $find->role = $request->role;
+            $find->save();
+        } catch (\Illuminate\Database\QueryException $e) {
+            report($e);
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors(['email' => 'Gagal memperbarui user. Email atau nama pengguna sudah digunakan oleh akun lain.'])
+                ->with('form_context', 'edit_user_' . $id);
+        }
 
         return redirect()->route('index')->with('success', 'Data user berhasil diperbarui!');
     }
@@ -255,7 +310,7 @@ class HomeController extends Controller
     public function detail(Request $request, $id)
     {
         $user = Auth::user();
-        $data = User::find($id);
+        $data = User::findOrFail($id);
 
         return view('detail', compact('data', 'user'));
     }

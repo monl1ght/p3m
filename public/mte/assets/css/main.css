@@ -12,8 +12,8 @@
   --background-color: #ffffff;
   --default-color: #475569;
   --heading-color: #0f172a;
-  --accent-color: #2563eb;
-  --accent-hover-color: #1d4ed8;
+  --accent-color: #059669;
+  --accent-hover-color: #047857;
   --surface-color: #ffffff;
   --contrast-color: #ffffff;
 
@@ -21,7 +21,7 @@
   --brand-green: #063f35;
   --brand-muted: #f8fafc;
   --brand-border: #e2e8f0;
-  --brand-soft: #eff6ff;
+  --brand-soft: #ecfdf5;
   --brand-gold: #d5a72f;
 
   --header-top-height: 72px;
@@ -232,8 +232,8 @@ section,
 }
 
 .header-search:focus-within {
-  border-color: #bfdbfe;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, .08);
+  border-color: #a7f3d0;
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, .1);
 }
 
 .header-search input {
@@ -287,8 +287,8 @@ section,
   align-items: center;
   justify-content: center;
   min-height: var(--header-nav-height);
-  padding-right: 120px;
 }
+
 
 .navmenu li {
   position: relative;
@@ -323,7 +323,8 @@ section,
   transition: transform .25s ease;
 }
 
-.navmenu .dropdown:hover > a i {
+.navmenu .dropdown:hover > a i,
+.navmenu .dropdown:focus-within > a i {
   transform: rotate(180deg);
 }
 
@@ -344,7 +345,8 @@ section,
   z-index: 99;
 }
 
-.navmenu .dropdown:hover > ul {
+.navmenu .dropdown:hover > ul,
+.navmenu .dropdown:focus-within > ul {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
@@ -360,39 +362,31 @@ section,
   letter-spacing: 0;
   text-transform: none;
   line-height: 1.35;
+  transition: all .2s ease;
 }
 
-.navmenu .dropdown ul a:hover,
+.navmenu .dropdown ul a:hover {
+  color: var(--accent-color);
+  background: #f8fafc;
+}
+
+.navmenu .dropdown ul a.active,
 .navmenu .dropdown ul .active {
   color: var(--accent-color);
   background: var(--brand-soft);
+  font-weight: 700;
+}
+
+.navmenu .dropdown ul a.active:hover,
+.navmenu .dropdown ul .active:hover {
+  background: #d1fae5;
+  color: var(--accent-hover-color);
 }
 
 .desktop-login {
-  position: absolute;
-  right: max(24px, calc((100vw - 1140px) / 2 + 24px));
-  bottom: 7px;
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  height: 34px;
-  padding: 0 20px;
-  border-radius: 999px;
-  background: var(--accent-color);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  box-shadow: none;
-  z-index: 5;
+  display: none !important;
 }
 
-.desktop-login:hover {
-  background: var(--accent-hover-color);
-  color: #fff;
-  transform: translateY(-1px);
-}
 
 .header-mobile {
   height: 64px;
@@ -519,7 +513,7 @@ section,
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: #c7e7ff;
+  color: #a7f3d0;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: .20em;
@@ -531,7 +525,7 @@ section,
   content: "";
   width: 34px;
   height: 2px;
-  background: #60a5fa;
+  background: #10b981;
 }
 
 .hero h1 {
@@ -1073,12 +1067,16 @@ section,
 .portfolio-info h6 {
   margin-bottom: 6px;
   line-height: 1.45;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .portfolio-info p {
   color: #64748b;
   font-size: 13px;
   line-height: 1.65;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 /* =========================
@@ -1122,6 +1120,18 @@ section,
   font-weight: 800;
 }
 
+.btn-primary {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: var(--accent-hover-color) !important;
+  border-color: var(--accent-hover-color) !important;
+}
+
 .btn,
 .btn-outline-warning,
 .btn-warning,
@@ -1133,7 +1143,7 @@ section,
 
 .btn-outline-warning {
   color: var(--accent-color) !important;
-  border-color: #bfdbfe !important;
+  border-color: #a7f3d0 !important;
   background: #fff !important;
 }
 
@@ -1199,7 +1209,7 @@ section,
 }
 
 .footer {
-  background: #020617;
+  background: #04241d; /* Sangat gelap Hijau P3M */
   color: #cbd5e1;
   font-size: 14px;
   padding-bottom: 28px;
@@ -1298,7 +1308,7 @@ section,
   height: 46px;
   border-radius: 999px;
   transition: all .25s ease;
-  box-shadow: 0 16px 35px rgba(37, 99, 235, .25);
+  box-shadow: 0 16px 35px rgba(5, 150, 105, .25);
 }
 
 .scroll-top i {
@@ -1435,9 +1445,16 @@ section,
     box-shadow: none;
     margin: 0 0 8px 16px;
     border-radius: 16px;
-    border-color: #dbeafe;
+    border-color: #a7f3d0;
     padding: 6px;
     transition: none;
+  }
+
+  .navmenu .dropdown ul a.active,
+  .navmenu .dropdown ul .active {
+    color: var(--accent-color);
+    background: #ecfdf5;
+    font-weight: 700;
   }
 
   .navmenu .dropdown > .dropdown-active {
@@ -1703,7 +1720,7 @@ section,
 }
 
 .team .team-member span {
-  color: #2563eb !important;
+  color: #059669 !important;
 }
 
 .team .team-member p {
@@ -1712,15 +1729,15 @@ section,
 
 /* Tombol Selengkapnya di team, karena section sekarang putih */
 .team .btn-outline-light {
-  color: #2563eb !important;
-  border: 1px solid #bfdbfe !important;
+  color: #059669 !important;
+  border: 1px solid #a7f3d0 !important;
   background: #ffffff !important;
 }
 
 .team .btn-outline-light:hover {
   color: #ffffff !important;
-  border-color: #2563eb !important;
-  background: #2563eb !important;
+  border-color: #059669 !important;
+  background: #059669 !important;
 }
 
 /* Strip logo/clients dibuat lebih halus sebagai pemisah sebelum footer */
@@ -1733,7 +1750,7 @@ section,
 
 /* Footer tetap satu-satunya area gelap di bagian bawah */
 .footer {
-  background: #020617 !important;
+  background: #04241d !important; /* Sangat gelap Hijau P3M */
   color: #cbd5e1 !important;
   padding-top: 0;
 }
@@ -1742,3 +1759,55 @@ section,
 .footer .footer-top {
   padding-top: 58px !important;
 }
+
+/* =========================================================
+   MOBILE HEADER FIX — tanpa tombol login
+   Mobile header menggunakan 2 item (hamburger + brand)
+   centered via space-between.
+   ========================================================= */
+.mobile-header-inner {
+  justify-content: space-between;
+}
+
+/* Pastikan mobile-brand tetap center secara visual */
+@media (max-width: 1199px) {
+  .mobile-header-inner {
+    justify-content: flex-start;
+    gap: 16px;
+  }
+
+  .mobile-brand {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* =========================================================
+   TAMBAHAN: Main section top padding fix
+   Karena quick-access bukan sticky di bawah hero,
+   tapi section biasa yang butuh margin atas yang benar.
+   ========================================================= */
+.main {
+  padding-top: var(--header-height, 120px);
+}
+
+@media (max-width: 1199px) {
+  .main {
+    padding-top: 64px;
+  }
+}
+
+/* =========================================================
+   Smooth scroll & focus outline
+   ========================================================= */
+:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Image placeholder loading state */
+img {
+  background-color: #f1f5f9;
+}
+

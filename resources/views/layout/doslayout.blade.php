@@ -1,324 +1,643 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin P3M POLIBANG</title>
+    <meta name="turbo-root" content="/">
+    <title>Dosen P3M POLIBANG</title>
 
-
-    <!-- //favicon -->
-    <link rel="shortcut icon" href="{{ 'asset(favicon/icon_log.ico)' }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('favicon/icon_log.ico') }}" type="image/x-icon">
     <link rel="icon" href="{{ asset('favicon/icon_log.ico') }}" type="image/x-icon">
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="{{ asset('lte/plugins/fontawesome-free/css/all.min.css') }}">
-    <!-- Ionicons -->
-    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-    <!-- Tempusdominus Bootstrap 4 -->
-    <link rel="stylesheet" href="{{ asset('lte/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css') }}">
-    <!-- iCheck -->
-    <link rel="stylesheet" href="{{ asset('lte/plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
-    <!-- JQVMap -->
-    <link rel="stylesheet" href="{{ asset('lte/plugins/jqvmap/jqvmap.min.css') }}">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="{{ asset('lte/dist/css/adminlte.min.css') }}">
-    <!-- overlayScrollbars -->
-    <link rel="stylesheet" href="{{ asset('lte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
-    <!-- Daterange picker -->
-    <link rel="stylesheet" href="{{ asset('lte/plugins/daterangepicker/daterangepicker.css') }}">
-    <!-- summernote -->
-    <link rel="stylesheet" href="{{ asset('lte/plugins/summernote/summernote-bs4.min.css') }}">
-    <link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpdmOHSUnXTr9Q4iUds+Wl5NzVs+sm2X/VzV5SglNPhCegnar4TQ69K4GT+3n5OZXdTqkq==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- ckeditor -->
-    <script src="https://cdn.ckeditor.com/ckeditor5/35.3.1/classic/ckeditor.js"></script>
-    <!-- <script src="https://cdn.ckeditor.com/4.16.0/standard/ckeditor.js"></script> -->
-    <!-- <script src="//cdn.ckeditor.com/4.22.1/basic/ckeditor.js"></script> -->
+
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ asset('lte/plugins/fontawesome-free/css/all.min.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet"
+        href="{{ asset('lte/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css') }}"
+        data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}"
+        data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/jqvmap/jqvmap.min.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/dist/css/adminlte.min.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}"
+        data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/daterangepicker/daterangepicker.css') }}"
+        data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/summernote/summernote-bs4.min.css') }}"
+        data-turbo-track="reload">
     <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/43.1.0/ckeditor5.css">
 
-    <!-- include libraries(jQuery, bootstrap) -->
-    <script type="text/javascript" src="//code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" />
-    <script type="text/javascript" src="cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="{{ asset('lte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}"
+        data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}"
+        data-turbo-track="reload">
 
-    <!-- include summernote css/js-->
-    <link href="summernote-bs5.css" rel="stylesheet">
-    <script src="summernote-bs5.js"></script>
+    <link rel="stylesheet" href="{{ asset('css/p3m-admin.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('css/p3m-dosen.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/sweetalert2/sweetalert2.min.css') }}" data-turbo-track="reload">
+    <script src="{{ asset('lte/plugins/sweetalert2/sweetalert2.all.min.js') }}" data-turbo-eval="false"></script>
+
+    {{-- SPA Turbo Drive --}}
+    <script type="module" src="{{ asset('js/turbo.esm.js') }}"></script>
+    <style>
+        /* ── Turbo progress bar ── */
+        .turbo-progress-bar {
+            height: 3px;
+            background: linear-gradient(90deg, #31b777, #0d6e53, #b99835);
+            box-shadow: 0 0 10px rgba(49, 183, 119, 0.45);
+        }
+
+        /* ── Silky smooth SPA page transitions ── */
+        .content-wrapper {
+            will-change: opacity, transform;
+            transition: opacity .18s cubic-bezier(0.16, 1, 0.3, 1), transform .18s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .dosen-page-exit {
+            opacity: 0.35 !important;
+            transform: translateY(4px) !important;
+        }
+
+        .dosen-page-enter {
+            animation: dosenPageIn .26s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes dosenPageIn {
+            0% {
+                opacity: 0.3;
+                transform: translateY(8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 
     @yield('css')
 </head>
-<style>
-    a {
-        text-decoration: none;
-    }
-</style>
 
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed p3m-admin-elegant p3m-dosen-shell @yield('body_class')">
+
     <div class="wrapper">
 
-        <!-- Preloader -->
-        <!-- <div class="preloader flex-column justify-content-center align-items-center">
-            <img class="animation__shake" src="dist/img/AdminLTELogo.png" alt="AdminLTELogo" height="60" width="60">
-        </div> -->
+        @php
+            $navAvatarPath = !empty($user->image) ? 'storage/photo-user/' . $user->image : null;
+            $navAvatarExists = $navAvatarPath && file_exists(public_path($navAvatarPath));
+            $navInitial = strtoupper(substr($user->name ?? 'D', 0, 1));
+        @endphp
 
-        <!-- Navbar -->
-        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <!-- Left navbar links -->
-            <ul class="navbar-nav">
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light dosen-topbar" id="dosen-topnav"
+            data-turbo-permanent>
+
+            <ul class="navbar-nav align-items-center">
                 <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                    <a class="nav-link dosen-menu-toggle" data-widget="pushmenu" href="#" role="button"
+                        aria-label="Toggle sidebar" data-turbo="false">
+                        <i class="fas fa-bars"></i>
+                    </a>
                 </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="{{ route('dosen.dash') }}" class="nav-link">Home</a>
+
+                <li class="nav-item d-none d-sm-flex">
+                    <div class="dosen-topbar-breadcrumb">
+                        <span class="dosen-topbar-workspace">Dosen Workspace</span>
+                        <i class="fas fa-chevron-right dosen-topbar-sep"></i>
+                        <span class="dosen-topbar-page" id="js-topbar-page">Dashboard</span>
+                    </div>
                 </li>
-                <!-- <li class="nav-item d-none d-sm-inline-block">
-                    <a href="#" class="nav-link">Contact</a>
-                </li> -->
+            </ul>
+
+            <ul class="navbar-nav ml-auto align-items-center dosen-topbar-actions">
+
+                <li class="nav-item d-none d-md-flex">
+                    <a href="{{ route('tampilan') }}" class="dosen-website-btn" target="_blank" rel="noopener"
+                        data-turbo="false">
+                        <i class="fas fa-globe"></i>
+                        <span>Website P3M</span>
+                    </a>
+                </li>
+
+                <li class="nav-item dosen-topbar-divider d-none d-md-flex"></li>
+
+                <li class="nav-item dropdown d-none d-sm-flex">
+                    <button type="button" class="dosen-user-chip" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false" data-turbo="false" id="dosenUserDropdownTrigger">
+                        <div class="dosen-user-avatar">
+                            @if ($navAvatarExists)
+                                <img src="{{ asset($navAvatarPath) }}" alt="{{ $user->name }}">
+                            @else
+                                {{ $navInitial }}
+                            @endif
+                        </div>
+
+                        <div class="dosen-user-info">
+                            <span class="dosen-user-name">{{ $user->name }}</span>
+                            <span class="dosen-user-role">Dosen POLIBANG</span>
+                        </div>
+                        <i class="fas fa-chevron-down dosen-user-caret"></i>
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-right dosen-user-dropdown"
+                        aria-labelledby="dosenUserDropdownTrigger">
+                        <div class="dosen-dropdown-header">
+                            <span class="dosen-dropdown-name">{{ $user->name }}</span>
+                            <span class="dosen-dropdown-role">Dosen POLIBANG</span>
+                        </div>
+
+                        <div class="dosen-dropdown-body">
+                            <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}"
+                                class="dropdown-item dosen-dropdown-item">
+                                <i class="fas fa-user-circle"></i>
+                                <span>Profil Saya</span>
+                            </a>
+
+                            <hr class="dosen-dropdown-divider">
+
+                            <form action="{{ route('logout') }}" method="POST" id="dosen-nav-logout-form">
+                                @csrf
+                                <button type="button" class="dropdown-item dosen-dropdown-item dosen-dropdown-logout"
+                                    id="js-nav-logout-btn">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Logout Akun</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+
             </ul>
         </nav>
-        <!-- /.navbar -->
 
-        <!-- Main Sidebar Container -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <!-- Brand Logo -->
-            <!-- <a href="index3.html" class="brand-link">
-                <img src="{{ asset ('lte/dist/img/AdminLTELogo.png') }}" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-                <span class="brand-text font-weight-light">AdminLTE 3</span>
-            </a> -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4 dosen-sidebar" id="p3m-sidebar"
+            data-turbo-permanent>
+            <a href="{{ route('dosen.dash') }}" class="dosen-brand">
+                <div class="dosen-brand-logo">
+                    <img src="{{ asset('mte/assets/img/Pusat_Penelitian.png') }}" alt="Logo P3M">
+                </div>
 
-            <!-- Sidebar -->
+                <div class="dosen-brand-copy">
+                    <strong>P3M POLIBANG</strong>
+                    <span>DOSEN WORKSPACE</span>
+                </div>
+            </a>
+
             <div class="sidebar">
-                <!-- Sidebar user panel (optional) -->
-                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-                    <div class="image">
-                        @if($user->image)
-                        <img src="{{ asset('storage/photo-user/'.$user->image) }}" class="img-circle elevation-2" alt="User Image"
-                            style="width: 35px; height: 35px; object-fit: cover; border-radius: 50%;">
+
+                @php
+                    $avatarPath = !empty($user->image) ? 'storage/photo-user/' . $user->image : null;
+                    $avatarExists = $avatarPath && file_exists(public_path($avatarPath));
+                    $avatarInitial = strtoupper(substr($user->name ?? 'D', 0, 1));
+                @endphp
+
+                <div class="dosen-sidebar-user">
+                    <div class="dosen-sidebar-avatar">
+                        @if ($avatarExists)
+                            <img src="{{ asset($avatarPath) }}" alt="{{ $user->name ?? 'User' }}">
+                        @else
+                            <span>{{ $avatarInitial }}</span>
                         @endif
                     </div>
-                    <div class=" info">
-                        <a href="{{ route('dosen.dash') }}" class="d-block">{{ $user->name }}</a>
+
+                    <div class="dosen-sidebar-user-copy">
+                        <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}" data-turbo="true">{{ $user->name }}</a>
+                        <span>Dosen POLIBANG</span>
                     </div>
                 </div>
 
-                <!-- SidebarSearch Form -->
-                <div class="form-inline">
+                <div class="dosen-sidebar-search">
                     <div class="input-group" data-widget="sidebar-search">
-                        <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
+                        <input class="form-control form-control-sidebar" type="search" placeholder="Cari menu..."
+                            aria-label="Search">
                         <div class="input-group-append">
-                            <button class="btn btn-sidebar">
+                            <button class="btn btn-sidebar" type="button" aria-label="Cari">
                                 <i class="fas fa-search fa-fw"></i>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sidebar Menu -->
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <!-- Add icons to the links using the .nav-icon class
-               with font-awesome or any other icon font library -->
+                <nav class="dosen-navigation mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                        data-accordion="false">
+
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <!-- <i class="nav-icon fas fa-chart-pie"></i> -->
+                            <a href="{{ route('dosen.dash') }}"
+                                class="nav-link dosen-nav-link {{ request()->routeIs('dosen.dash') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-home"></i>
+                                <p>Dashboard Dosen</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item {{ request()->routeIs('dosen.profil*') ? 'menu-open' : '' }}">
+                            <a href="#" data-turbo="false" role="button"
+                                class="nav-link dosen-nav-link {{ request()->routeIs('dosen.profil*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-user-cog"></i>
                                 <p>
                                     Profil
-                                    <i class="right fas fa-angle-left"></i>
+                                    <i class="right fas fa-chevron-right"></i>
                                 </p>
                             </a>
+
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}" class="nav-link">
-
-                                        <!-- <i class="fa fa-home" aria-hidden="true"></i> -->
-                                        <i class="nav-icon fas fa-clipboard-list"></i>
-                                        <!-- <i class="nav-icon fas fa-th"></i> -->
-                                        <p>
-                                            Setting Akun
-                                            <!-- <span class="right badge badge-danger">New</span> -->
-                                        </p>
+                                    <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}"
+                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.profil*') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-id-card"></i>
+                                        <p>Setting Akun</p>
                                     </a>
-
                                 </li>
                             </ul>
                         </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <!-- <i class="nav-icon fas fa-chart-pie"></i> -->
+
+                        <li
+                            class="nav-item {{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab', 'dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') ? 'menu-open' : '' }}">
+                            <a href="#" data-turbo="false" role="button"
+                                class="nav-link dosen-nav-link {{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab', 'dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-hand-holding-heart"></i>
                                 <p>
-                                    Pengabdian Kepada Masyarakat
-                                    <i class="right fas fa-angle-left"></i>
+                                    Pengabdian Masyarakat
+                                    <i class="right fas fa-chevron-right"></i>
                                 </p>
                             </a>
+
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('dosen.upp3m') }}" class="nav-link">
-                                        <i class="nav-icon fas fa-users"></i>
+                                    <a href="{{ route('dosen.upp3m') }}"
+                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab') ? 'active' : '' }}">
+                                        <i class="nav-icon far fa-file-alt"></i>
                                         <p>Pengajuan Pengabdian</p>
                                     </a>
                                 </li>
-                            </ul>
-                            <ul class="nav nav-treeview">
+
                                 <li class="nav-item">
-                                    <a href="{{ route('dosen.dash_kpengabdian') }}" class="nav-link">
-                                        <i class="nav-icon fas fa-users"></i>
+                                    <a href="{{ route('dosen.dash_kpengabdian') }}"
+                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-folder-open"></i>
                                         <p>Laporan Pengabdian</p>
                                     </a>
                                 </li>
                             </ul>
                         </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <!-- <i class="nav-icon fas fa-chart-pie"></i> -->
+
+                        <li
+                            class="nav-item {{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian', 'dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') ? 'menu-open' : '' }}">
+                            <a href="#" data-turbo="false" role="button"
+                                class="nav-link dosen-nav-link {{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian', 'dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-microscope"></i>
                                 <p>
                                     Penelitian
-                                    <i class="right fas fa-angle-left"></i>
+                                    <i class="right fas fa-chevron-right"></i>
                                 </p>
                             </a>
+
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('dosen.dash_ajuanpenelitian') }}" class="nav-link">
-                                        <i class="nav-icon fas fa-users"></i>
+                                    <a href="{{ route('dosen.dash_ajuanpenelitian') }}"
+                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian') ? 'active' : '' }}">
+                                        <i class="nav-icon far fa-file-alt"></i>
                                         <p>Pengajuan Penelitian</p>
                                     </a>
                                 </li>
-                            </ul>
-                            <ul class="nav nav-treeview">
+
                                 <li class="nav-item">
-                                    <a href="{{ route('dosen.dash_kpenelitian') }}" class="nav-link">
-                                        <i class="nav-icon fas fa-users"></i>
+                                    <a href="{{ route('dosen.dash_kpenelitian') }}"
+                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-folder-open"></i>
                                         <p>Laporan Penelitian</p>
                                     </a>
                                 </li>
                             </ul>
                         </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <p>
-                                    Logout Akun
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="{{ route('logout') }}" class="nav-link">
-                                        <i class="nav-icon fas fa-sign-out-alt"></i>
-                                        <p>
-                                            Logout
-                                        </p>
-                                    </a>
-                                </li>
-                            </ul>
+
+                        <li class="nav-item dosen-logout-item">
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="nav-link dosen-logout-link">
+                                    <i class="nav-icon fas fa-sign-out-alt"></i>
+                                    <p>Logout Akun</p>
+                                </button>
+                            </form>
                         </li>
+
                     </ul>
                 </nav>
-                <!-- /.sidebar-menu -->
+
             </div>
-            <!-- /.sidebar -->
         </aside>
 
-        <!-- Content Wrapper. Contains page content -->
         @yield('content')
-        <!-- /.content-wrapper -->
-        <footer class="main-footer">
-            <!-- <strong>Copyright &copy; 2014-2021 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> -->
-            Pusat Penelitian dan Pengadbdian Kepada Masyarakat POLIBANG
-            <!-- <div class="float-right d-none d-sm-inline-block">
-                <b>Version</b> 3.2.0
-            </div> -->
-        </footer>
 
-        <!-- Control Sidebar -->
-        <aside class="control-sidebar control-sidebar-dark">
-            <!-- Control sidebar content goes here -->
-        </aside>
-        <!-- /.control-sidebar -->
+        <aside class="control-sidebar control-sidebar-dark"></aside>
     </div>
-    <!-- ./wrapper -->
 
-    <!-- jQuery -->
-    <script src="{{ asset ('lte/plugins/jquery/jquery.min.js')}}"></script>
-    <!-- jQuery UI 1.11.4 -->
-    <script src="{{ asset ('lte/plugins/jquery-ui/jquery-ui.min.js')}}"></script>
-    <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
-    <script>
-        $.widget.bridge('uibutton', $.ui.button)
+    @include('components.global-alert')
+
+    {{-- Global upload validator: manages inputs named "uppdf" (PDF, max 5 MB)
+         and "foto" (JPG/PNG, max 2 MB). Profile photo (name="image") is not
+         intercepted by this component. --}}
+    @include('components.upload-validation')
+
+    <script src="{{ asset('lte/plugins/jquery/jquery.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/jquery-ui/jquery-ui.min.js') }}" data-turbo-eval="false"></script>
+    <script data-turbo-eval="false">
+        $.widget.bridge('uibutton', $.ui.button);
     </script>
-    <!-- Bootstrap 4 -->
-    <script src="{{ asset ('lte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <!-- ChartJS -->
-    <script src="{{ asset ('lte/plugins/chart.js/Chart.min.js') }}"></script>
-    <!-- Sparkline -->
-    <script src="{{ asset ('lte/plugins/sparklines/sparkline.js') }}"></script>
-    <!-- JQVMap -->
-    <script src="{{ asset ('lte/plugins/jqvmap/jquery.vmap.min.js') }}"></script>
-    <script src="{{ asset ('lte/plugins/jqvmap/maps/jquery.vmap.usa.js') }}"></script>
-    <!-- jQuery Knob Chart -->
-    <script src="{{ asset ('lte/plugins/jquery-knob/jquery.knob.min.js') }}"></script>
-    <!-- daterangepicker -->
-    <script src="{{ asset ('lte/plugins/moment/moment.min.js') }}"></script>
-    <script src="{{ asset ('lte/plugins/daterangepicker/daterangepicker.js') }}"></script>
-    <!-- Tempusdominus Bootstrap 4 -->
-    <script src="{{ asset ('lte/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js') }}"></script>
-    <!-- Summernote -->
-    <script src="{{ asset ('lte/plugins/summernote/summernote-bs4.min.js') }}"></script>
-    <!-- overlayScrollbars -->
-    <script src="{{ asset ('lte/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}"></script>
-    <!-- AdminLTE App -->
-    <script src="{{ asset ('lte/dist/js/adminlte.js') }}"></script>
-    <!-- AdminLTE for demo purposes -->
-    <!-- <script src="{{ asset ('lte/dist/js/demo.js') }}"></script> -->
-    <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-    <!-- <script src="{{ asset ('lte/dist/js/pages/dashboard.js') }}"></script> -->
+    <script src="{{ asset('lte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/chart.js/Chart.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/sparklines/sparkline.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/jqvmap/jquery.vmap.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/jqvmap/maps/jquery.vmap.usa.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/jquery-knob/jquery.knob.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/moment/moment.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/daterangepicker/daterangepicker.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js') }}"
+        data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/summernote/summernote-bs4.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/dist/js/adminlte.js') }}" data-turbo-eval="false"></script>
+    {{-- CKEditor loaded after jQuery, with data-turbo-eval="false" so it is never re-evaluated on Turbo visits --}}
+    <script src="https://cdn.ckeditor.com/ckeditor5/35.3.1/classic/ckeditor.js" data-turbo-eval="false"></script>
 
-    <!-- ckeditor -->
-    <script>
-        ClassicEditor
-            .create(document.querySelector('#editor'), {
-                // Konfigurasi lainnya
-                // readOnly: true
-            })
-            .catch(error => {
-                console.error(error);
-            })
-            .then(editor => {
-                window.editor = editor;
-            })
-            .catch(error => {
-                console.error(error);
-            });
-    </script>
+    {{-- DataTables plugins loaded globally once with data-turbo-eval="false" so SPA visits never fail --}}
+    <script src="{{ asset('lte/plugins/datatables/jquery.dataTables.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}" data-turbo-eval="false"></script>
 
+    <script data-turbo-eval="false">
+        (function() {
+            'use strict';
 
-    <!-- javascrip -->
-    <script>
-        const inputFile = document.getElementById('image');
-        const fileLabel = document.querySelector('.custom-file-label');
+            /*
+             * Dosen Workspace — Enterprise SPA Navigation Layer
+             *
+             * - Turbo Drive handles seamless page-to-page navigation.
+             * - Sidebar & topbar are data-turbo-permanent (no re-renders / zero flickering).
+             * - destinationUrl captured on turbo:before-visit to sync sidebar on turbo:before-render.
+             * - Treeview open/closed display properties are managed explicitly.
+             * - Silky 60fps fade+slide entrance/exit animations.
+             */
 
-        inputFile.addEventListener('change', (e) => {
-            const fileName = e.target.files[0].name;
-            fileLabel.textContent = fileName;
-        });
-    </script>
+            const SIDEBAR_SELECTOR = '#p3m-sidebar';
+            const NAV_LINK_SELECTOR = `${SIDEBAR_SELECTOR} a.nav-link[href]`;
 
-    <script>
-        // Function to preview image
+            let destinationUrl = null;
 
-        function previewImage(event) {
-            var reader = new FileReader();
-            reader.onload = function() {
-                var output = document.getElementById('preview-image');
-                output.src = reader.result;
+            /* ── Utilities ─────────────────────────────────────────────────── */
+
+            function getSidebar() {
+                return document.querySelector(SIDEBAR_SELECTOR);
             }
-            reader.readAsDataURL(event.target.files[0]);
-        }
 
-        // Add event listener to the image input
-        document.getElementById('image').addEventListener('change', previewImage);
+            function normalizeUrl(url) {
+                try {
+                    const parsed = new URL(url, window.location.origin);
+                    parsed.hash = '';
+                    return parsed.href.replace(/\/$/, '');
+                } catch {
+                    return String(url || '').split('#')[0].replace(/\/$/, '');
+                }
+            }
+
+            function findActiveLink(url) {
+                const currentUrl = normalizeUrl(url);
+                const sidebar = getSidebar();
+                if (!sidebar) return null;
+
+                const links = Array.from(sidebar.querySelectorAll(NAV_LINK_SELECTOR));
+                let exactMatch = null;
+                let bestMatch = null;
+                let bestLength = 0;
+
+                for (const link of links) {
+                    const href = link.getAttribute('href');
+                    if (!href || href === '#' || href.startsWith('javascript:')) continue;
+
+                    const linkUrl = normalizeUrl(link.href);
+
+                    if (linkUrl === currentUrl) {
+                        exactMatch = link;
+                        break;
+                    }
+
+                    if (linkUrl && currentUrl.startsWith(`${linkUrl}/`) && linkUrl.length > bestLength) {
+                        bestLength = linkUrl.length;
+                        bestMatch = link;
+                    }
+                }
+
+                return exactMatch || bestMatch;
+            }
+
+            /* ── Sidebar sync ──────────────────────────────────────────────── */
+
+            function syncSidebarState(url) {
+                const sidebar = getSidebar();
+                if (!sidebar) return;
+
+                const activeLink = findActiveLink(url);
+
+                /* Remove all active states first */
+                sidebar.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+
+                if (!activeLink) return;
+
+                activeLink.classList.add('active');
+
+                /* Determine whether the active link lives inside a sub-menu */
+                const treeview = activeLink.closest('.nav-treeview');
+
+                if (treeview) {
+                    /* Active link is inside a sub-menu: ensure its parent group is open and marked active */
+                    const parentItem = treeview.closest('.nav-item');
+                    if (parentItem) {
+                        parentItem.classList.add('menu-open');
+                        treeview.style.display = 'block';
+
+                        const parentLink = parentItem.querySelector(':scope > .nav-link');
+                        if (parentLink) parentLink.classList.add('active');
+                    }
+                }
+                /*
+                 * Note: With data-accordion="false", multiple dropdown groups can be opened simultaneously.
+                 * We do NOT forcibly close sibling .menu-open groups so that groups opened by the user
+                 * (e.g. Profil) remain open as the user browses sub-menus in another group (e.g. Penelitian).
+                 */
+            }
+
+            /* ── Topbar breadcrumb ─────────────────────────────────────────── */
+
+            function updateTopbarPage() {
+                const pageElement = document.getElementById('js-topbar-page');
+                if (!pageElement) return;
+
+                const activeLink =
+                    document.querySelector(`${SIDEBAR_SELECTOR} .nav-treeview .nav-link.active`) ||
+                    document.querySelector(`${SIDEBAR_SELECTOR} .nav-link.active:not([href="#"])`);
+
+                if (!activeLink) return;
+
+                const paragraph = activeLink.querySelector('p');
+                const pageName = paragraph ? paragraph.textContent.trim() : '';
+                if (pageName) pageElement.textContent = pageName;
+            }
+
+            /* ── Per-page component init ───────────────────────────────────── */
+
+            function initializeImagePreview() {
+                const input = document.getElementById('image');
+                const label = document.querySelector('.custom-file-label');
+                const preview = document.getElementById('preview-image');
+
+                if (!input || input.dataset.p3mPreviewReady === 'true') return;
+                input.dataset.p3mPreviewReady = 'true';
+
+                input.addEventListener('change', event => {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    if (label) label.textContent = file.name;
+                    if (!preview) return;
+
+                    const reader = new FileReader();
+                    reader.addEventListener('load', () => { preview.src = reader.result; }, { once: true });
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function initializeEditor() {
+                const editorElement = document.querySelector('#editor');
+                if (!editorElement || !window.ClassicEditor || editorElement.classList.contains('ck-applied')) return;
+
+                window.ClassicEditor
+                    .create(editorElement)
+                    .then(editor => {
+                        window.editor = editor;
+                        editorElement.classList.add('ck-applied');
+                    })
+                    .catch(error => console.error('CKEditor init failed:', error));
+            }
+
+            function initializePageComponents() {
+                initializeEditor();
+                initializeImagePreview();
+            }
+
+            /* ── Shell refresh (called after every navigation) ─────────────── */
+
+            function refreshDosenShell(url) {
+                syncSidebarState(url || window.location.href);
+                updateTopbarPage();
+                initializePageComponents();
+            }
+
+            /* ── Page enter animation ──────────────────────────────────────── */
+
+            function triggerPageEnterAnimation() {
+                const cw = document.querySelector('.content-wrapper');
+                if (!cw) return;
+                cw.classList.remove('dosen-page-enter', 'dosen-page-exit');
+                void cw.offsetWidth; /* reflow */
+                cw.classList.add('dosen-page-enter');
+            }
+
+            /* ── Turbo event hooks ─────────────────────────────────────────── */
+
+            /* Close topbar dropdown before any navigation and start exit transition */
+            document.addEventListener('turbo:before-visit', function(e) {
+                destinationUrl = e.detail && e.detail.url ? e.detail.url : null;
+
+                if (typeof $ !== 'undefined') {
+                    $('.dosen-user-dropdown').removeClass('show').closest('.dropdown').removeClass('show');
+                    $('#dosenUserDropdownTrigger').attr('aria-expanded', 'false');
+                }
+
+                const cw = document.querySelector('.content-wrapper');
+                if (cw) cw.classList.add('dosen-page-exit');
+            });
+
+            /* Sync sidebar active state BEFORE DOM swap so menu highlights immediately */
+            document.addEventListener('turbo:before-render', function() {
+                if (destinationUrl) {
+                    syncSidebarState(destinationUrl);
+                }
+            });
+
+            /* Animate content in after Turbo swaps the body */
+            document.addEventListener('turbo:render', function() {
+                requestAnimationFrame(triggerPageEnterAnimation);
+            });
+
+            /* Sync sidebar + init page components on every Turbo load */
+            document.addEventListener('turbo:load', function() {
+                const url = destinationUrl || window.location.href;
+                refreshDosenShell(url);
+                requestAnimationFrame(triggerPageEnterAnimation);
+                destinationUrl = null;
+            });
+
+            /* Strip the animation class before Turbo caches the page so the
+               cached snapshot starts clean (no mid-animation state stored). */
+            document.addEventListener('turbo:before-cache', function() {
+                const cw = document.querySelector('.content-wrapper');
+                if (cw) cw.classList.remove('dosen-page-enter', 'dosen-page-exit');
+            });
+
+            /* Initial non-Turbo boot (first page load). */
+            document.addEventListener('DOMContentLoaded', function() {
+                refreshDosenShell();
+                triggerPageEnterAnimation();
+            }, { once: true });
+
+            /* ── Logout confirmation ───────────────────────────────────────── */
+
+            /* Use event delegation so it works after Turbo replaces page content */
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('#js-nav-logout-btn, .dosen-logout-link');
+                if (!btn) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const form = btn.closest('form');
+                if (!form) return;
+
+                if (typeof window.p3mConfirm === 'function') {
+                    window.p3mConfirm({
+                        title: 'Logout dari Akun?',
+                        html: 'Anda akan keluar dari sesi Dosen Workspace saat ini.<br><span style="font-size:13px;color:#9ca3af;">Anda perlu login kembali untuk mengakses data.</span>',
+                        icon: 'warning',
+                        confirmText: '<i class="fas fa-sign-out-alt" style="font-size:12px;"></i>&nbsp; Ya, Logout',
+                        confirmClass: 'p3m-swal-btn-danger',
+                        onConfirm: function() { form.submit(); }
+                    });
+                } else if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Logout dari Akun?',
+                        text: 'Anda akan keluar dari sesi Dosen Workspace saat ini.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Ya, Logout',
+                        cancelButtonText: 'Batal'
+                    }).then(result => { if (result.isConfirmed) form.submit(); });
+                } else {
+                    if (confirm('Apakah Anda yakin ingin logout dari akun ini?')) form.submit();
+                }
+            });
+
+        })();
     </script>
+
     @yield('scripts')
+
+    {{-- Global Image Cropper Component --}}
+    <x-image-cropper />
 </body>
 
 </html>

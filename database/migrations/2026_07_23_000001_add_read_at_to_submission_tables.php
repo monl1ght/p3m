@@ -12,6 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         foreach ($this->tables() as $tableName) {
+            if (Schema::hasColumn($tableName, 'read_at')) {
+                continue;
+            }
+
             Schema::table($tableName, function (Blueprint $table) {
                 $table->timestamp('read_at')->nullable()->after('status');
             });
@@ -23,11 +27,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        foreach ($this->tables() as $tableName) {
-            Schema::table($tableName, function (Blueprint $table) {
-                $table->dropColumn('read_at');
-            });
-        }
+        // This migration also reconciles databases where read_at was added manually.
+        // Dropping the column here could delete pre-existing production data.
     }
 
     /**

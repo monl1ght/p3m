@@ -5,8 +5,8 @@
 
 <style>
     :root {
-        --p3m-blue: #2563eb;
-        --p3m-blue-dark: #1d4ed8;
+        --p3m-blue: #003d2d;
+        --p3m-blue-dark: #002e22;
         --p3m-gold: #d5a72f;
         --p3m-slate-900: #0f172a;
         --p3m-slate-700: #334155;
@@ -118,7 +118,7 @@
 
     .news-form-group .form-control:focus {
         border-color: #93c5fd;
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, .08);
+        box-shadow: 0 0 0 4px rgba(0, 61, 45, .08);
     }
 
     .news-form-group small {
@@ -217,7 +217,7 @@
         background: var(--p3m-blue);
         border: 1px solid var(--p3m-blue);
         color: #ffffff;
-        box-shadow: 0 12px 24px rgba(37, 99, 235, .17);
+        box-shadow: 0 12px 24px rgba(0, 61, 45, .17);
     }
 
     .btn-news-submit:hover {
@@ -324,8 +324,14 @@
                                 <div class="news-form-group news-form-group-full">
                                     <label for="image">Gambar Kegiatan</label>
                                     <div class="news-upload-box">
-                                        <input type="file" name="image" id="image" class="form-control" required>
-                                        <span class="news-help-text">Format yang didukung: PNG, JPG, JPEG. Maksimal 2MB.</span>
+                                        <input type="file" name="image" id="image" class="form-control"
+                                               accept=".png,.jpg,.jpeg,.webp,.gif,image/png,image/jpeg,image/webp,image/gif"
+                                               data-p3m-upload
+                                               data-p3m-upload-label="Gambar kegiatan"
+                                               data-p3m-upload-formats="PNG, JPG, JPEG, atau WEBP"
+                                               data-p3m-upload-max-bytes="5242880"
+                                               required>
+                                        <span class="news-help-text">Format yang didukung: PNG, JPG, JPEG, WEBP. Maksimal 5 MB.</span>
                                     </div>
                                     @error('image')
                                         <small>{{ $message }}</small>
@@ -360,7 +366,7 @@
 </div>
 @endsection
 
-@section('script')
+@section('scripts')
 <script src="{{ asset('lte/plugins/summernote/summernote-bs4.min.js') }}"></script>
 <script>
     $(function() {
@@ -373,6 +379,67 @@
                 ['view', ['fullscreen', 'codeview']]
             ]
         });
+
+        // Instant validation for image upload with SweetAlert2 popup
+        var imageInput = document.getElementById('image');
+        if (imageInput) {
+            imageInput.addEventListener('change', function() {
+                var file = this.files && this.files[0];
+                if (!file) return;
+
+                var allowedExts = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
+                var fileName = file.name || '';
+                var ext = fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : '';
+                var maxBytes = 5 * 1024 * 1024; // 5 MB
+
+                function escapeHtml(text) {
+                    var div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                }
+
+                if (!allowedExts.includes(ext) || (!file.type.startsWith('image/') && file.type !== '')) {
+                    this.value = '';
+                    var errorMsg = 'Format file <strong>' + escapeHtml(fileName) + '</strong> tidak didukung.<br>Harap pilih gambar dengan format <strong>PNG, JPG, JPEG, atau WEBP</strong>.';
+                    if (typeof window.p3mError === 'function') {
+                        window.p3mError(errorMsg, 'Format File Tidak Sesuai');
+                    } else if (typeof window.Swal === 'function') {
+                        window.Swal.fire({
+                            icon: 'error',
+                            title: 'Format File Tidak Sesuai',
+                            html: errorMsg,
+                            confirmButtonText: 'MENGERTI',
+                            customClass: { popup: 'p3m-swal-popup', confirmButton: 'p3m-swal-btn-danger' },
+                            buttonsStyling: false
+                        });
+                    } else {
+                        alert('Format file ' + fileName + ' tidak didukung. Harap pilih gambar dengan format PNG, JPG, JPEG, atau WEBP.');
+                    }
+                    return;
+                }
+
+                if (file.size > maxBytes) {
+                    this.value = '';
+                    var sizeInMb = (file.size / (1024 * 1024)).toFixed(2);
+                    var sizeMsg = 'Ukuran file <strong>' + escapeHtml(fileName) + '</strong> (' + sizeInMb + ' MB) melebihi batas maksimal <strong>5 MB</strong>.';
+                    if (typeof window.p3mWarning === 'function') {
+                        window.p3mWarning(sizeMsg, 'Ukuran File Terlalu Besar');
+                    } else if (typeof window.Swal === 'function') {
+                        window.Swal.fire({
+                            icon: 'warning',
+                            title: 'Ukuran File Terlalu Besar',
+                            html: sizeMsg,
+                            confirmButtonText: 'MENGERTI',
+                            customClass: { popup: 'p3m-swal-popup', confirmButton: 'p3m-swal-btn-warning' },
+                            buttonsStyling: false
+                        });
+                    } else {
+                        alert('Ukuran file melebihi batas maksimal 5 MB.');
+                    }
+                    return;
+                }
+            });
+        }
     });
 </script>
 @endsection

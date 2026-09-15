@@ -4,626 +4,548 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Register P3M | Polibang</title>
+    <title>Daftar Akun Dosen | P3M Polibang</title>
 
     <link rel="shortcut icon" href="{{ asset('favicon/icon_log.ico') }}" type="image/x-icon">
     <link rel="icon" href="{{ asset('favicon/icon_log.ico') }}" type="image/x-icon">
 
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ asset('lte/plugins/fontawesome-free/css/all.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('lte/plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('lte/dist/css/adminlte.min.css') }}">
 
     <style>
         :root {
-            --p3m-green: #063f35;
-            --p3m-dark: #071f24;
-            --p3m-blue: #2563eb;
-            --p3m-blue-hover: #1d4ed8;
-            --p3m-gold: #d5a72f;
-            --p3m-border: #e2e8f0;
-            --p3m-muted: #64748b;
-            --p3m-heading: #0f172a;
-            --p3m-soft: #f8fafc;
-            --p3m-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            --p3m-heading-font: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+            --primary: #059669;
+            --primary-hover: #047857;
+            --primary-soft: #ecfdf5;
+            --primary-border: #a7f3d0;
+            --surface: #ffffff;
+            --surface-alt: #f8fafc;
+            --text-heading: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --font-body: "Inter", system-ui, sans-serif;
+            --font-heading: "Plus Jakarta Sans", "Inter", sans-serif;
+            --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        *,
-        *::before,
-        *::after {
+        *, *::before, *::after {
             box-sizing: border-box;
         }
 
-        html,
-        body {
+        html, body {
             min-height: 100%;
         }
 
         body.login-page {
             min-height: 100vh;
             margin: 0;
-            padding: 28px 18px;
+            padding: 24px 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #475569;
-            font-family: var(--p3m-font);
-            background:
-                radial-gradient(circle at 16% 14%, rgba(6, 63, 53, .07), transparent 30%),
-                radial-gradient(circle at 84% 18%, rgba(213, 167, 47, .08), transparent 28%),
-                linear-gradient(135deg, #f8fafc 0%, #f3f6fb 52%, #eef2f7 100%);
+            font-family: var(--font-body);
+            color: var(--text-body);
+            background: 
+                radial-gradient(circle at 10% 10%, rgba(5, 150, 105, 0.05), transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(5, 150, 105, 0.04), transparent 40%),
+                linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         }
 
-        a {
-            color: var(--p3m-blue);
-            text-decoration: none;
-            transition: .22s ease;
-        }
-
-        a:hover {
-            color: var(--p3m-blue-hover);
-            text-decoration: none;
-        }
-
-        .register-wrapper {
+        .auth-wrapper {
             width: 100%;
-            max-width: 920px;
+            max-width: 880px;
+            margin: auto;
         }
 
-        .register-card {
-            min-height: 560px;
+        .auth-card {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.03);
             display: grid;
-            grid-template-columns: 1fr .92fr;
+            grid-template-columns: 1.15fr 0.85fr;
             overflow: hidden;
-            border-radius: 30px;
-            background: #ffffff;
-            border: 1px solid rgba(226, 232, 240, .96);
-            box-shadow: 0 28px 70px rgba(15, 23, 42, .11), 0 1px 0 rgba(255, 255, 255, .85) inset;
+            min-height: 540px;
         }
 
-        .register-form-side {
-            padding: 50px 58px 42px;
+        /* ── Form Side ── */
+        .auth-form-side {
+            padding: 44px 46px 36px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
-        .register-form-side .brand-inline,
-        .register-form-side .register-title,
-        .register-form-side form,
-        .register-form-side .back-login {
-            width: 100%;
-            max-width: 382px;
-        }
-
-        .brand-inline {
-            width: fit-content;
+        .auth-brand {
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 28px;
-            color: var(--p3m-heading);
-            font-family: var(--p3m-heading-font);
-            font-size: 18.5px;
-            font-weight: 900;
-            letter-spacing: -0.045em;
+            margin-bottom: 22px;
+            text-decoration: none;
+            color: var(--text-heading);
         }
 
-        .brand-inline:hover {
-            color: var(--p3m-heading);
-            opacity: .88;
+        .auth-brand:hover {
+            color: var(--text-heading);
+            opacity: 0.9;
         }
 
-        .brand-inline img {
-            width: 37px;
-            height: 37px;
-            object-fit: contain;
-            border-radius: 999px;
-            background: #ffffff;
-            border: 1px solid #dbeafe;
-            padding: 4px;
-            box-shadow: 0 10px 24px rgba(15, 23, 42, .08);
-        }
-
-        .register-title {
-            position: relative;
-            margin-bottom: 24px;
-            padding-top: 12px;
-        }
-
-        .register-title::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
+        .auth-brand-logo {
             width: 36px;
-            height: 3px;
-            border-radius: 999px;
-            background: var(--p3m-gold);
+            height: 36px;
+            object-fit: contain;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
         }
 
-        .register-title h1 {
-            margin: 0;
-            color: var(--p3m-heading);
-            font-family: var(--p3m-heading-font);
-            font-size: 30px;
-            line-height: 1.12;
-            font-weight: 900;
-            letter-spacing: -0.052em;
+        .auth-brand-name {
+            font-family: var(--font-heading);
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-heading);
         }
 
-        .register-title p {
-            margin: 8px 0 0;
-            color: var(--p3m-muted);
+        .auth-header {
+            margin-bottom: 22px;
+        }
+
+        .auth-header h1 {
+            font-family: var(--font-heading);
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.25;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.02em;
+        }
+
+        .auth-header p {
             font-size: 13.5px;
-            line-height: 1.65;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.5;
         }
 
-        .auth-input-group {
-            margin-bottom: 14px;
+        /* ── Form Controls ── */
+        .form-group-custom {
+            margin-bottom: 15px;
         }
 
         .form-label-custom {
             display: block;
-            margin-bottom: 7px;
-            color: #1e293b;
-            font-size: 12.75px;
-            font-weight: 850;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
         }
 
-        .auth-input-group .input-group {
-            overflow: hidden;
-            border: 1px solid #dbe4f0;
-            border-radius: 12px;
+        .input-wrap-custom {
+            position: relative;
+            display: flex;
+            align-items: center;
             background: #ffffff;
-            transition: .22s ease;
+            border: 1.5px solid var(--border-color);
+            border-radius: 14px;
+            transition: var(--transition);
         }
 
-        .auth-input-group .input-group:hover {
+        .input-wrap-custom:hover {
             border-color: #cbd5e1;
         }
 
-        .auth-input-group .input-group:focus-within {
-            border-color: #93c5fd;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, .09);
+        .input-wrap-custom:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3.5px rgba(5, 150, 105, 0.12);
         }
 
-        .auth-input-group .form-control {
-            height: 44px;
-            border: 0;
-            box-shadow: none;
-            color: #0f172a;
+        .form-input-custom {
+            width: 100%;
+            height: 48px;
+            padding: 0 46px 0 16px;
+            border: none;
             background: transparent;
-            font-size: 13.8px;
-            padding-left: 14px;
+            font-family: var(--font-body);
+            font-size: 14px;
+            color: var(--text-heading);
+            outline: none;
         }
 
-        .auth-input-group .form-control::placeholder {
+        .form-input-custom::placeholder {
             color: #94a3b8;
+            font-size: 13.5px;
         }
 
-        .auth-input-group .input-group-text,
-        .password-toggle {
-            width: 46px;
-            border: 0;
-            background: #f8fafc;
-            color: #475569;
+        .input-addon-btn,
+        .input-addon-icon {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 44px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            color: #94a3b8;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 14px;
         }
 
-        .password-toggle {
+        .input-addon-btn {
             cursor: pointer;
-            transition: .22s ease;
+            transition: color 0.2s ease;
         }
 
-        .password-toggle:hover {
-            color: var(--p3m-blue);
-            background: #eff6ff;
+        .input-addon-btn:hover {
+            color: var(--primary);
         }
 
-        .auth-error {
+        .form-error {
             display: block;
-            margin-top: -7px;
-            margin-bottom: 11px;
-            color: #dc2626;
-            font-size: 13px;
-            font-weight: 650;
+            margin-top: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #ef4444;
         }
 
-        .btn-register {
+        /* ── Submit Button ── */
+        .btn-submit-p3m {
             width: 100%;
-            height: 47px;
+            height: 48px;
             margin-top: 8px;
-            border: 0;
-            border-radius: 12px;
-            background: var(--p3m-blue);
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
             color: #ffffff;
+            font-family: var(--font-heading);
             font-size: 14.5px;
-            font-weight: 900;
-            letter-spacing: 0;
-            box-shadow: 0 13px 26px rgba(37, 99, 235, .18);
-            transition: .22s ease;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.24);
+            transition: var(--transition);
         }
 
-        .btn-register:hover {
-            background: var(--p3m-blue-hover);
+        .btn-submit-p3m:hover {
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
             color: #ffffff;
             transform: translateY(-1px);
-            box-shadow: 0 16px 32px rgba(37, 99, 235, .22);
+            box-shadow: 0 10px 24px rgba(5, 150, 105, 0.32);
         }
 
-        .login-secondary {
+        .btn-submit-p3m:active {
+            transform: translateY(0);
+        }
+
+        /* ── Clean Switch & Links ── */
+        .auth-switch {
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid #f1f5f9;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-top: 15px;
-            padding: 12px 13px;
-            border: 1px solid var(--p3m-border);
-            border-radius: 13px;
-            background: linear-gradient(180deg, #ffffff 0%, var(--p3m-soft) 100%);
-            text-align: left;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13.5px;
+            color: var(--text-muted);
         }
 
-        .login-copy {
-            min-width: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .auth-switch-link {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 13.5px;
+            text-decoration: none;
+            transition: color 0.2s ease;
         }
 
-        .login-icon {
-            width: 34px;
-            height: 34px;
-            flex: 0 0 auto;
-            border-radius: 999px;
+        .auth-switch-link:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        .auth-back {
+            margin-top: 14px;
+            text-align: center;
+        }
+
+        .auth-back a {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            background: #eff6ff;
-            color: var(--p3m-blue);
+            gap: 6px;
+            color: var(--text-muted);
             font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s ease;
         }
 
-        .login-secondary strong {
-            display: block;
-            color: var(--p3m-heading);
-            font-size: 13px;
-            line-height: 1.25;
-            font-weight: 850;
+        .auth-back a:hover {
+            color: var(--primary);
+            text-decoration: none;
         }
 
-        .login-secondary span:not(.login-icon) {
-            display: block;
-            margin-top: 2px;
-            color: var(--p3m-muted);
-            font-size: 11.7px;
-            line-height: 1.35;
-        }
-
-        .login-btn {
-            flex: 0 0 auto;
-            min-height: 32px;
-            padding: 7px 13px;
-            border-radius: 999px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: #ffffff;
-            border: 1px solid #bfdbfe;
-            color: var(--p3m-blue);
-            font-size: 12.5px;
-            font-weight: 850;
-            white-space: nowrap;
-        }
-
-        .login-btn:hover {
-            background: var(--p3m-blue);
-            border-color: var(--p3m-blue);
-            color: #ffffff;
-        }
-
-        .register-art-side {
+        /* ── Side Art Panel (Desktop) ── */
+        .auth-art-side {
+            background: linear-gradient(145deg, #04261f 0%, #063f35 60%, #047857 100%);
             position: relative;
-            overflow: hidden;
-            margin: 18px 18px 18px 0;
-            border-radius: 24px;
-            color: #ffffff;
-            background: linear-gradient(145deg, var(--p3m-green) 0%, #05352f 48%, var(--p3m-dark) 100%);
+            padding: 44px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            padding: 46px;
+            justify-content: space-between;
+            color: #ffffff;
+            overflow: hidden;
             isolation: isolate;
         }
 
-        .register-art-side::before {
+        .auth-art-side::before {
             content: "";
             position: absolute;
             inset: 0;
-            background:
-                linear-gradient(135deg, rgba(255, 255, 255, .075), transparent 36%),
-                radial-gradient(circle at 88% 12%, rgba(213, 167, 47, .16), transparent 30%);
-            z-index: -2;
-        }
-
-        .register-art-side::after {
-            content: "";
-            position: absolute;
-            left: 46px;
-            right: 46px;
-            bottom: 40px;
-            height: 1px;
-            background: linear-gradient(90deg, rgba(213, 167, 47, .82), rgba(213, 167, 47, 0));
-            opacity: .8;
+            background: radial-gradient(circle at 85% 15%, rgba(52, 211, 153, 0.18), transparent 45%);
             z-index: -1;
         }
 
-        .art-badge {
-            width: fit-content;
-            display: inline-flex;
-            align-items: center;
-            gap: 9px;
-            margin-bottom: 38px;
-            padding: 9px 13px;
-            border-radius: 999px;
-            color: rgba(255, 255, 255, .92);
-            background: rgba(255, 255, 255, .10);
-            border: 1px solid rgba(255, 255, 255, .16);
-            backdrop-filter: blur(10px);
-            font-size: 11.5px;
-            font-weight: 800;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-        }
-
-        .art-badge i {
-            color: var(--p3m-gold);
-        }
-
-        .art-content {
-            max-width: 350px;
-        }
-
-        .art-content h2 {
-            margin: 0;
-            color: #ffffff;
-            font-family: var(--p3m-heading-font);
-            font-size: 40px;
-            line-height: 1.05;
-            letter-spacing: -0.055em;
-            font-weight: 900;
-        }
-
-        .art-content p {
-            max-width: 315px;
-            margin: 15px 0 0;
-            color: rgba(226, 232, 240, .88);
-            font-size: 13.5px;
-            line-height: 1.8;
-        }
-
-        .art-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 26px;
-        }
-
-        .art-tag {
+        .art-header-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 11px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 6px 14px;
             border-radius: 999px;
-            color: rgba(226, 232, 240, .88);
-            background: rgba(255, 255, 255, .09);
-            border: 1px solid rgba(255, 255, 255, .12);
-            font-size: 11.8px;
+            font-size: 12px;
             font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #ffffff;
+            width: fit-content;
         }
 
-        .art-tag i {
-            color: #bfdbfe;
-            font-size: 11px;
+        .art-header-badge i {
+            color: #34d399;
         }
 
+        .art-body {
+            margin: auto 0;
+        }
+
+        .art-body h2 {
+            font-family: var(--font-heading);
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+            margin: 0 0 12px 0;
+        }
+
+        .art-body p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.85);
+            margin: 0;
+            max-width: 320px;
+        }
+
+        .art-footer-meta {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 500;
+        }
+
+        /* ── Floating Alerts ── */
         .alert-floating {
             position: fixed;
-            right: 24px;
-            top: 24px;
+            right: 20px;
+            top: 20px;
             z-index: 9999;
-            max-width: 420px;
+            max-width: 380px;
             border: 0;
-            border-radius: 18px;
-            box-shadow: 0 22px 60px rgba(15, 23, 42, .18);
+            border-radius: 14px;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15);
         }
 
+        /* ── Mobile Layout (< 992px) ── */
         @media (max-width: 991.98px) {
-            .register-card {
-                max-width: 520px;
-                min-height: auto;
-                margin: 0 auto;
+            body.login-page {
+                padding: 20px 14px;
+            }
+
+            .auth-card {
                 grid-template-columns: 1fr;
+                max-width: 440px;
+                min-height: auto;
+                border-radius: 24px;
             }
 
-            .register-form-side {
-                padding: 42px 36px 36px;
-            }
-
-            .register-form-side .brand-inline,
-            .register-form-side .register-title,
-            .register-form-side form,
-            .register-form-side .back-login {
-                max-width: 100%;
-            }
-
-            .register-art-side {
-                min-height: 235px;
-                margin: 0 18px 18px;
-                padding: 34px;
-                order: -1;
-            }
-
-            .art-badge {
-                margin-bottom: 24px;
-            }
-
-            .art-tags {
+            .auth-art-side {
                 display: none;
+            }
+
+            .auth-form-side {
+                padding: 34px 28px 30px;
+            }
+
+            .auth-brand {
+                margin-bottom: 18px;
+            }
+
+            .auth-header {
+                margin-bottom: 18px;
+            }
+
+            .auth-header h1 {
+                font-size: 23px;
+            }
+
+            .auth-header p {
+                font-size: 13px;
             }
         }
 
         @media (max-width: 575.98px) {
             body.login-page {
-                padding: 18px 12px;
+                padding: 16px 12px;
             }
 
-            .register-card {
-                border-radius: 24px;
+            .auth-card {
+                border-radius: 20px;
             }
 
-            .register-form-side {
-                padding: 32px 22px 28px;
+            .auth-form-side {
+                padding: 28px 20px 24px;
             }
 
-            .register-title h1 {
-                font-size: 29px;
+            .form-input-custom {
+                height: 46px;
+                font-size: 14px;
             }
 
-            .register-art-side {
-                display: none;
-            }
-
-            .login-secondary {
-                align-items: stretch;
-                flex-direction: column;
-            }
-
-            .login-btn {
-                width: 100%;
+            .btn-submit-p3m {
+                height: 46px;
+                font-size: 14px;
             }
 
             .alert-floating {
-                left: 14px;
-                right: 14px;
-                top: 14px;
+                left: 12px;
+                right: 12px;
+                top: 12px;
             }
         }
     </style>
 </head>
 
 <body class="hold-transition login-page">
-    <main class="register-wrapper">
-        <section class="register-card">
-            <div class="register-form-side">
-                <a href="{{ route('tampilan') }}" class="brand-inline">
-                    <img src="{{ asset('mte/assets/img/Pusat_Penelitian.png') }}" alt="Logo P3M Polibang">
-                    <span>P3M Polibang</span>
+    <main class="auth-wrapper">
+        <div class="auth-card">
+
+            {{-- 1. Form Column --}}
+            <div class="auth-form-side">
+                <a href="{{ route('tampilan') }}" class="auth-brand">
+                    <img src="{{ asset('mte/assets/img/Pusat_Penelitian.png') }}" alt="Logo P3M Polibang" class="auth-brand-logo">
+                    <span class="auth-brand-name">P3M Polibang</span>
                 </a>
 
-                <div class="register-title">
-                    <h1>Register P3M</h1>
-                    <p>Buat akun P3M khusus dosen Politeknik Balekambang Jepara.</p>
+                <div class="auth-header">
+                    <h1>Daftar Akun Dosen</h1>
+                    <p>Khusus dosen resmi Politeknik Balekambang</p>
                 </div>
 
                 <form action="{{ route('proses-register') }}" method="post">
                     @csrf
 
-                    <div class="auth-input-group">
+                    <div class="form-group-custom">
                         <label class="form-label-custom" for="name">Username</label>
-                        <div class="input-group">
-                            <input id="name" type="text" name="name" class="form-control" placeholder="Masukkan username" value="{{ old('name') }}" autocomplete="username" autofocus>
-                            <div class="input-group-append">
-                                <div class="input-group-text">
-                                    <span class="fas fa-user"></span>
-                                </div>
-                            </div>
+                        <div class="input-wrap-custom">
+                            <input id="name" type="text" name="name" class="form-input-custom" placeholder="Masukkan username" value="{{ old('name') }}" autocomplete="username" maxlength="255" required autofocus>
+                            <span class="input-addon-icon">
+                                <i class="fas fa-user"></i>
+                            </span>
                         </div>
+                        @error('name')
+                            <small class="form-error">{{ $message }}</small>
+                        @enderror
                     </div>
-                    @error('name')
-                        <small class="auth-error">{{ $message }}</small>
-                    @enderror
 
-                    <div class="auth-input-group">
+                    <div class="form-group-custom">
                         <label class="form-label-custom" for="email">Email</label>
-                        <div class="input-group">
-                            <input id="email" type="email" name="email" class="form-control" placeholder="Masukkan email" value="{{ old('email') }}" autocomplete="email">
-                            <div class="input-group-append">
-                                <div class="input-group-text">
-                                    <span class="fas fa-envelope"></span>
-                                </div>
-                            </div>
+                        <div class="input-wrap-custom">
+                            <input id="email" type="email" name="email" class="form-input-custom" placeholder="Masukkan email" value="{{ old('email') }}" autocomplete="email" maxlength="255" required>
+                            <span class="input-addon-icon">
+                                <i class="fas fa-envelope"></i>
+                            </span>
                         </div>
+                        @error('email')
+                            <small class="form-error">{{ $message }}</small>
+                        @enderror
                     </div>
-                    @error('email')
-                        <small class="auth-error">{{ $message }}</small>
-                    @enderror
 
-                    <div class="auth-input-group">
+                    <div class="form-group-custom">
                         <label class="form-label-custom" for="password">Password</label>
-                        <div class="input-group">
-                            <input id="password" type="password" name="password" class="form-control" placeholder="Masukkan password" autocomplete="new-password">
-                            <div class="input-group-append">
-                                <button class="password-toggle" type="button" id="togglePassword" aria-label="Tampilkan password">
-                                    <span class="fas fa-eye"></span>
-                                </button>
-                            </div>
+                        <div class="input-wrap-custom">
+                            <input id="password" type="password" name="password" class="form-input-custom" placeholder="Minimal 8 karakter" autocomplete="new-password" minlength="8" required>
+                            <button class="input-addon-btn" type="button" id="togglePassword" aria-label="Tampilkan password">
+                                <i class="fas fa-eye"></i>
+                            </button>
                         </div>
+                        @error('password')
+                            <small class="form-error">{{ $message }}</small>
+                        @enderror
                     </div>
-                    @error('password')
-                        <small class="auth-error">{{ $message }}</small>
-                    @enderror
 
-                    <button type="submit" class="btn-register">
-                        Daftar Akun
-                        <i class="fas fa-arrow-right ml-2"></i>
+                    <button type="submit" class="btn-submit-p3m">
+                        <span>Daftar Sekarang</span>
+                        <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <div class="login-secondary">
-                        <div class="login-copy">
-                            <span class="login-icon">
-                                <i class="fas fa-sign-in-alt"></i>
-                            </span>
-                            <div>
-                                <strong>Sudah punya akun?</strong>
-                                <span>Masuk ke portal pengelola atau dosen.</span>
-                            </div>
-                        </div>
-                        <a href="{{ route('login') }}" class="login-btn">Login</a>
+                    <div class="auth-switch">
+                        <span>Sudah memiliki akun?</span>
+                        <a href="{{ route('login') }}" class="auth-switch-link">
+                            Masuk di sini
+                        </a>
                     </div>
                 </form>
+
+                <div class="auth-back">
+                    <a href="{{ route('tampilan') }}">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Kembali ke Beranda</span>
+                    </a>
+                </div>
             </div>
 
-            <aside class="register-art-side">
-                <div class="art-badge">
+            {{-- 2. Art Column (Desktop Only) --}}
+            <aside class="auth-art-side">
+                <div class="art-header-badge">
                     <i class="fas fa-user-plus"></i>
-                    Registrasi Dosen
+                    <span>Registrasi Dosen</span>
                 </div>
 
-                <div class="art-content">
-                    <h2>Mulai<br>Bergabung</h2>
-                    <p>Daftarkan akun dosen untuk mengakses layanan pengelolaan data P3M Politeknik Balekambang Jepara.</p>
+                <div class="art-body">
+                    <h2>Mulai Bergabung</h2>
+                    <p>Daftarkan akun dosen untuk mengakses layanan penelitian dan pengabdian masyarakat Politeknik Balekambang Jepara.</p>
                 </div>
 
-                <div class="art-tags">
-                    <span class="art-tag">
-                        <i class="fas fa-check"></i>
-                        Akun dosen
-                    </span>
-                    <span class="art-tag">
-                        <i class="fas fa-lock"></i>
-                        Data aman
-                    </span>
+                <div class="art-footer-meta">
+                    © {{ date('Y') }} P3M Polibang
                 </div>
             </aside>
-        </section>
+
+        </div>
     </main>
 
     @inject('session', 'Illuminate\Support\Facades\Session')
@@ -655,7 +577,7 @@
 
         if (togglePassword && passwordInput) {
             togglePassword.addEventListener('click', function () {
-                const icon = this.querySelector('span');
+                const icon = this.querySelector('i');
                 const isPassword = passwordInput.getAttribute('type') === 'password';
 
                 passwordInput.setAttribute('type', isPassword ? 'text' : 'password');

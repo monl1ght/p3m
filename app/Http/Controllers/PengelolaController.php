@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class PengelolaController extends Controller
 {
@@ -43,7 +44,8 @@ class PengelolaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'image'              => 'required|mimes:png,jpg,jpeg|max:2048',
+            'image'              => 'nullable|mimes:png,jpg,jpeg,webp,gif|max:5120',
+            'image_base64'       => 'nullable|string',
             'nama_pengelola'     => 'required|unique:m__pengelolas,nama_pengelola',
             'jabatan_pengelola'  => 'required',
             'email_pengelola'    => 'required|email',
@@ -59,10 +61,16 @@ class PengelolaController extends Controller
         }
 
         $image = $request->file('image');
-        $filename = date('d-m-Y') . $image->getClientOriginalName();
-        $path = 'photo-pengelola/' . $filename;
-
-        Storage::disk('public')->put($path, file_get_contents($image));
+        $imageBase64 = $request->input('image_base64');
+        $imageService = app(\App\Services\ImageService::class);
+        
+        if ($imageBase64) {
+            $filename = $imageService->storeBase64($imageBase64, 'photo-pengelola');
+        } else if ($image) {
+            $filename = $imageService->processAndStore($image, 'photo-pengelola');
+        } else {
+            return redirect()->back()->withInput()->withErrors(['image' => 'Foto pengelola wajib diisi.'])->with('form_context', 'create_pengelola');
+        }
 
         $data['nama_pengelola']     = $request->nama_pengelola;
         $data['jabatan_pengelola']  = $request->jabatan_pengelola;
@@ -91,7 +99,8 @@ class PengelolaController extends Controller
         $find = M_Pengelola::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'image'              => 'nullable|mimes:png,jpg,jpeg|max:2048',
+            'image'              => 'nullable|mimes:png,jpg,jpeg,webp,gif|max:5120',
+            'image_base64'       => 'nullable|string',
             'nama_pengelola'     => 'required',
             'jabatan_pengelola'  => 'required',
             'email_pengelola'    => 'required|email',
@@ -112,16 +121,20 @@ class PengelolaController extends Controller
         $data['NIDN']               = $request->NIDN;
 
         $image = $request->file('image');
+        $imageBase64 = $request->input('image_base64');
 
-        if ($image) {
-            $filename = date('d-m-Y') . $image->getClientOriginalName();
-            $path = 'photo-pengelola/' . $filename;
+        if ($imageBase64 || $image) {
+            $imageService = app(\App\Services\ImageService::class);
+            
+            if ($imageBase64) {
+                $filename = $imageService->storeBase64($imageBase64, 'photo-pengelola');
+            } else {
+                $filename = $imageService->processAndStore($image, 'photo-pengelola');
+            }
 
             if ($find->image) {
                 Storage::disk('public')->delete('photo-pengelola/' . $find->image);
             }
-
-            Storage::disk('public')->put($path, file_get_contents($image));
 
             $data['image'] = $filename;
         }

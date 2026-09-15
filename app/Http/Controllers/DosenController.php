@@ -9,6 +9,7 @@ use App\Models\kum_pengabdianModel;
 use App\Models\M_categories;
 use App\Models\p3mModel;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,28 +18,24 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Http\UploadedFile;
 
 class DosenController extends Controller
 {
-    public function dash(Request $id)
+    public function dash(Request $request)
     {
-        // $data = new M_news();
         $user = Auth::user();
-        $data = User::find($id);
-        // $jurnal = JurnalModel::get();
-        // if ($request->get('search')) {
-        //     $data = M_news::where('title', 'like', '%' . $request->get('search') . '%');
-        // }
-        // $pagetitle = 'Jurnal P3M';
-        // $data = $data->get();
-        // return view('jurnal.index', compact('jurnal', 'pagetitle', 'user'));
+        $data = $user;
+
         return view('dosen.dash', compact('user', 'data'));
     }
     //PROFIL DOSEN 
     public function update(Request $request, $id)
     {
-        $data = User::find($id);
         $user = Auth::user();
+        abort_unless((int) $id === (int) $user->id, 403);
+
+        $data = $user;
 
         $layout = $request->get('layout') ?? (($user->role === 'admin') ? 'layout.main' : 'layout.doslayout');
 
@@ -47,48 +44,57 @@ class DosenController extends Controller
 
     public function edit(Request $request, $id)
     {
+        $find = User::findOrFail($id);
+        abort_unless($find->is($request->user()), 403);
+
         $validator = Validator::make($request->all(), [
-            'email'     => 'required|email',
-            'name'      => 'required',
-            'password'  => 'nullable',
-            'image'     => 'nullable|mimes:png,jpg,jpeg|max:2048',
+            'email'         => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($find)],
+            'name'          => ['required', 'string', 'max:255', Rule::unique('users', 'name')->ignore($find)],
+            'password'      => 'nullable|string|min:8',
+            'image'         => 'nullable|mimes:png,jpg,jpeg,webp|max:5120',
+            'image_base64'  => 'nullable|string',
         ]);
 
         if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
 
-        $find = User::findOrFail($id);
-        $currentUser = Auth::user();
-
-        $data['email']      = $request->email;
-        $data['name']       = $request->name;
-        $user = Auth::user();
-
+        $data['email'] = $request->email;
+        $data['name']  = $request->name;
 
         if ($request->password) {
-            $data['password']   = Hash::make($request->password);
+            $data['password'] = Hash::make($request->password);
         }
-        $image = $request->file('image');
 
-        if ($image) {
+        $imageBase64 = $request->input('image_base64');
+        $imageFile   = $request->file('image');
 
-            $filename = date('Y-m-d') . $image->getClientOriginalName();
-            $path = 'photo-user/' . $filename;
+        if ($imageBase64) {
+            $imageService = app(\App\Services\ImageService::class);
+            $filename = $imageService->storeBase64($imageBase64, 'photo-user');
 
             if ($find->image) {
-
-                // $image->storeAs('public/photo-user/', $image->hashName());
                 Storage::disk('public')->delete('photo-user/' . $find->image);
             }
+            $data['image'] = $filename;
 
-            Storage::disk('public')->put($path, file_get_contents($image));
+        } elseif ($imageFile) {
+            $imageService = app(\App\Services\ImageService::class);
+            $filename = $imageService->processAndStore($imageFile, 'photo-user');
 
+            if ($find->image) {
+                Storage::disk('public')->delete('photo-user/' . $find->image);
+            }
             $data['image'] = $filename;
         }
+
         $find->update($data);
 
+        $routeParams = ['id' => Auth::id()];
+        if ($request->filled('layout')) {
+            $routeParams['layout'] = $request->input('layout');
+        }
 
-
-        return redirect()->route('dosen.profil', ['id' => Auth::id()]);
+        return redirect()->route('dosen.profil', $routeParams)
+            ->with('success', 'Profil akun berhasil diperbarui!');
     }
     //PENGAJUAN PENELITIAN
     public function upp3m(Request $request)
@@ -124,12 +130,11 @@ class DosenController extends Controller
     //     return view('dosen.dash_kpengabdian', compact('user', 'data', 'penelitians', 'pagetitle'));
     // }
 
-    public function ajuanpeneliti(Request  $id)
+    public function ajuanpeneliti(Request $request)
     {
-        // $data = new M_news();
         $pagetitle = 'Proposal Penelitian Masyarakat';
         $user = Auth::user();
-        $data = User::find($id);
+        $data = $user;
         $penelitians = ajuan_penelitianModel::where('user_id', $user->id)
             // ->orWhereNull('user_id')
             ->orderBy('created_at', 'desc')
@@ -139,12 +144,11 @@ class DosenController extends Controller
         return view('dosen.dash_ajuanpenelitian', compact('user', 'data', 'penelitians', 'pagetitle'));
     }
 
-    public function kpeneliti(Request  $id)
+    public function kpeneliti(Request $request)
     {
-        // $data = new M_news();
         $pagetitle = 'Laporan Penelitian Masyarakat';
         $user = Auth::user();
-        $data = User::find($id);
+        $data = $user;
         $penelitians = kum_penelitianModel::where('user_id', $user->id)
             // ->orWhereNull('user_id')
             ->orderBy('created_at', 'desc')
@@ -251,14 +255,18 @@ class DosenController extends Controller
     //tambah ajuan pengabdian
     public function storep3m(Request $request)
     {
+        $uploadCacheService = app(\App\Services\SubmissionUploadCacheService::class);
+        $cachedUploads = $uploadCacheService->captureCachedUploads($request, Auth::id());
+        $hasCachedPdf = !empty($cachedUploads['cached_uppdf']);
+
         $validator = Validator::make($request->all(), [
             'judul' => 'required',
             'bidang' => 'required',
             'jeniskategori' => 'required',
             'lokasi' => 'required',
             'lamapenelitian' => 'nullable',
-            'biaya' => 'required',
-            'uppdf' => 'required|mimes:pdf|max:20480',
+            'biaya' => ['required', 'numeric', 'min:0'],
+            'uppdf' => $hasCachedPdf ? 'nullable|mimes:pdf|max:20480' : 'required|mimes:pdf|max:20480',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             //untuk profil
@@ -280,11 +288,13 @@ class DosenController extends Controller
                 'nullable',
                 Rule::in(['DR', 'LT', 'KP', 'DS', 'MHS'])
             ],
-        ], [], [
+        ], [
+            'uppdf.required' => 'Dokumen proposal pengabdian wajib diunggah.',
+            'uppdf.mimes' => 'Dokumen proposal pengabdian harus berupa file PDF.',
+            'uppdf.max' => 'Ukuran proposal pengabdian maksimal 20 MB.',
+        ], [
+            'uppdf' => 'proposal pengabdian',
             'anggota.0.nama' => 'nama'
-
-            //untuk user login yang up this data
-            // 'user_id' => auth()->user()->id,
         ]);
 
         foreach ($validator->errors()->getMessages() as $key => $messages) {
@@ -292,47 +302,51 @@ class DosenController extends Controller
                 $validator->errors()->add('nama', $messages[0]);
             }
         }
-        if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withInput(array_merge($request->all(), [
+                    'cached_uppdf' => $cachedUploads['cached_uppdf'],
+                    'cached_uppdf_name' => $cachedUploads['cached_uppdf_name'],
+                ]))
+                ->with('cached_uppdf', $cachedUploads['cached_uppdf'])
+                ->with('cached_uppdf_name', $cachedUploads['cached_uppdf_name'])
+                ->withErrors($validator);
+        }
 
-        //proses up pdf
-        $uppdf = $request->file('uppdf');
-        $filenamepdf = date('d-m-Y') . $uppdf->getClientOriginalName();
-        $pathpdf = 'uppdf/' . $filenamepdf;
-        Storage::disk('public')->put($pathpdf, file_get_contents($uppdf));
+        $filenamepdf = null;
 
-        $penelitian = p3mModel::create([
-            //untuk user login yang up this data
-            'user_id' => auth()->user()->id,
-            //untuk data
-            'judul' => $request->judul,
-            'bidang' => $request->bidang,
-            'jeniskategori' => $request->jeniskategori,
-            'lokasi' => $request->lokasi,
-            'lamapenelitian' => $request->lamapenelitian,
-            'biaya' => $request->biaya,
-            'uppdf' => $filenamepdf,
-            'tanggal_mulai' => $request->tanggal_mulai,
-            'tanggal_selesai' => $request->tanggal_selesai,
-            //untuk profil
-            'ketua' => $request->ketua,
-            'jabatan' => $request->jabatan,
-            'nidn' => $request->nidn,
-            'telp' => $request->telp,
-            'alamat' => $request->alamat,
-            'jeniskelamin' => $request->jeniskelamin,
-            'prodi' => $request->prodi,
+        try {
+            $filenamepdf = $uploadCacheService->resolveFinalPdf(
+                $request,
+                $cachedUploads['cached_uppdf'],
+                fn($file) => $this->storeSubmissionPdf($file)
+            );
+            $uploadCacheService->cleanUserTempFiles(Auth::id());
 
-        ]);
+            $this->createSubmissionWithMembers(p3mModel::class, [
+                'user_id' => Auth::id(),
+                'judul' => $request->judul,
+                'bidang' => $request->bidang,
+                'jeniskategori' => $request->jeniskategori,
+                'lokasi' => $request->lokasi,
+                'lamapenelitian' => $request->lamapenelitian,
+                'biaya' => $request->biaya,
+                'uppdf' => $filenamepdf,
+                'tanggal_mulai' => $request->tanggal_mulai,
+                'tanggal_selesai' => $request->tanggal_selesai,
+                'ketua' => $request->ketua,
+                'jabatan' => $request->jabatan,
+                'nidn' => $request->nidn,
+                'telp' => $request->telp,
+                'alamat' => $request->alamat,
+                'jeniskelamin' => $request->jeniskelamin,
+                'prodi' => $request->prodi,
+            ], 'ajupengab_model_id', $request->anggota);
+        } catch (\Throwable $exception) {
+            $this->discardNewSubmissionFiles($filenamepdf);
+            report($exception);
 
-        foreach ($request->anggota as $anggota) {
-            // dd($anggota);
-            anggotap3mModel::create([
-                'ajupengab_model_id' => $penelitian->id,
-                'nama' => $anggota['nama'],
-                'nim' => $anggota['nim'],
-                'prodi' => $anggota['prodi'],
-                'jabatan' => $anggota['jabatan'],
-            ]);
+            return back()->withInput()->with('error', 'Data gagal disimpan. Silakan coba kembali.');
         }
 
         return redirect()->route('dosen.upp3m')->with('success', 'Data berhasil disimpan!');
@@ -345,7 +359,10 @@ class DosenController extends Controller
         $user = Auth::user();
         $pagetitle = 'Proposal Pengabdian Masyarakat';
         // $categories = M_categories::all();
-        $penelitian = p3mModel::with('anggotap3m')->findOrFail($id);
+        $penelitian = p3mModel::where('user_id', Auth::id())
+            ->with('anggotap3m')
+            ->findOrFail($id);
+        $this->ensureSubmissionIsEditable($penelitian);
         $anggota = anggotap3mModel::where('ajupengab_model_id', $id)->get();
 
         return view('dosen.edit_ajupengab', compact('user', 'pagetitle', 'penelitian', 'anggota'));
@@ -360,7 +377,7 @@ class DosenController extends Controller
             'lamapenelitian' => 'nullable',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-            'biaya' => 'required',
+            'biaya' => ['required', 'numeric', 'min:0'],
             'uppdf' => 'nullable|mimes:pdf|max:20480',
             //untuk profil
             'ketua' => 'required',
@@ -395,11 +412,10 @@ class DosenController extends Controller
         }
         if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
 
-        $penelitian = p3mModel::findOrFail($id);
+        $penelitian = p3mModel::where('user_id', Auth::id())->findOrFail($id);
+        $this->ensureSubmissionIsEditable($penelitian);
 
         $data = [
-            //untuk user login yang up this data
-            'user_id' => auth()->user()->id,
             //untuk data
             'judul' => $request->judul,
             'bidang' => $request->bidang,
@@ -420,41 +436,29 @@ class DosenController extends Controller
         ];
 
 
-        if ($request->hasFile('uppdf')) {
-            $uppdf = $request->file('uppdf');
-            $filenamepdf = date('d-m-Y') . $uppdf->getClientOriginalName();
-            $pathpdf = 'uppdf/' . $filenamepdf;
+        $oldPdfFilename = $penelitian->uppdf;
+        $newPdfFilename = null;
 
-            Storage::disk('public')->put($pathpdf, file_get_contents($uppdf));
-
-            // Hapus PDF lama jika ada
-            if ($penelitian->uppdf) {
-                Storage::disk('public')->delete('uppdf/' . $penelitian->uppdf);
+        try {
+            if ($request->hasFile('uppdf')) {
+                $newPdfFilename = $this->storeSubmissionPdf($request->file('uppdf'));
+                $data['uppdf'] = $newPdfFilename;
             }
 
-            $data['uppdf'] = $filenamepdf;
-        } else {
-            $filenamepdf = $request->old_uppdf; // pakai file lama
+            $this->updateSubmissionWithMembers(
+                $penelitian,
+                $data,
+                'ajupengab_model_id',
+                $request->anggota
+            );
+        } catch (\Throwable $exception) {
+            $this->discardNewSubmissionFiles($newPdfFilename);
+            report($exception);
+
+            return back()->withInput()->with('error', 'Data gagal diperbarui. Silakan coba kembali.');
         }
 
-        // Update penelitian
-        $penelitian->update($data);
-
-        if ($request->filled('anggota_dihapus')) {
-            $idsToDelete = explode(',', $request->anggota_dihapus);
-            anggotap3mModel::whereIn('id', $idsToDelete)->delete();
-        }
-        // Update anggota
-        anggotap3mModel::where('ajupengab_model_id', $id)->delete();
-        foreach ($request->anggota as $anggota) {
-            anggotap3mModel::create([
-                'ajupengab_model_id' => $penelitian->id,
-                'nama' => $anggota['nama'],
-                'nim' => $anggota['nim'],
-                'prodi' => $anggota['prodi'],
-                'jabatan' => $anggota['jabatan'],
-            ]);
-        }
+        $this->deleteReplacedSubmissionFiles($oldPdfFilename, $newPdfFilename);
 
         return redirect()->route('dosen.upp3m')->with('success', 'Data berhasil diperbarui!');
     }
@@ -477,14 +481,19 @@ class DosenController extends Controller
     }
     public function storekumpulanp3m(Request $request)
     {
+        $uploadCacheService = app(\App\Services\SubmissionUploadCacheService::class);
+        $cachedUploads = $uploadCacheService->captureCachedUploads($request, Auth::id());
+        $hasCachedPdf = !empty($cachedUploads['cached_uppdf']);
+        $hasCachedPhoto = !empty($cachedUploads['cached_foto']);
+
         $validator = Validator::make($request->all(), [
             'judul' => 'required',
             'bidang' => 'required',
             'jeniskategori' => 'required',
             'lokasi' => 'required',
             'lamapenelitian' => 'nullable',
-            'biaya' => 'required',
-            'uppdf' => 'required|mimes:pdf|max:20480',
+            'biaya' => ['required', 'numeric', 'min:0'],
+            'uppdf' => $hasCachedPdf ? 'nullable|mimes:pdf|max:20480' : 'required|mimes:pdf|max:20480',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             //untuk profil
@@ -494,9 +503,9 @@ class DosenController extends Controller
             'telp' => 'required',
             'alamat' => 'required',
             'jeniskelamin' => 'required|in:L,P',
-            'prodi' => 'required|in:R,A,AK, AB, AP',
+            'prodi' => 'required|in:R,A,AK,AB,AP',
             //untuk up gambar
-            'foto' => 'required|mimes:png,jpg,jpeg|max:2048',
+            'foto' => $hasCachedPhoto ? 'nullable|mimes:png,jpg,jpeg|max:2048' : 'required|mimes:png,jpg,jpeg|max:2048',
             //anggota
             'anggota' => 'required|array',
             'anggota.*.nama' => 'required|string|max:100',
@@ -509,66 +518,83 @@ class DosenController extends Controller
                 'nullable',
                 Rule::in(['DR', 'LT', 'KP', 'DS', 'MHS'])
             ],
-        ], [], [
+        ], [
+            'uppdf.required' => 'Laporan pengabdian wajib diunggah.',
+            'uppdf.mimes' => 'Laporan pengabdian harus berupa file PDF.',
+            'uppdf.max' => 'Ukuran laporan pengabdian maksimal 20 MB.',
+            'foto.required' => 'Foto kegiatan wajib diunggah.',
+            'foto.mimes' => 'Foto kegiatan harus berupa PNG, JPG, atau JPEG.',
+            'foto.max' => 'Ukuran foto kegiatan maksimal 2 MB.',
+        ], [
+            'uppdf' => 'laporan pengabdian',
+            'foto' => 'foto kegiatan',
             'anggota.0.nama' => 'nama'
-
         ]);
+
         foreach ($validator->errors()->getMessages() as $key => $messages) {
             if (Str::startsWith($key, 'anggota.') && Str::endsWith($key, '.nama')) {
                 $validator->errors()->add('nama', $messages[0]);
             }
         }
-        if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
 
-        //proses up data 
-        $image = $request->file('foto');
-        $filename = date('d-m-Y') . $image->getClientOriginalName();
-        $path = 'photo-upp3m/' . $filename;
-
-        Storage::disk('public')->put($path, file_get_contents($image));
-
-        //proses up pdf
-        $uppdf = $request->file('uppdf');
-        $filenamepdf = date('d-m-Y') . $uppdf->getClientOriginalName();
-        $pathpdf = 'uppdf/' . $filenamepdf;
-        Storage::disk('public')->put($pathpdf, file_get_contents($uppdf));
-
-        $penelitian = kum_pengabdianModel::create([
-            //untuk user login yang up this data
-            'user_id' => auth()->user()->id,
-            //untuk data
-            'judul' => $request->judul,
-            'bidang' => $request->bidang,
-            'jeniskategori' => $request->jeniskategori,
-            'lokasi' => $request->lokasi,
-            'lamapenelitian' => $request->lamapenelitian,
-            'biaya' => $request->biaya,
-            'uppdf' => $filenamepdf,
-            'tanggal_mulai' => $request->tanggal_mulai,
-            'tanggal_selesai' => $request->tanggal_selesai,
-            //untuk profil
-            'ketua' => $request->ketua,
-            'jabatan' => $request->jabatan,
-            'nidn' => $request->nidn,
-            'telp' => $request->telp,
-            'alamat' => $request->alamat,
-            'jeniskelamin' => $request->jeniskelamin,
-            'prodi' => $request->prodi,
-            //untuk up gambar
-            'foto' => $filename,
-        ]);
-        // dd($request->all());
-        //input anggota
-        foreach ($request->anggota as $anggota) {
-            // dd($anggota);
-            anggotap3mModel::create([
-                'kpengab_model_id' => $penelitian->id,
-                'nama' => $anggota['nama'],
-                'nim' => $anggota['nim'],
-                'prodi' => $anggota['prodi'],
-                'jabatan' => $anggota['jabatan'],
-            ]);
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withInput(array_merge($request->all(), [
+                    'cached_uppdf' => $cachedUploads['cached_uppdf'],
+                    'cached_uppdf_name' => $cachedUploads['cached_uppdf_name'],
+                    'cached_foto' => $cachedUploads['cached_foto'],
+                    'cached_foto_name' => $cachedUploads['cached_foto_name'],
+                ]))
+                ->with('cached_uppdf', $cachedUploads['cached_uppdf'])
+                ->with('cached_uppdf_name', $cachedUploads['cached_uppdf_name'])
+                ->with('cached_foto', $cachedUploads['cached_foto'])
+                ->with('cached_foto_name', $cachedUploads['cached_foto_name'])
+                ->withErrors($validator);
         }
+
+        $filenamepdf = null;
+        $filenamephoto = null;
+
+        try {
+            $filenamephoto = $uploadCacheService->resolveFinalPhoto(
+                $request,
+                $cachedUploads['cached_foto'],
+                fn($file) => $this->storeSubmissionPhoto($file)
+            );
+            $filenamepdf = $uploadCacheService->resolveFinalPdf(
+                $request,
+                $cachedUploads['cached_uppdf'],
+                fn($file) => $this->storeSubmissionPdf($file)
+            );
+            $uploadCacheService->cleanUserTempFiles(Auth::id());
+
+            $this->createSubmissionWithMembers(kum_pengabdianModel::class, [
+                'user_id' => Auth::id(),
+                'judul' => $request->judul,
+                'bidang' => $request->bidang,
+                'jeniskategori' => $request->jeniskategori,
+                'lokasi' => $request->lokasi,
+                'lamapenelitian' => $request->lamapenelitian,
+                'biaya' => $request->biaya,
+                'uppdf' => $filenamepdf,
+                'tanggal_mulai' => $request->tanggal_mulai,
+                'tanggal_selesai' => $request->tanggal_selesai,
+                'ketua' => $request->ketua,
+                'jabatan' => $request->jabatan,
+                'nidn' => $request->nidn,
+                'telp' => $request->telp,
+                'alamat' => $request->alamat,
+                'jeniskelamin' => $request->jeniskelamin,
+                'prodi' => $request->prodi,
+                'foto' => $filenamephoto,
+            ], 'kpengab_model_id', $request->anggota);
+        } catch (\Throwable $exception) {
+            $this->discardNewSubmissionFiles($filenamepdf, $filenamephoto);
+            report($exception);
+
+            return back()->withInput()->with('error', 'Data gagal disimpan. Silakan coba kembali.');
+        }
+
         return redirect()->route('dosen.dash_kpengabdian')->with('success', 'Data berhasil disimpan!');
     }
 
@@ -577,7 +603,8 @@ class DosenController extends Controller
     {
         $user = Auth::user();
         $pagetitle = 'Laporan Pengabdian Masyarakat';
-        $penelitian = kum_pengabdianModel::findOrFail($id);
+        $penelitian = kum_pengabdianModel::where('user_id', Auth::id())->findOrFail($id);
+        $this->ensureSubmissionIsEditable($penelitian);
         $anggota = anggotap3mModel::where('kpengab_model_id', $id)->get();
 
         return view('dosen.edit_kpengabdian', compact('user', 'pagetitle', 'penelitian', 'anggota'));
@@ -590,7 +617,7 @@ class DosenController extends Controller
             'jeniskategori' => 'required',
             'lokasi' => 'required',
             'lamapenelitian' => 'nullable',
-            'biaya' => 'required',
+            'biaya' => ['required', 'numeric', 'min:0'],
             'uppdf' => 'nullable|mimes:pdf|max:20480',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
@@ -627,11 +654,10 @@ class DosenController extends Controller
         }
         if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
 
-        $penelitian = kum_pengabdianModel::findOrFail($id);
+        $penelitian = kum_pengabdianModel::where('user_id', Auth::id())->findOrFail($id);
+        $this->ensureSubmissionIsEditable($penelitian);
 
         $data = [
-            //untuk user login yang up this data
-            'user_id' => auth()->user()->id,
             //untuk data
             'judul' => $request->judul,
             'bidang' => $request->bidang,
@@ -653,53 +679,41 @@ class DosenController extends Controller
 
         ];
 
-        if ($request->hasFile('foto')) {
-            $image = $request->file('foto');
-            $filename = date('d-m-Y') . $image->getClientOriginalName();
-            $path = 'photo-upp3m/' . $filename;
+        $oldPdfFilename = $penelitian->uppdf;
+        $oldPhotoFilename = $penelitian->foto;
+        $newPdfFilename = null;
+        $newPhotoFilename = null;
 
-            Storage::disk('public')->put($path, file_get_contents($image));
-
-            // Hapus gambar lama jika ada
-            if ($penelitian->foto) {
-                Storage::disk('public')->delete('photo-upp3m/' . $penelitian->foto);
+        try {
+            if ($request->hasFile('foto')) {
+                $newPhotoFilename = $this->storeSubmissionPhoto($request->file('foto'));
+                $data['foto'] = $newPhotoFilename;
             }
 
-            $data['foto'] = $filename;
-        } elseif ($request->hasFile('uppdf')) {
-
-            $uppdf = $request->file('uppdf');
-            $filenamepdf = date('d-m-Y') . $uppdf->getClientOriginalName();
-            $pathpdf = 'uppdf/' . $filenamepdf;
-
-            Storage::disk('public')->put($pathpdf, file_get_contents($uppdf));
-
-            // Hapus PDF lama jika ada
-            if ($penelitian->uppdf) {
-                Storage::disk('public')->delete('uppdf/' . $penelitian->uppdf);
+            if ($request->hasFile('uppdf')) {
+                $newPdfFilename = $this->storeSubmissionPdf($request->file('uppdf'));
+                $data['uppdf'] = $newPdfFilename;
             }
 
-            $data['uppdf'] = $filenamepdf;
-        } else {
-            $filenamepdf = $request->old_foto; // pakai file lama
-            $filenamepdf = $request->old_uppdf; // pakai file lama
+            $this->updateSubmissionWithMembers(
+                $penelitian,
+                $data,
+                'kpengab_model_id',
+                $request->anggota
+            );
+        } catch (\Throwable $exception) {
+            $this->discardNewSubmissionFiles($newPdfFilename, $newPhotoFilename);
+            report($exception);
+
+            return back()->withInput()->with('error', 'Data gagal diperbarui. Silakan coba kembali.');
         }
 
-
-        // Update penelitian
-        $penelitian->update($data);
-
-        // Update anggota
-        anggotap3mModel::where('kpengab_model_id', $id)->delete();
-        foreach ($request->anggota as $anggota) {
-            anggotap3mModel::create([
-                'kpengab_model_id' => $penelitian->id,
-                'nama' => $anggota['nama'],
-                'nim' => $anggota['nim'],
-                'prodi' => $anggota['prodi'],
-                'jabatan' => $anggota['jabatan'],
-            ]);
-        }
+        $this->deleteReplacedSubmissionFiles(
+            $oldPdfFilename,
+            $newPdfFilename,
+            $oldPhotoFilename,
+            $newPhotoFilename
+        );
 
         return redirect()->route('dosen.dash_kpengabdian')->with('success', 'Data berhasil disimpan!');
     }
@@ -714,14 +728,18 @@ class DosenController extends Controller
     }
     public function storepenelitian(Request $request)
     {
+        $uploadCacheService = app(\App\Services\SubmissionUploadCacheService::class);
+        $cachedUploads = $uploadCacheService->captureCachedUploads($request, Auth::id());
+        $hasCachedPdf = !empty($cachedUploads['cached_uppdf']);
+
         $validator = Validator::make($request->all(), [
             'judul' => 'required',
             'bidang' => 'required',
             'jeniskategori' => 'required',
             'lokasi' => 'required',
             'lamapenelitian' => 'nullable',
-            'biaya' => 'required',
-            'uppdf' => 'required|mimes:pdf|max:20480',
+            'biaya' => ['required', 'numeric', 'min:0'],
+            'uppdf' => $hasCachedPdf ? 'nullable|mimes:pdf|max:20480' : 'required|mimes:pdf|max:20480',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             //untuk profil
@@ -743,11 +761,13 @@ class DosenController extends Controller
                 'nullable',
                 Rule::in(['DR', 'LT', 'KP', 'DS', 'MHS'])
             ],
-        ], [], [
+        ], [
+            'uppdf.required' => 'Dokumen proposal penelitian wajib diunggah.',
+            'uppdf.mimes' => 'Dokumen proposal penelitian harus berupa file PDF.',
+            'uppdf.max' => 'Ukuran proposal penelitian maksimal 20 MB.',
+        ], [
+            'uppdf' => 'proposal penelitian',
             'anggota.0.nama' => 'nama'
-
-            //untuk user login yang up this data
-            // 'user_id' => auth()->user()->id,
         ]);
 
         foreach ($validator->errors()->getMessages() as $key => $messages) {
@@ -755,47 +775,51 @@ class DosenController extends Controller
                 $validator->errors()->add('nama', $messages[0]);
             }
         }
-        if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withInput(array_merge($request->all(), [
+                    'cached_uppdf' => $cachedUploads['cached_uppdf'],
+                    'cached_uppdf_name' => $cachedUploads['cached_uppdf_name'],
+                ]))
+                ->with('cached_uppdf', $cachedUploads['cached_uppdf'])
+                ->with('cached_uppdf_name', $cachedUploads['cached_uppdf_name'])
+                ->withErrors($validator);
+        }
 
-        //proses up pdf
-        $uppdf = $request->file('uppdf');
-        $filenamepdf = date('d-m-Y') . $uppdf->getClientOriginalName();
-        $pathpdf = 'uppdf/' . $filenamepdf;
-        Storage::disk('public')->put($pathpdf, file_get_contents($uppdf));
+        $filenamepdf = null;
 
-        $penelitian = ajuan_penelitianModel::create([
-            //untuk user login yang up this data
-            'user_id' => auth()->user()->id,
-            //untuk data
-            'judul' => $request->judul,
-            'bidang' => $request->bidang,
-            'jeniskategori' => $request->jeniskategori,
-            'lokasi' => $request->lokasi,
-            'lamapenelitian' => $request->lamapenelitian,
-            'biaya' => $request->biaya,
-            'uppdf' => $filenamepdf,
-            'tanggal_mulai' => $request->tanggal_mulai,
-            'tanggal_selesai' => $request->tanggal_selesai,
-            //untuk profil
-            'ketua' => $request->ketua,
-            'jabatan' => $request->jabatan,
-            'nidn' => $request->nidn,
-            'telp' => $request->telp,
-            'alamat' => $request->alamat,
-            'jeniskelamin' => $request->jeniskelamin,
-            'prodi' => $request->prodi,
+        try {
+            $filenamepdf = $uploadCacheService->resolveFinalPdf(
+                $request,
+                $cachedUploads['cached_uppdf'],
+                fn($file) => $this->storeSubmissionPdf($file)
+            );
+            $uploadCacheService->cleanUserTempFiles(Auth::id());
 
-        ]);
-        // dd($request->all());
-        foreach ($request->anggota as $anggota) {
-            // dd($anggota);
-            anggotap3mModel::create([
-                'ajupenel_model_id' => $penelitian->id,
-                'nama' => $anggota['nama'],
-                'nim' => $anggota['nim'],
-                'prodi' => $anggota['prodi'],
-                'jabatan' => $anggota['jabatan'],
-            ]);
+            $this->createSubmissionWithMembers(ajuan_penelitianModel::class, [
+                'user_id' => Auth::id(),
+                'judul' => $request->judul,
+                'bidang' => $request->bidang,
+                'jeniskategori' => $request->jeniskategori,
+                'lokasi' => $request->lokasi,
+                'lamapenelitian' => $request->lamapenelitian,
+                'biaya' => $request->biaya,
+                'uppdf' => $filenamepdf,
+                'tanggal_mulai' => $request->tanggal_mulai,
+                'tanggal_selesai' => $request->tanggal_selesai,
+                'ketua' => $request->ketua,
+                'jabatan' => $request->jabatan,
+                'nidn' => $request->nidn,
+                'telp' => $request->telp,
+                'alamat' => $request->alamat,
+                'jeniskelamin' => $request->jeniskelamin,
+                'prodi' => $request->prodi,
+            ], 'ajupenel_model_id', $request->anggota);
+        } catch (\Throwable $exception) {
+            $this->discardNewSubmissionFiles($filenamepdf);
+            report($exception);
+
+            return back()->withInput()->with('error', 'Data gagal disimpan. Silakan coba kembali.');
         }
 
         return redirect()->route('dosen.dash_ajuanpenelitian')->with('success', 'Data berhasil disimpan!');
@@ -807,7 +831,8 @@ class DosenController extends Controller
         $user = Auth::user();
         $pagetitle = 'Pengajuan Penelitian';
         // $categories = M_categories::all();
-        $penelitian = ajuan_penelitianModel::findOrFail($id);
+        $penelitian = ajuan_penelitianModel::where('user_id', Auth::id())->findOrFail($id);
+        $this->ensureSubmissionIsEditable($penelitian);
         $anggota = anggotap3mModel::where('ajupenel_model_id', $id)->get();
 
         return view('dosen.edit_ajuanpenelitian', compact('user', 'pagetitle', 'penelitian', 'anggota'));
@@ -820,7 +845,7 @@ class DosenController extends Controller
             'jeniskategori' => 'required',
             'lokasi' => 'required',
             'lamapenelitian' => 'nullable',
-            'biaya' => 'required',
+            'biaya' => ['required', 'numeric', 'min:0'],
             'uppdf' => 'nullable|mimes:pdf|max:20480',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
@@ -857,11 +882,10 @@ class DosenController extends Controller
         }
         if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
 
-        $penelitian = ajuan_penelitianModel::findOrFail($id);
+        $penelitian = ajuan_penelitianModel::where('user_id', Auth::id())->findOrFail($id);
+        $this->ensureSubmissionIsEditable($penelitian);
 
         $data = [
-            //untuk user login yang up this data
-            'user_id' => auth()->user()->id,
             //untuk data
             'judul' => $request->judul,
             'bidang' => $request->bidang,
@@ -882,41 +906,29 @@ class DosenController extends Controller
         ];
 
 
-        if ($request->hasFile('uppdf')) {
-            $uppdf = $request->file('uppdf');
-            $filenamepdf = date('d-m-Y') . $uppdf->getClientOriginalName();
-            $pathpdf = 'uppdf/' . $filenamepdf;
+        $oldPdfFilename = $penelitian->uppdf;
+        $newPdfFilename = null;
 
-            Storage::disk('public')->put($pathpdf, file_get_contents($uppdf));
-
-            // Hapus PDF lama jika ada
-            if ($penelitian->uppdf) {
-                Storage::disk('public')->delete('uppdf/' . $penelitian->uppdf);
+        try {
+            if ($request->hasFile('uppdf')) {
+                $newPdfFilename = $this->storeSubmissionPdf($request->file('uppdf'));
+                $data['uppdf'] = $newPdfFilename;
             }
 
-            $data['uppdf'] = $filenamepdf;
-        } else {
-            $filenamepdf = $request->old_uppdf; // pakai file lama
+            $this->updateSubmissionWithMembers(
+                $penelitian,
+                $data,
+                'ajupenel_model_id',
+                $request->anggota
+            );
+        } catch (\Throwable $exception) {
+            $this->discardNewSubmissionFiles($newPdfFilename);
+            report($exception);
+
+            return back()->withInput()->with('error', 'Data gagal diperbarui. Silakan coba kembali.');
         }
 
-        // Update penelitian
-        $penelitian->update($data);
-
-        if ($request->filled('anggota_dihapus')) {
-            $idsToDelete = explode(',', $request->anggota_dihapus);
-            anggotap3mModel::whereIn('id', $idsToDelete)->delete();
-        }
-        // Update anggota
-        anggotap3mModel::where('ajupenel_model_id', $id)->delete();
-        foreach ($request->anggota as $anggota) {
-            anggotap3mModel::create([
-                'ajupenel_model_id' => $penelitian->id,
-                'nama' => $anggota['nama'],
-                'nim' => $anggota['nim'],
-                'prodi' => $anggota['prodi'],
-                'jabatan' => $anggota['jabatan'],
-            ]);
-        }
+        $this->deleteReplacedSubmissionFiles($oldPdfFilename, $newPdfFilename);
         return redirect()->route('dosen.dash_ajuanpenelitian')->with('success', 'Data berhasil diperbarui!');
     }
 
@@ -929,14 +941,23 @@ class DosenController extends Controller
     }
     public function storekumpulanpenelitian(Request $request)
     {
+        $uploadCacheService = app(\App\Services\SubmissionUploadCacheService::class);
+        $cachedUploads = $uploadCacheService->captureCachedUploads($request, Auth::id());
+        $hasCachedPdf = !empty($cachedUploads['cached_uppdf']);
+        $hasCachedPhoto = !empty($cachedUploads['cached_foto']);
+
         $validator = Validator::make($request->all(), [
             'judul' => 'required',
             'bidang' => 'required',
             'jeniskategori' => 'required',
             'lokasi' => 'required',
             'lamapenelitian' => 'nullable',
-            'biaya' => 'required',
-            'uppdf' => 'required|mimes:pdf|max:20480',
+            'biaya' => ['required', 'numeric', 'min:0'],
+
+            // Laporan penelitian: PDF wajib, maksimal 5 MB.
+            // 5120 KB = 5 MB.
+            'uppdf' => $hasCachedPdf ? 'nullable|mimes:pdf|max:5120' : 'required|mimes:pdf|max:5120',
+
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             //untuk profil
@@ -948,7 +969,7 @@ class DosenController extends Controller
             'jeniskelamin' => 'required|in:L,P',
             'prodi' => 'required|in:R,A,AK,AB,AP',
             //untuk up gambar
-            'foto' => 'required|mimes:png,jpg,jpeg|max:2048',
+            'foto' => $hasCachedPhoto ? 'nullable|mimes:png,jpg,jpeg|max:2048' : 'required|mimes:png,jpg,jpeg|max:2048',
             //anggota
             'anggota' => 'required|array',
             'anggota.*.nama' => 'required|string|max:100',
@@ -961,66 +982,83 @@ class DosenController extends Controller
                 'nullable',
                 Rule::in(['DR', 'LT', 'KP', 'DS', 'MHS'])
             ],
-        ], [], [
-            'anggota.0.nama' => 'nama'
-
+        ], [
+            'uppdf.required' => 'Laporan penelitian wajib diunggah.',
+            'uppdf.mimes' => 'Laporan penelitian harus berupa file PDF.',
+            'uppdf.max' => 'Ukuran laporan penelitian maksimal 5 MB.',
+            'foto.required' => 'Foto kegiatan wajib diunggah.',
+            'foto.mimes' => 'Foto kegiatan harus berupa PNG, JPG, atau JPEG.',
+            'foto.max' => 'Ukuran foto kegiatan maksimal 2 MB.',
+        ], [
+            'uppdf' => 'laporan penelitian',
+            'foto' => 'foto kegiatan',
+            'anggota.0.nama' => 'nama',
         ]);
+
         foreach ($validator->errors()->getMessages() as $key => $messages) {
             if (Str::startsWith($key, 'anggota.') && Str::endsWith($key, '.nama')) {
                 $validator->errors()->add('nama', $messages[0]);
             }
         }
-        if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
 
-        //proses up data 
-        $image = $request->file('foto');
-        $filename = date('d-m-Y') . $image->getClientOriginalName();
-        $path = 'photo-upp3m/' . $filename;
-
-        Storage::disk('public')->put($path, file_get_contents($image));
-
-        //proses up pdf
-        $uppdf = $request->file('uppdf');
-        $filenamepdf = date('d-m-Y') . $uppdf->getClientOriginalName();
-        $pathpdf = 'uppdf/' . $filenamepdf;
-        Storage::disk('public')->put($pathpdf, file_get_contents($uppdf));
-
-        $penelitian = kum_penelitianModel::create([
-            //untuk user login yang up this data
-            'user_id' => auth()->user()->id,
-            //untuk data
-            'judul' => $request->judul,
-            'bidang' => $request->bidang,
-            'jeniskategori' => $request->jeniskategori,
-            'lokasi' => $request->lokasi,
-            'lamapenelitian' => $request->lamapenelitian,
-            'uppdf' => $filenamepdf,
-            'biaya' => $request->biaya,
-            'tanggal_mulai' => $request->tanggal_mulai,
-            'tanggal_selesai' => $request->tanggal_selesai,
-            //untuk profil
-            'ketua' => $request->ketua,
-            'jabatan' => $request->jabatan,
-            'nidn' => $request->nidn,
-            'telp' => $request->telp,
-            'alamat' => $request->alamat,
-            'jeniskelamin' => $request->jeniskelamin,
-            'prodi' => $request->prodi,
-            //untuk up gambar
-            'foto' => $filename,
-        ]);
-        // dd($request->anggota);
-        //input anggota
-        foreach ($request->anggota as $anggota) {
-            // dd($anggota);
-            anggotap3mModel::create([
-                'kpenel_model_id' => $penelitian->id,
-                'nama' => $anggota['nama'],
-                'nim' => $anggota['nim'],
-                'prodi' => $anggota['prodi'],
-                'jabatan' => $anggota['jabatan'],
-            ]);
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withInput(array_merge($request->all(), [
+                    'cached_uppdf' => $cachedUploads['cached_uppdf'],
+                    'cached_uppdf_name' => $cachedUploads['cached_uppdf_name'],
+                    'cached_foto' => $cachedUploads['cached_foto'],
+                    'cached_foto_name' => $cachedUploads['cached_foto_name'],
+                ]))
+                ->with('cached_uppdf', $cachedUploads['cached_uppdf'])
+                ->with('cached_uppdf_name', $cachedUploads['cached_uppdf_name'])
+                ->with('cached_foto', $cachedUploads['cached_foto'])
+                ->with('cached_foto_name', $cachedUploads['cached_foto_name'])
+                ->withErrors($validator);
         }
+
+        $filenamepdf = null;
+        $filenamephoto = null;
+
+        try {
+            $filenamephoto = $uploadCacheService->resolveFinalPhoto(
+                $request,
+                $cachedUploads['cached_foto'],
+                fn($file) => $this->storeSubmissionPhoto($file)
+            );
+            $filenamepdf = $uploadCacheService->resolveFinalPdf(
+                $request,
+                $cachedUploads['cached_uppdf'],
+                fn($file) => $this->storeSubmissionPdf($file)
+            );
+            $uploadCacheService->cleanUserTempFiles(Auth::id());
+
+            $this->createSubmissionWithMembers(kum_penelitianModel::class, [
+                'user_id' => Auth::id(),
+                'judul' => $request->judul,
+                'bidang' => $request->bidang,
+                'jeniskategori' => $request->jeniskategori,
+                'lokasi' => $request->lokasi,
+                'lamapenelitian' => $request->lamapenelitian,
+                'uppdf' => $filenamepdf,
+                'biaya' => $request->biaya,
+                'tanggal_mulai' => $request->tanggal_mulai,
+                'tanggal_selesai' => $request->tanggal_selesai,
+                'ketua' => $request->ketua,
+                'jabatan' => $request->jabatan,
+                'nidn' => $request->nidn,
+                'telp' => $request->telp,
+                'alamat' => $request->alamat,
+                'jeniskelamin' => $request->jeniskelamin,
+                'prodi' => $request->prodi,
+                'foto' => $filenamephoto,
+            ], 'kpenel_model_id', $request->anggota);
+        } catch (\Throwable $exception) {
+            $this->discardNewSubmissionFiles($filenamepdf, $filenamephoto);
+            report($exception);
+
+            return back()->withInput()->with('error', 'Data gagal disimpan. Silakan coba kembali.');
+        }
+
         return redirect()->route('dosen.dash_kpenelitian')->with('success', 'Data berhasil disimpan!');
     }
     //EDIT KUMPULAN PENELITIAN
@@ -1028,7 +1066,8 @@ class DosenController extends Controller
     {
         $user = Auth::user();
         $pagetitle = 'Laporan Penelitian';
-        $penelitian = kum_penelitianModel::findOrFail($id);
+        $penelitian = kum_penelitianModel::where('user_id', Auth::id())->findOrFail($id);
+        $this->ensureSubmissionIsEditable($penelitian);
         $anggota = anggotap3mModel::where('kpenel_model_id', $id)->get();
 
         return view('dosen.edit_kpenliti', compact('user', 'pagetitle', 'penelitian', 'anggota'));
@@ -1041,8 +1080,12 @@ class DosenController extends Controller
             'jeniskategori' => 'required',
             'lokasi' => 'required',
             'lamapenelitian' => 'nullable',
-            'biaya' => 'required',
-            'uppdf' => 'nullable|mimes:pdf|max:20480',
+            'biaya' => ['required', 'numeric', 'min:0'],
+
+            // Laporan penelitian: PDF opsional saat edit, maksimal 5 MB.
+            // File lama tetap dipertahankan bila tidak ada upload baru.
+            'uppdf' => 'nullable|mimes:pdf|max:5120',
+
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             //untuk profil
@@ -1067,9 +1110,15 @@ class DosenController extends Controller
                 'nullable',
                 Rule::in(['DR', 'LT', 'KP', 'DS', 'MHS'])
             ],
-        ], [], [
-            'anggota.0.nama' => 'nama'
-
+        ], [
+            'uppdf.mimes' => 'Laporan penelitian harus berupa file PDF.',
+            'uppdf.max' => 'Ukuran laporan penelitian maksimal 5 MB.',
+            'foto.mimes' => 'Foto harus berupa PNG, JPG, atau JPEG.',
+            'foto.max' => 'Ukuran foto maksimal 2 MB.',
+        ], [
+            'uppdf' => 'laporan penelitian',
+            'foto' => 'foto',
+            'anggota.0.nama' => 'nama',
         ]);
         foreach ($validator->errors()->getMessages() as $key => $messages) {
             if (Str::startsWith($key, 'anggota.') && Str::endsWith($key, '.nama')) {
@@ -1078,11 +1127,10 @@ class DosenController extends Controller
         }
         if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
 
-        $penelitian = kum_penelitianModel::findOrFail($id);
+        $penelitian = kum_penelitianModel::where('user_id', Auth::id())->findOrFail($id);
+        $this->ensureSubmissionIsEditable($penelitian);
 
         $data = [
-            //untuk user login yang up this data
-            'user_id' => auth()->user()->id,
             //untuk data
             'judul' => $request->judul,
             'bidang' => $request->bidang,
@@ -1104,54 +1152,38 @@ class DosenController extends Controller
 
         ];
 
-        if ($request->hasFile('foto')) {
-            $image = $request->file('foto');
-            $filename = date('d-m-Y') . $image->getClientOriginalName();
-            $path = 'photo-upp3m/' . $filename;
+        $oldPdfFilename = $penelitian->uppdf;
+        $oldPhotoFilename = $penelitian->foto;
+        $newPdfFilename = null;
+        $newPhotoFilename = null;
 
-            Storage::disk('public')->put($path, file_get_contents($image));
-
-            // Hapus gambar lama jika ada
-            if ($penelitian->foto) {
-                Storage::disk('public')->delete('photo-upp3m/' . $penelitian->foto);
+        try {
+            if ($request->hasFile('foto')) {
+                $newPhotoFilename = $this->storeSubmissionPhoto($request->file('foto'));
+                $data['foto'] = $newPhotoFilename;
             }
 
-            $data['foto'] = $filename;
-        } else {
-            $filenamepdf = $request->old_foto; // pakai file lama
-        }
-
-        if ($request->hasFile('uppdf')) {
-            $uppdf = $request->file('uppdf');
-            $filenamepdf = date('d-m-Y') . $uppdf->getClientOriginalName();
-            $pathpdf = 'uppdf/' . $filenamepdf;
-
-            Storage::disk('public')->put($pathpdf, file_get_contents($uppdf));
-
-            // Hapus PDF lama jika ada
-            if ($penelitian->uppdf) {
-                Storage::disk('public')->delete('uppdf/' . $penelitian->uppdf);
+            if ($request->hasFile('uppdf')) {
+                $newPdfFilename = $this->storeSubmissionPdf($request->file('uppdf'));
+                $data['uppdf'] = $newPdfFilename;
             }
 
-            $data['uppdf'] = $filenamepdf;
-        } else {
-            $filenamepdf = $request->old_uppdf; // pakai file lama
+            $this->updateSubmissionWithMembers($penelitian, $data, 'kpenel_model_id', $request->anggota);
+        } catch (\Throwable $exception) {
+            $this->discardNewSubmissionFiles($newPdfFilename, $newPhotoFilename);
+            report($exception);
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Data laporan penelitian tidak dapat diperbarui. Silakan coba lagi.');
         }
 
-        // Update penelitian
-        $penelitian->update($data);
-
-        // Update anggota
-        anggotap3mModel::where('kpenel_model_id', $id)->delete();
-        foreach ($request->anggota as $anggota) {
-            anggotap3mModel::create([
-                'kpenel_model_id' => $penelitian->id,
-                'nama' => $anggota['nama'],
-                'nim' => $anggota['nim'],
-                'prodi' => $anggota['prodi'],
-                'jabatan' => $anggota['jabatan'],
-            ]);
-        }
+        $this->deleteReplacedSubmissionFiles(
+            $oldPdfFilename,
+            $newPdfFilename,
+            $oldPhotoFilename,
+            $newPhotoFilename
+        );
 
         return redirect()->route('dosen.dash_kpenelitian')->with('success', 'Data berhasil disimpan!');
     }
@@ -1166,6 +1198,7 @@ class DosenController extends Controller
         return view('detail.detail', [
             'penelitians' => $data,
             'type' => 'penelitian',
+            'documentType' => 'proposal-pengabdian',
             'user' => $user,
             'pagetitle' => $pagetitle
         ]);
@@ -1179,9 +1212,11 @@ class DosenController extends Controller
         switch ($tipe) {
             case 'ajupengab':
                 $data = p3mModel::with('anggotap3m')->findOrFail($id);
+                $documentType = 'proposal-pengabdian';
                 break;
             case 'ajupenel':
                 $data = ajuan_penelitianModel::with('anggotap3m')->findOrFail($id);
+                $documentType = 'proposal-penelitian';
                 break;
             default:
                 abort(404);
@@ -1190,6 +1225,7 @@ class DosenController extends Controller
         return view('detail.detail', [
             'penelitians' => $data,
             'type' => 'penelitian',
+            'documentType' => $documentType,
             'user' => $user,
             'pagetitle' => $pagetitle
         ]);
@@ -1203,9 +1239,11 @@ class DosenController extends Controller
         switch ($tipe) {
             case 'kpengeabdian':
                 $data = kum_pengabdianModel::with('anggotap3m')->findOrFail($id);
+                $documentType = 'laporan-pengabdian';
                 break;
             case 'kpeneliti':
                 $data = kum_penelitianModel::with('anggotap3m')->findOrFail($id);
+                $documentType = 'laporan-penelitian';
                 break;
 
             default:
@@ -1215,6 +1253,7 @@ class DosenController extends Controller
         return view('detail.detailk', [
             'penelitians' => $data,
             'type' => 'penelitian',
+            'documentType' => $documentType,
             'user' => $user,
             'pagetitle' => $pagetitle
         ]);
@@ -1252,16 +1291,15 @@ class DosenController extends Controller
     //hapus proposal pengabdian
     public function deletep3m($id)
     {
-        $data = p3mModel::with('anggotap3m')->find($id);
+        \Log::info('Delete p3m called with ID: ' . $id);
+        $data = p3mModel::where('user_id', Auth::id())->with('anggotap3m')->find($id);
 
         if (!$data) {
             return redirect()->back()->with('error', 'Data tidak ditemukan.');
         }
+        $this->ensureSubmissionIsEditable($data);
 
-        // Hapus file PDF kalau ada
-        if ($data->uppdf && Storage::disk('public')->exists('uppdf/' . $data->uppdf)) {
-            Storage::disk('public')->delete('uppdf/' . $data->uppdf);
-        }
+        $this->deleteSubmissionPdf($data->uppdf);
 
         // Hapus foto kalau ada
         if ($data->foto && Storage::disk('public')->exists('photo-upp3m/' . $data->foto)) {
@@ -1280,16 +1318,15 @@ class DosenController extends Controller
     //hapus proposal penelitian
     public function deletepropen($id)
     {
-        $data = ajuan_penelitianModel::with('anggotap3m')->find($id);
+        \Log::info('Delete propen called with ID: ' . $id);
+        $data = ajuan_penelitianModel::where('user_id', Auth::id())->with('anggotap3m')->find($id);
 
         if (!$data) {
             return redirect()->back()->with('error', 'Data tidak ditemukan.');
         }
+        $this->ensureSubmissionIsEditable($data);
 
-        // Hapus file PDF kalau ada
-        if ($data->uppdf && Storage::disk('public')->exists('uppdf/' . $data->uppdf)) {
-            Storage::disk('public')->delete('uppdf/' . $data->uppdf);
-        }
+        $this->deleteSubmissionPdf($data->uppdf);
 
         // Hapus foto kalau ada
         if ($data->foto && Storage::disk('public')->exists('photo-upp3m/' . $data->foto)) {
@@ -1308,16 +1345,14 @@ class DosenController extends Controller
     //hapus kumpulan pengabdian
     public function deletekpeng($id)
     {
-        $data = kum_pengabdianModel::with('anggotap3m')->find($id);
+        $data = kum_pengabdianModel::where('user_id', Auth::id())->with('anggotap3m')->find($id);
 
         if (!$data) {
             return redirect()->back()->with('error', 'Data tidak ditemukan.');
         }
+        $this->ensureSubmissionIsEditable($data);
 
-        // Hapus file PDF kalau ada
-        if ($data->uppdf && Storage::disk('public')->exists('uppdf/' . $data->uppdf)) {
-            Storage::disk('public')->delete('uppdf/' . $data->uppdf);
-        }
+        $this->deleteSubmissionPdf($data->uppdf);
 
         // Hapus foto kalau ada
         if ($data->foto && Storage::disk('public')->exists('photo-upp3m/' . $data->foto)) {
@@ -1336,16 +1371,14 @@ class DosenController extends Controller
     //hapus kumpulan penelitian
     public function deletekpen($id)
     {
-        $data = kum_penelitianModel::with('anggotap3m')->find($id);
+        $data = kum_penelitianModel::where('user_id', Auth::id())->with('anggotap3m')->find($id);
 
         if (!$data) {
             return redirect()->back()->with('error', 'Data tidak ditemukan.');
         }
+        $this->ensureSubmissionIsEditable($data);
 
-        // Hapus file PDF kalau ada
-        if ($data->uppdf && Storage::disk('public')->exists('uppdf/' . $data->uppdf)) {
-            Storage::disk('public')->delete('uppdf/' . $data->uppdf);
-        }
+        $this->deleteSubmissionPdf($data->uppdf);
 
         // Hapus foto kalau ada
         if ($data->foto && Storage::disk('public')->exists('photo-upp3m/' . $data->foto)) {
@@ -1367,5 +1400,121 @@ class DosenController extends Controller
         // dd('oke');
         Auth::logout();
         return redirect()->route('tampilan');
+    }
+
+    private function storeSubmissionPdf(UploadedFile $file): string
+    {
+        $filename = Str::uuid()->toString().'.pdf';
+        $stored = Storage::disk('private')->putFileAs('submissions', $file, $filename);
+
+        if ($stored === false) {
+            throw new \RuntimeException('PDF tidak dapat disimpan.');
+        }
+
+        return $filename;
+    }
+
+    private function storeSubmissionPhoto(UploadedFile $file): string
+    {
+        $imageService = app(\App\Services\ImageService::class);
+        return $imageService->processAndStore($file, 'photo-upp3m');
+    }
+
+    private function deleteSubmissionPdf(?string $filename): void
+    {
+        if (! $filename) {
+            return;
+        }
+
+        $privatePath = 'submissions/'.$filename;
+        if (Storage::disk('private')->exists($privatePath)) {
+            Storage::disk('private')->delete($privatePath);
+
+            return;
+        }
+
+        Storage::disk('public')->delete('uppdf/'.$filename);
+    }
+
+    private function deleteSubmissionPhoto(?string $filename): void
+    {
+        if ($filename) {
+            Storage::disk('public')->delete('photo-upp3m/'.$filename);
+        }
+    }
+
+    private function createSubmissionWithMembers(
+        string $modelClass,
+        array $data,
+        string $memberForeignKey,
+        array $members
+    ): void {
+        DB::transaction(function () use ($modelClass, $data, $memberForeignKey, $members) {
+            $submission = $modelClass::create($data);
+            $this->replaceSubmissionMembers($submission->id, $memberForeignKey, $members);
+        });
+    }
+
+    private function updateSubmissionWithMembers(
+        Model $submission,
+        array $data,
+        string $memberForeignKey,
+        array $members
+    ): void {
+        DB::transaction(function () use ($submission, $data, $memberForeignKey, $members) {
+            $submission->update($data);
+            anggotap3mModel::where($memberForeignKey, $submission->id)->delete();
+            $this->replaceSubmissionMembers($submission->id, $memberForeignKey, $members);
+        });
+    }
+
+    private function replaceSubmissionMembers(int $submissionId, string $memberForeignKey, array $members): void
+    {
+        foreach ($members as $member) {
+            anggotap3mModel::create([
+                $memberForeignKey => $submissionId,
+                'nama' => $member['nama'],
+                'nim' => $member['nim'] ?? null,
+                'prodi' => $member['prodi'] ?? null,
+                'jabatan' => $member['jabatan'] ?? null,
+            ]);
+        }
+    }
+
+    private function discardNewSubmissionFiles(?string $pdfFilename, ?string $photoFilename = null): void
+    {
+        if ($pdfFilename) {
+            Storage::disk('private')->delete('submissions/'.$pdfFilename);
+        }
+
+        $this->deleteSubmissionPhoto($photoFilename);
+    }
+
+    private function deleteReplacedSubmissionFiles(
+        ?string $oldPdfFilename,
+        ?string $newPdfFilename,
+        ?string $oldPhotoFilename = null,
+        ?string $newPhotoFilename = null
+    ): void {
+        try {
+            if ($newPdfFilename) {
+                $this->deleteSubmissionPdf($oldPdfFilename);
+            }
+
+            if ($newPhotoFilename) {
+                $this->deleteSubmissionPhoto($oldPhotoFilename);
+            }
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
+    }
+
+    private function ensureSubmissionIsEditable(Model $submission): void
+    {
+        abort_if(
+            $submission->status === 'approve',
+            403,
+            'Data yang sudah disetujui tidak dapat diubah atau dihapus.'
+        );
     }
 }

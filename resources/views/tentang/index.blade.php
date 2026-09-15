@@ -1,417 +1,275 @@
 @extends('layout.main')
 
+@section('body_class', 'page-tentang')
+
 @section('css')
 <style>
-    :root {
-        --p3m-blue: #2563eb;
-        --p3m-blue-dark: #1d4ed8;
-        --p3m-gold: #d5a72f;
-        --p3m-slate-900: #0f172a;
-        --p3m-slate-700: #334155;
-        --p3m-slate-600: #475569;
-        --p3m-slate-500: #64748b;
-        --p3m-border: #e2e8f0;
-        --p3m-border-soft: #eef2f7;
-        --p3m-bg-soft: #f8fafc;
-    }
+/* ================================================================
+   P3M — Tentang P3M Page — Premium SaaS Redesign
+   ================================================================ */
 
-    .tentang-page .content-header {
-        padding-top: 22px;
-        padding-bottom: 6px;
-    }
+:root {
+    --forest:       #003d2d;
+    --forest-deep:  #002e22;
+    --forest-mid:   #00573b;
+    --forest-soft:  #eaf5ee;
+    --gold:         #b99835;
+    --gold-soft:    #fdf8ec;
+    --ink:          #0d1f1a;
+    --ink-2:        #1e3328;
+    --tx:           #3b4f47;
+    --muted:        #6b7f78;
+    --light:        #9caaa4;
+    --border:       #e4ede8;
+    --border-2:     #d3e0d9;
+    --surface:      #ffffff;
+    --surface-alt:  #f7faf8;
+    --surface-hov:  #f2f7f4;
+    --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 24px;
+}
 
-    .tentang-page .content {
-        padding-top: 8px;
-    }
+/* Page Shell */
+.page-tentang .content-wrapper {
+    min-height: calc(100vh - 78px);
+    background: radial-gradient(ellipse 70% 40% at 100% 0%, rgba(0,93,59,.06), transparent),
+                linear-gradient(180deg, #f2f8f5 0%, #f7faf8 100%);
+}
+.page-tentang .content-header { padding: 26px 28px 0; }
+.page-tentang section.content { padding: 16px 28px 36px; }
 
-    .tentang-wrap {
-        width: 100%;
-        max-width: 1120px;
-        margin: 0 auto;
-    }
+/* Breadcrumb */
+.page-tentang .breadcrumb {
+    background: transparent; padding: 0; margin: 0;
+    font-size: 12.5px; font-weight: 600;
+}
+.page-tentang .breadcrumb-item a { color: var(--forest); text-decoration: none; transition: opacity .18s; }
+.page-tentang .breadcrumb-item a:hover { opacity: .75; }
+.page-tentang .breadcrumb-item.active { color: var(--muted); }
+.page-tentang .breadcrumb-item + .breadcrumb-item::before { content: "/"; padding: 0 8px; color: var(--border-2); }
 
-    .tentang-breadcrumb {
-        margin-bottom: 12px;
-    }
+/* Main Card */
+.tentang-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-2xl); box-shadow: 0 20px 56px rgba(3,50,33,.12), 0 4px 12px rgba(0,0,0,.06);
+    overflow: hidden;
+}
 
-    .tentang-breadcrumb .breadcrumb {
-        margin: 0;
-    }
+/* Card Header */
+.tentang-card-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 20px; flex-wrap: wrap;
+    padding: 28px 32px 24px;
+    background: linear-gradient(112deg, #ffffff 55%, #f0faf5 100%);
+    border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+}
+.tentang-card-head::after {
+    content: ""; position: absolute; top: -40px; right: -40px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,93,59,.05), transparent 70%);
+    pointer-events: none;
+}
 
-    .tentang-panel {
-        overflow: hidden;
-        border: 1px solid var(--p3m-border);
-        border-radius: 20px;
-        background: #ffffff;
-        box-shadow: 0 18px 44px rgba(15, 23, 42, .055);
-    }
+.card-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    color: var(--forest-mid); font-size: 11px; font-weight: 800;
+    letter-spacing: .12em; text-transform: uppercase;
+}
+.card-eyebrow::before {
+    content: ""; width: 20px; height: 2.5px; border-radius: 99px; background: var(--gold);
+}
 
-    .tentang-panel-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-        padding: 22px 24px;
-        border-bottom: 1px solid var(--p3m-border);
-        background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-    }
+.card-head-title {
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    font-size: 22px; font-weight: 800; color: var(--ink);
+    letter-spacing: -.04em; margin: 0 0 6px; line-height: 1.2;
+}
+.card-head-sub {
+    color: var(--muted); font-size: 13.5px; line-height: 1.65; margin: 0; max-width: 480px;
+}
 
-    .tentang-title-group {
-        min-width: 0;
-    }
+.card-head-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-    .tentang-kicker {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 7px;
-        color: var(--p3m-blue);
-        font-size: 11.25px;
-        font-weight: 900;
-        letter-spacing: .11em;
-        text-transform: uppercase;
-    }
+.btn-tentang-add,
+.btn-tentang-edit {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border: none; border-radius: var(--r-md);
+    font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all .18s ease; white-space: nowrap;
+}
 
-    .tentang-kicker::before {
-        content: "";
-        width: 24px;
-        height: 2px;
-        border-radius: 999px;
-        background: var(--p3m-gold);
-    }
+.btn-tentang-add {
+    background: var(--forest); color: #fff;
+    box-shadow: 0 6px 18px rgba(0,61,45,.22);
+}
+.btn-tentang-add:hover {
+    background: var(--forest-deep); color: #fff;
+    transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,46,34,.28);
+}
 
-    .tentang-panel-header h1 {
-        margin: 0;
-        color: var(--p3m-slate-900);
-        font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
-        font-size: clamp(1.38rem, 1.65vw, 1.82rem);
-        line-height: 1.16;
-        font-weight: 900;
-        letter-spacing: -0.04em;
-    }
+.btn-tentang-edit {
+    background: var(--surface); color: var(--forest);
+    border: 1px solid var(--border-2);
+}
+.btn-tentang-edit:hover {
+    background: var(--forest-soft); color: var(--forest-deep); border-color: #c2dece;
+    transform: translateY(-1px);
+}
 
-    .tentang-panel-header p {
-        max-width: 620px;
-        margin: 7px 0 0;
-        color: var(--p3m-slate-500);
-        font-size: 13.25px;
-        line-height: 1.6;
-    }
+/* Body & Grid */
+.tentang-card-body { padding: 32px; }
 
-    .tentang-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex: 0 0 auto;
-    }
+.tentang-empty {
+    padding: 40px 20px; border: 1.5px dashed var(--border-2); border-radius: var(--r-xl);
+    background: var(--surface-alt); text-align: center; color: var(--muted); font-weight: 600;
+}
 
-    .btn-tentang-primary,
-    .btn-tentang-soft {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        min-height: 38px;
-        padding: 8px 13px;
-        border-radius: 11px;
-        font-size: 13.25px;
-        font-weight: 850;
-        transition: .22s ease;
-    }
+.tentang-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;
+}
 
-    .btn-tentang-primary {
-        background: var(--p3m-blue);
-        border: 1px solid var(--p3m-blue);
-        color: #ffffff;
-        box-shadow: 0 10px 22px rgba(37, 99, 235, .16);
-    }
+.info-box {
+    position: relative; display: flex; flex-direction: column;
+    border: 1px solid var(--border); border-radius: var(--r-xl);
+    background: var(--surface); box-shadow: 0 10px 30px rgba(0,30,20,.03); overflow: hidden;
+}
+.info-box::before {
+    content: ""; position: absolute; left: 0; top: 24px; bottom: 24px;
+    width: 3px; border-radius: 0 4px 4px 0; background: var(--gold);
+}
+.info-box-full { grid-column: 1 / -1; }
 
-    .btn-tentang-primary:hover {
-        background: var(--p3m-blue-dark);
-        border-color: var(--p3m-blue-dark);
-        color: #ffffff;
-        transform: translateY(-1px);
-    }
+.info-box-head { display: flex; align-items: center; gap: 14px; padding: 20px 24px 12px; }
 
-    .btn-tentang-soft {
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        color: var(--p3m-blue);
-    }
+.info-box-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: var(--forest-soft); color: var(--forest);
+    display: inline-flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+}
 
-    .btn-tentang-soft:hover {
-        background: var(--p3m-blue);
-        border-color: var(--p3m-blue);
-        color: #ffffff;
-        transform: translateY(-1px);
-    }
+.info-box-title { min-width: 0; }
+.info-box-title h2 {
+    margin: 0 0 3px; font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -.02em;
+}
+.info-box-title span { display: block; font-size: 13px; color: var(--muted); font-weight: 600; }
 
-    .tentang-panel-body {
-        padding: 24px;
-    }
+.info-box-body {
+    padding: 0 24px 24px 80px; font-size: 14px; color: var(--tx); line-height: 1.7;
+}
+.info-box-body p { margin-bottom: 12px; }
+.info-box-body p:last-child { margin-bottom: 0; }
+.info-box-body ul, .info-box-body ol { margin: 0; padding-left: 18px; }
+.info-box-body li { margin-bottom: 6px; }
+.info-box-body li:last-child { margin-bottom: 0; }
 
-    .tentang-empty {
-        padding: 34px 22px;
-        border: 1px dashed var(--p3m-border);
-        border-radius: 18px;
-        background: var(--p3m-bg-soft);
-        text-align: center;
-        color: var(--p3m-slate-500);
-        font-weight: 650;
-    }
+/* Responsive */
+@media (max-width: 991.98px) {
+    .tentang-grid { grid-template-columns: 1fr; }
+    .info-box-full { grid-column: auto; }
+}
 
-    .tentang-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
-    }
-
-    .tentang-card {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        border: 1px solid var(--p3m-border);
-        border-radius: 18px;
-        background: #ffffff;
-        box-shadow: 0 10px 28px rgba(15, 23, 42, .035);
-    }
-
-    .tentang-card::before {
-        content: "";
-        position: absolute;
-        top: 18px;
-        bottom: 18px;
-        left: 0;
-        width: 3px;
-        border-radius: 999px;
-        background: var(--p3m-gold);
-    }
-
-    .tentang-card-full {
-        grid-column: 1 / -1;
-    }
-
-    .tentang-card-head {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 18px 20px 12px;
-    }
-
-    .tentang-card-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 13px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 auto;
-        color: var(--p3m-blue);
-        background: #eff6ff;
-        border: 1px solid #dbeafe;
-    }
-
-    .tentang-card-title {
-        min-width: 0;
-    }
-
-    .tentang-card-title h2 {
-        margin: 0;
-        color: var(--p3m-slate-900);
-        font-size: 16px;
-        line-height: 1.25;
-        font-weight: 900;
-        letter-spacing: -0.025em;
-    }
-
-    .tentang-card-title span {
-        display: block;
-        margin-top: 3px;
-        color: var(--p3m-slate-500);
-        font-size: 12.5px;
-        font-weight: 650;
-    }
-
-    .tentang-card-body {
-        padding: 0 20px 20px 70px;
-        color: var(--p3m-slate-700);
-        font-size: 14.25px;
-        line-height: 1.75;
-    }
-
-    .tentang-card-body p {
-        margin-bottom: 10px;
-    }
-
-    .tentang-card-body p:last-child {
-        margin-bottom: 0;
-    }
-
-    .tentang-card-body ul,
-    .tentang-card-body ol {
-        margin-top: 0;
-        margin-bottom: 0;
-        padding-left: 20px;
-    }
-
-    .tentang-card-body li {
-        margin-bottom: 6px;
-        padding-left: 2px;
-    }
-
-    .tentang-card-body li:last-child {
-        margin-bottom: 0;
-    }
-
-    @media (max-width: 991.98px) {
-        .tentang-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .tentang-card-full {
-            grid-column: auto;
-        }
-    }
-
-    @media (max-width: 767.98px) {
-        .tentang-wrap {
-            max-width: 100%;
-        }
-
-        .tentang-panel-header {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 20px;
-        }
-
-        .tentang-actions {
-            width: 100%;
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .btn-tentang-primary,
-        .btn-tentang-soft {
-            width: 100%;
-        }
-
-        .tentang-panel-body {
-            padding: 16px;
-        }
-
-        .tentang-card-head {
-            padding: 16px 16px 10px;
-        }
-
-        .tentang-card-body {
-            padding: 0 16px 18px 16px;
-        }
-    }
+@media (max-width: 767.98px) {
+    .page-tentang .content-header { padding: 20px 16px 0; }
+    .page-tentang section.content { padding: 14px 16px 28px; }
+    .tentang-card { border-radius: var(--r-lg); }
+    .tentang-card-head { padding: 22px 20px 18px; }
+    .card-head-title { font-size: 19px; }
+    .tentang-card-body { padding: 20px; }
+    .info-box-head { padding: 16px 16px 10px; }
+    .info-box-body { padding: 0 16px 20px 16px; }
+    .info-box::before { top: 16px; bottom: 16px; }
+}
 </style>
 @endsection
 
 @section('content')
-<div class="content-wrapper tentang-page">
+<div class="content-wrapper">
+
     <div class="content-header">
-        <div class="container-fluid">
-            <div class="tentang-wrap">
-                <div class="tentang-breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('dash.dashboard') }}">Home</a></li>
-                        <li class="breadcrumb-item active">{{ $pagetitle }}</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dash.dashboard') }}">Home</a></li>
+            <li class="breadcrumb-item active">{{ $pagetitle }}</li>
+        </ol>
     </div>
 
     <section class="content">
-        <div class="container-fluid">
-            <div class="tentang-wrap">
-                @php
-                    $tentang = $bout->first();
-                @endphp
+        @php
+            $tentang = $bout->first();
+        @endphp
 
-                <div class="tentang-panel">
-                    <div class="tentang-panel-header">
-                        <div class="tentang-title-group">
-                            <span class="tentang-kicker">Profil P3M</span>
-                            <h1>Tentang P3M</h1>
-                            <p>Kelola informasi visi, misi, dan deskripsi P3M yang tampil pada halaman publik website.</p>
-                        </div>
+        <div class="tentang-card">
 
-                        <div class="tentang-actions">
-                            <a href="{{ route('tentang.create') }}" class="btn-tentang-primary">
-                                <i class="fas fa-plus"></i>
-                                Tambah
-                            </a>
-
-                            @if($tentang)
-                                <a href="{{ route('tentang.edit', ['id' => $tentang->id]) }}" class="btn-tentang-soft">
-                                    <i class="fas fa-pen"></i>
-                                    Edit
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="tentang-panel-body">
-                        @if(!$tentang)
-                            <div class="tentang-empty">
-                                Belum ada data Tentang P3M. Silakan tambahkan data terlebih dahulu.
-                            </div>
-                        @else
-                            <div class="tentang-grid">
-                                <article class="tentang-card">
-                                    <div class="tentang-card-head">
-                                        <span class="tentang-card-icon">
-                                            <i class="fas fa-eye"></i>
-                                        </span>
-                                        <div class="tentang-card-title">
-                                            <h2>Visi</h2>
-                                            <span>Arah dan tujuan utama P3M.</span>
-                                        </div>
-                                    </div>
-                                    <div class="tentang-card-body">
-                                        {!! $tentang->visi !!}
-                                    </div>
-                                </article>
-
-                                <article class="tentang-card">
-                                    <div class="tentang-card-head">
-                                        <span class="tentang-card-icon">
-                                            <i class="fas fa-bullseye"></i>
-                                        </span>
-                                        <div class="tentang-card-title">
-                                            <h2>Misi</h2>
-                                            <span>Langkah strategis pendukung visi.</span>
-                                        </div>
-                                    </div>
-                                    <div class="tentang-card-body">
-                                        {!! $tentang->misi !!}
-                                    </div>
-                                </article>
-
-                                <article class="tentang-card tentang-card-full">
-                                    <div class="tentang-card-head">
-                                        <span class="tentang-card-icon">
-                                            <i class="fas fa-info-circle"></i>
-                                        </span>
-                                        <div class="tentang-card-title">
-                                            <h2>Tentang P3M</h2>
-                                            <span>Informasi umum Pusat Penelitian dan Pengabdian.</span>
-                                        </div>
-                                    </div>
-                                    <div class="tentang-card-body">
-                                        {!! $tentang->ourbout !!}
-                                    </div>
-                                </article>
-                            </div>
-                        @endif
-                    </div>
+            {{-- Card Header --}}
+            <div class="tentang-card-head">
+                <div>
+                    <span class="card-eyebrow">Profil P3M</span>
+                    <h1 class="card-head-title">Tentang P3M</h1>
+                    <p class="card-head-sub">Kelola informasi visi, misi, dan deskripsi P3M yang tampil pada halaman publik website.</p>
+                </div>
+                <div class="card-head-actions">
+                    <a href="{{ route('tentang.create') }}" class="btn-tentang-add">
+                        <i class="fas fa-plus"></i> Tambah
+                    </a>
+                    @if($tentang)
+                    <a href="{{ route('tentang.edit', ['id' => $tentang->id]) }}" class="btn-tentang-edit">
+                        <i class="fas fa-pen"></i> Edit Data
+                    </a>
+                    @endif
                 </div>
             </div>
+
+            {{-- Body --}}
+            <div class="tentang-card-body">
+                @if(!$tentang)
+                    <div class="tentang-empty">
+                        <i class="fas fa-info-circle mb-2" style="font-size: 24px; color: var(--border-2); display: block;"></i>
+                        Belum ada data Tentang P3M. Silakan tambahkan data terlebih dahulu.
+                    </div>
+                @else
+                    <div class="tentang-grid">
+                        
+                        <article class="info-box">
+                            <div class="info-box-head">
+                                <span class="info-box-icon"><i class="fas fa-eye"></i></span>
+                                <div class="info-box-title">
+                                    <h2>Visi</h2>
+                                    <span>Arah dan tujuan utama P3M.</span>
+                                </div>
+                            </div>
+                            <div class="info-box-body">
+                                {{ strip_tags($tentang->visi) }}
+                            </div>
+                        </article>
+
+                        <article class="info-box">
+                            <div class="info-box-head">
+                                <span class="info-box-icon"><i class="fas fa-bullseye"></i></span>
+                                <div class="info-box-title">
+                                    <h2>Misi</h2>
+                                    <span>Langkah strategis pendukung visi.</span>
+                                </div>
+                            </div>
+                            <div class="info-box-body">
+                                {{ strip_tags($tentang->misi) }}
+                            </div>
+                        </article>
+
+                        <article class="info-box info-box-full">
+                            <div class="info-box-head">
+                                <span class="info-box-icon"><i class="fas fa-info-circle"></i></span>
+                                <div class="info-box-title">
+                                    <h2>Tentang P3M</h2>
+                                    <span>Informasi umum Pusat Penelitian dan Pengabdian.</span>
+                                </div>
+                            </div>
+                            <div class="info-box-body">
+                                {{ strip_tags($tentang->ourbout) }}
+                            </div>
+                        </article>
+
+                    </div>
+                @endif
+            </div>
+            
         </div>
     </section>
 </div>

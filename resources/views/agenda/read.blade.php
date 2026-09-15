@@ -3,8 +3,8 @@
 @section('css')
 <style>
     :root {
-        --p3m-blue: #2563eb;
-        --p3m-blue-dark: #1d4ed8;
+        --p3m-blue: #003d2d;
+        --p3m-blue-dark: #002e22;
         --p3m-gold: #d5a72f;
         --p3m-slate-900: #0f172a;
         --p3m-slate-700: #334155;
@@ -140,7 +140,7 @@
         background: var(--p3m-blue);
         border: 1px solid var(--p3m-blue);
         color: #ffffff;
-        box-shadow: 0 10px 22px rgba(37, 99, 235, .16);
+        box-shadow: 0 10px 22px rgba(0, 61, 45, .16);
     }
 
     .btn-agenda-edit:hover {
@@ -253,7 +253,7 @@
 
                     <div class="agenda-read-body">
                         <div class="agenda-content-box">
-                            {!! $data->keterangan !!}
+                            {{ strip_tags($data->keterangan) }}
                         </div>
                     </div>
                 </article>

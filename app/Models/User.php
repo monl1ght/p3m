@@ -23,7 +23,8 @@ class User extends Authenticatable
         'email',
         'password',
         'image',
-        'role',
+        // 'role' tidak dimasukkan ke fillable — hanya boleh diset secara eksplisit
+        // via hard-coded assignment, bukan via mass assignment
     ];
 
     /**

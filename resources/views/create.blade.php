@@ -78,7 +78,7 @@
 
     .modern-form-group .form-control:focus {
         border-color: #93c5fd;
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, .08);
+        box-shadow: 0 0 0 4px rgba(0, 61, 45, .08);
     }
 
     .modern-form-group small {

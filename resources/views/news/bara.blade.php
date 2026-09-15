@@ -130,12 +130,22 @@
                                         <td colspan="2">{{ optional($d->user)->name }}</td>
                                         <td colspan="2"><img src="{{ asset('storage/photo-news/'.$d->image) }}" alt="" width="100"></td>
                                         <td colspan="2">{{ $d->category->name }}</td>
-                                        <td id="compose-textarea">{!! Str::words($d->content, 20) !!}</td>
+                                                <td id="compose-textarea">{{ Str::words(strip_tags($d->content), 20) }}</td>
                                         <td colspan="3">
                                             <div class="btn-group" role="group">
                                                 <a href="{{ route ('news.read', ['id' => $d->id]) }}" class="btn btn-info text-white"><i class="fas fa-eye white"></i></a>
                                                 <a href="{{ route ('news.edit', ['id' => $d->id]) }}" class="btn btn-primary"><i class="fas fa-pen"></i></a>
-                                                <a href="{{ route ('news.delete', ['id' => $d->id]) }}" class="btn btn-danger"><i class="fas fa-trash"></i></a>
+                                                <form action="{{ route('news.delete', ['id' => $d->id]) }}" method="POST" class="d-inline" id="del-news-bara-{{ $d->id }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" class="btn btn-danger"
+                                                        data-p3m-delete
+                                                        data-type="Kegiatan"
+                                                        data-label="{{ Str::limit($d->title ?? 'Kegiatan', 40) }}"
+                                                        data-form-id="del-news-bara-{{ $d->id }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
 

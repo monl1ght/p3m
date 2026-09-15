@@ -6,6 +6,7 @@ use App\Models\ajuan_penelitianModel;
 use App\Models\p3mModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use setasign\Fpdi\Fpdi;
 
 class suratcontroller extends Controller
@@ -136,20 +137,18 @@ class suratcontroller extends Controller
     //         ->header('Content-Type', 'application/pdf')
     //         ->header('Content-Disposition', 'attachment; filename="Surat_Tugas_' . $pengajuan->id . '.pdf"');
     // }
-    public function downloadSuratTugas($id)
+    public function downloadSuratTugas(Request $request, $id)
     {
         $penelitian = p3mModel::with('anggotap3m')->findOrFail($id);
+        $this->authorizeLetterDownload($request, $penelitian);
         $anggota = json_decode($penelitian->anggota, true);
 
         $pdf = new Fpdi();
         $pdf->AddPage();
-        $templatePath = storage_path('app/public/STPG1.pdf');
-        $pdf->setSourceFile($templatePath);
-        $tplIdx = $pdf->importPage(1);
-        $pdf->useTemplate($tplIdx, 0, 0, 210);
 
-        // $pdf->SetTitle('Surat Tugas Penelitian');
-        // $pdf->SetAuthor('Politeknik Balekambang');
+        $templatePath = storage_path('app/public/STPG1.pdf');
+        $this->applyLetterhead($pdf, $templatePath, 'Pengabdian Masyarakat', $penelitian);
+
         $pdf->SetFont('Times', '', 12);
         $pdf->SetXY(25, 70);
         $pdf->MultiCell(160, 8, "Ketua Pusat Penelitian dan Pengabdian kepada Masyarakat memberikan tugas kepada:", 0, 'L');
@@ -238,20 +237,18 @@ class suratcontroller extends Controller
         $pdf->Output('I', 'Surat_Tugas_Penelitian.pdf');
     }
 
-    public function downsurtagpen($id)
+    public function downsurtagpen(Request $request, $id)
     {
         $penelitian = ajuan_penelitianModel::with('anggotap3m')->findOrFail($id);
+        $this->authorizeLetterDownload($request, $penelitian);
         $anggota = json_decode($penelitian->anggota, true);
 
         $pdf = new Fpdi();
         $pdf->AddPage();
-        $templatePath = storage_path('app/public/STPN1.pdf');
-        $pdf->setSourceFile($templatePath);
-        $tplIdx = $pdf->importPage(1);
-        $pdf->useTemplate($tplIdx, 0, 0, 210);
 
-        // $pdf->SetTitle('Surat Tugas Penelitian');
-        // $pdf->SetAuthor('Politeknik Balekambang');
+        $templatePath = storage_path('app/public/STPN1.pdf');
+        $this->applyLetterhead($pdf, $templatePath, 'Penelitian', $penelitian);
+
         $pdf->SetFont('Times', '', 12);
         $pdf->SetXY(25, 70);
         $pdf->MultiCell(160, 8, "Ketua Pusat Penelitian dan Pengabdian kepada Masyarakat memberikan tugas kepada:", 0, 'L');
@@ -338,5 +335,64 @@ class suratcontroller extends Controller
         $pdf->SetFont('Times', 'B', 12);
         $pdf->Cell(0, 6, "NIDN : 0619099004", 0, 1, 'R');
         $pdf->Output('I', 'Surat_Tugas_Penelitian.pdf');
+    }
+
+    private function authorizeLetterDownload(Request $request, $submission): void
+    {
+        $user = $request->user();
+
+        abort_unless($submission->status === 'approve', 403);
+        abort_unless(
+            $user->role === 'admin' || (int) $submission->user_id === (int) $user->id,
+            403
+        );
+    }
+
+    /**
+     * Apply letterhead to the FPDI PDF instance.
+     *
+     * If the pre-printed template PDF exists, it is imported as a background layer.
+     * If not (e.g. first deployment), a clean typeset header is rendered instead,
+     * so the download never results in a 500 error due to a missing template file.
+     *
+     * @param  Fpdi    $pdf          The FPDI instance (page already added).
+     * @param  string  $templatePath Absolute path to the letterhead template PDF.
+     * @param  string  $type         'Penelitian' or 'Pengabdian Masyarakat'.
+     * @param  object  $submission   The model instance (for fallback judul display).
+     */
+    private function applyLetterhead(Fpdi $pdf, string $templatePath, string $type, object $submission): void
+    {
+        if (file_exists($templatePath) && is_readable($templatePath)) {
+            try {
+                $pdf->setSourceFile($templatePath);
+                $tplIdx = $pdf->importPage(1);
+                $pdf->useTemplate($tplIdx, 0, 0, 210);
+                return;
+            } catch (\Throwable $e) {
+                Log::warning("Gagal import template surat ({$templatePath}): " . $e->getMessage());
+                // fall through to typeset fallback
+            }
+        } else {
+            Log::warning("Template surat tidak ditemukan: {$templatePath}. Menggunakan letterhead dinamis.");
+        }
+
+        // ---- Typeset fallback letterhead ----
+        $pdf->SetFont('Times', 'B', 14);
+        $pdf->SetXY(25, 15);
+        $pdf->Cell(0, 8, 'POLITEKNIK BALEKAMBANG', 0, 1, 'C');
+        $pdf->SetFont('Times', '', 11);
+        $pdf->SetX(25);
+        $pdf->Cell(0, 6, 'Pusat Penelitian dan Pengabdian kepada Masyarakat (P3M)', 0, 1, 'C');
+        $pdf->SetX(25);
+        $pdf->Cell(0, 6, 'Jl. Raya Jepara - Kudus Km. 10, Jepara, Jawa Tengah', 0, 1, 'C');
+        $pdf->Ln(2);
+        $pdf->SetLineWidth(0.8);
+        $pdf->Line(20, $pdf->GetY(), 195, $pdf->GetY());
+        $pdf->SetLineWidth(0.3);
+        $pdf->Line(20, $pdf->GetY() + 1.5, 195, $pdf->GetY() + 1.5);
+        $pdf->Ln(4);
+        $pdf->SetFont('Times', 'BU', 13);
+        $pdf->SetX(25);
+        $pdf->Cell(0, 8, 'SURAT TUGAS ' . strtoupper($type), 0, 1, 'C');
     }
 }

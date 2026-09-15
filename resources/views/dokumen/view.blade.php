@@ -43,7 +43,13 @@
                             <div class="container">
                                 <h1>Detail Panduan: {{ $dokum->namefile }}</h1>
 
-                                <iframe src="{{ asset('uploud/' . $dokum->originalname) }}"
+                                @php
+                                    $docFilename = basename($dokum->originalname ?? '');
+                                    $docUrl = \Illuminate\Support\Facades\Storage::disk('public')->exists('dokumen/' . $docFilename)
+                                        ? asset('storage/dokumen/' . $docFilename)
+                                        : asset('uploud/' . $docFilename);
+                                @endphp
+                                <iframe src="{{ $docUrl }}"
                                     style="width: 100%; height: 600px;"
                                     frameborder="0"></iframe>
 

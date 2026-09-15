@@ -78,15 +78,15 @@
                             @foreach ($tentang as $bout)
                             <h2>Tentang Kami</h2>
                             <p>
-                                {!! $bout->ourbout !!}
+                                {{ strip_tags($bout->ourbout) }}
                             </p>
                             <h2>Visi Kami</h2>
                             <p>
-                                {!! $bout->visi !!}
+                                {{ strip_tags($bout->visi) }}
                             </p>
                             <h2>Misi Kami</h2>
                             <p>
-                                {!! $bout->misi !!}
+                                {{ strip_tags($bout->misi) }}
                             </p>
                             @endforeach
                         </div>

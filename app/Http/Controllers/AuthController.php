@@ -6,8 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
 
 
 class AuthController extends Controller
@@ -19,103 +18,137 @@ class AuthController extends Controller
 
     public function proses_login(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'password' => 'required'
+        $credentials = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string'],
         ]);
 
-        // $data = [
-        //     'name' => $request->name,
-        //     'password' => $request->password,
-        // ];
-
-        // // if (Auth::attempt($data)) {
-        // //     $data = auth()->user();
-        // //     // return redirect()->route('dash.dashboard');
-        // //     return match ($data->role) {
-        // //         'admin' => redirect()->route('dash.dashboard'),
-        // //         'dosen' => redirect()->route('dosdash.dash'),
-        // //         // 'guest' => redirect()->route('dash.dashboard'),
-        // //         // default => redirect()->route('tampilan')
-        // //     };
-        // //     // 'dosen' => redirect()->route('dash.hki');
-        // // }
-        // if (auth()->user()->role == 'admin') {
-        //     return redirect()->route('dash.dashboard');
-        // } elseif (auth()->user()->role == 'dosen') {
-        //     // return redirect()->route('dosdash.dash');
-        //     dd(auth()->user());
-        // } else {
-        //     // return redirect()->route('login')->with('error');
-        //     // return redirect()->route('dashboard');
-        //     Session::flash('error', 'name atau password salah');
-        //     return redirect()->back()->withInput();
-        // }
-        if (Auth::attempt(['name' => $request->name, 'password' => $request->password])) {
-            $user = Auth::user(); // Ambil user yang sudah login
-
-            // Redirect sesuai role user
-            // return match ($user->role) {
-            //     'admin' => redirect()->route('dash.dashboard'),
-            //     'dosen' => redirect()->route('dosdash.dash'),
-            //     default => redirect('/login')->with('error', 'Role tidak dikenali.')
-            // };
-            // dd($user);
-            if ($user->role == 'admin') {
-                return redirect()->route('dash.dashadmin');
-            } elseif ($user->role == 'dosen') {
-                return redirect()->route('dosen.dash');
-            } else {
-                Auth::logout();
-                return redirect()->route('login')->with('error', 'Role tidak valid!');
-            }
+        if (! Auth::attempt($credentials)) {
+            return back()->withInput($request->only('name'))
+                ->with('error', 'Nama atau password salah!');
         }
-        // Jika login gagal, kembali ke halaman login dengan pesan error
-        // Session::flash('error', 'Nama atau password salah');
-        // return redirect()->back()->withInput();
-        return redirect()->back()->with('error', 'Nama atau password salah!');
+
+        $request->session()->regenerate();
+        $user = $request->user();
+
+        return match ($user->role) {
+            'admin' => redirect()->route('dash.dashadmin'),
+            'dosen' => redirect()->route('dosen.dash'),
+            default => $this->logoutInvalidRole($request),
+        };
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        // dd('oke');
         Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('tampilan');
     }
-    // ->with('success', 'kamu berhasil')
 
-    public function register()
+    /**
+     * Verifikasi kode akses / passcode otorisasi sebelum masuk ke form registrasi dosen.
+     */
+    public function verify_gate(Request $request)
     {
+        $validated = $request->validate([
+            'passcode' => ['required', 'string'],
+        ], [
+            'passcode.required' => 'Kode otorisasi wajib diisi.',
+        ]);
+
+        $expectedPasscode = (string) config('auth.dosen_registration_passcode', 'V7#qLp2!oZ9@xR4$kP8');
+        $givenPasscode    = (string) $validated['passcode'];
+
+        // Menggunakan hash_equals untuk mitigasi timing attack
+        if (!hash_equals($expectedPasscode, $givenPasscode)) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kode otorisasi pendaftaran dosen tidak valid! Hubungi admin P3M Polibang.',
+                ], 422);
+            }
+
+            return back()->with('error', 'Kode otorisasi pendaftaran dosen tidak valid! Hubungi admin P3M Polibang.');
+        }
+
+        // Set session otorisasi dengan timestamp berlaku 30 menit
+        $request->session()->put('dosen_register_authorized', true);
+        $request->session()->put('dosen_register_authorized_at', now()->timestamp);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('register'),
+            ]);
+        }
+
+        return redirect()->route('register');
+    }
+
+    public function register(Request $request)
+    {
+        if (!$this->isRegisterAuthorized($request)) {
+            return redirect()->route('login')
+                ->with('error', 'Akses registrasi ditolak. Silakan masukkan kode otorisasi pendaftaran dosen terlebih dahulu.');
+        }
+
         return view('auth.register');
     }
 
     public function proses_register(Request $request)
     {
-        // dd($request->all());
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|unique:users',
-            'password' => 'required|min:8',
-            // 'role' => 'nullable|string',
+        if (!$this->isRegisterAuthorized($request)) {
+            return redirect()->route('login')
+                ->with('error', 'Sesi pendaftaran tidak valid atau telah kedaluwarsa. Silakan masukkan kode otorisasi pendaftaran kembali.');
+        }
 
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:users,name'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
         ]);
 
-        // $request = Validator::make(
-        //     $request->all(),
-        //     [
-        //         'name' => 'required',
-        //         'email' => 'required,|email|unique:user,email',
-        //         'password' => 'required |min:8',
-        //     ]
-        // );
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'role' => $request->role ?? 'dosen',
-            // 'is_admin' => true,
-        ];
-        User::create($data);
-        return redirect()->route('login')->with('success', 'kamu berhasil');
+        $user           = new User();
+        $user->name     = $validated['name'];
+        $user->email    = $validated['email'];
+        $user->password = Hash::make($validated['password']);
+        $user->role     = 'dosen'; // Eksplisit — bukan mass assignment
+        $user->save();
+
+        // Hanguskan session otorisasi agar tidak bisa dipakai ulang
+        $request->session()->forget(['dosen_register_authorized', 'dosen_register_authorized_at']);
+
+        return redirect()->route('login')->with('success', 'Akun dosen berhasil didaftarkan! Silakan masuk dengan akun Anda.');
+    }
+
+    /**
+     * Memeriksa keabsahan dan masa berlaku sesi otorisasi registrasi dosen.
+     */
+    private function isRegisterAuthorized(Request $request): bool
+    {
+        if (!$request->session()->get('dosen_register_authorized', false)) {
+            return false;
+        }
+
+        $authorizedAt = (int) $request->session()->get('dosen_register_authorized_at', 0);
+        // Masa berlaku maksimal 30 menit (1800 detik)
+        if (now()->timestamp - $authorizedAt > 1800) {
+            $request->session()->forget(['dosen_register_authorized', 'dosen_register_authorized_at']);
+            return false;
+        }
+
+        return true;
+    }
+
+    private function logoutInvalidRole(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->with('error', 'Role tidak valid!');
     }
 }

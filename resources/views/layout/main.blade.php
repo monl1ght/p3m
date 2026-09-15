@@ -4,514 +4,240 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin P3M POLIBANG</title>
+    <meta name="turbo-root" content="/">
+    <title>Sistem Informasi P3M POLIBANG</title>
 
     <link rel="shortcut icon" href="{{ asset('favicon/icon_log.ico') }}" type="image/x-icon">
     <link rel="icon" href="{{ asset('favicon/icon_log.ico') }}" type="image/x-icon">
 
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+        rel="stylesheet">
 
-    <link rel="stylesheet" href="{{ asset('lte/plugins/fontawesome-free/css/all.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('lte/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('lte/plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('lte/plugins/jqvmap/jqvmap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('lte/dist/css/adminlte.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('lte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('lte/plugins/daterangepicker/daterangepicker.css') }}">
-    <link rel="stylesheet" href="{{ asset('lte/plugins/summernote/summernote-bs4.min.css') }}">
-    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/43.1.0/ckeditor5.css">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/fontawesome-free/css/all.min.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet"
+        href="{{ asset('lte/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css') }}"
+        data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}"
+        data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/jqvmap/jqvmap.min.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/dist/css/adminlte.min.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}"
+        data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/daterangepicker/daterangepicker.css') }}"
+        data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/summernote/summernote-bs4.min.css') }}"
+        data-turbo-track="reload">
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/43.1.0/ckeditor5.css" data-turbo-track="reload">
 
-    <script src="https://cdn.ckeditor.com/ckeditor5/35.3.1/classic/ckeditor.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/35.3.1/classic/ckeditor.js" data-turbo-track="reload"></script>
+    <link rel="stylesheet" href="{{ asset('css/p3m-admin.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('lte/plugins/sweetalert2/sweetalert2.min.css') }}" data-turbo-track="reload">
+    <script src="{{ asset('lte/plugins/sweetalert2/sweetalert2.all.min.js') }}" data-turbo-eval="false"></script>
 
+    {{-- SPA Turbo Drive — local file, loaded early so it intercepts navigation before AdminLTE --}}
+    <script type="module" src="{{ asset('js/turbo.esm.js') }}"></script>
     <style>
-        :root {
-            --admin-bg: #f6f8fb;
-            --admin-surface: #ffffff;
-            --admin-border: #e2e8f0;
-            --admin-text: #334155;
-            --admin-heading: #0f172a;
-            --admin-muted: #64748b;
-            --admin-blue: #2563eb;
-            --admin-blue-hover: #1d4ed8;
-            --admin-green: #063f35;
-            --admin-dark: #071f24;
-            --admin-gold: #d5a72f;
-            --admin-radius: 18px;
-            --admin-shadow: 0 18px 45px rgba(15, 23, 42, .07);
-            --admin-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            --admin-heading-font: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+        .turbo-progress-bar {
+            height: 3px;
+            background: linear-gradient(90deg, #31b777, #0d6e53);
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            background: var(--admin-bg);
-            color: var(--admin-text);
-            font-family: var(--admin-font);
-            font-size: 14px;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        .wrapper {
-            background: var(--admin-bg);
-        }
-
+        /* ── Silky smooth SPA page transitions ── */
         .content-wrapper {
-            background:
-                radial-gradient(circle at top right, rgba(37, 99, 235, .06), transparent 28%),
-                linear-gradient(180deg, #f8fafc 0%, #f6f8fb 100%);
-            min-height: calc(100vh - 57px);
+            will-change: opacity, transform;
+            transition: opacity .18s cubic-bezier(0.16, 1, 0.3, 1), transform .18s cubic-bezier(0.16, 1, 0.3, 1);
         }
-to {
+
+        .admin-page-exit {
+            opacity: 0.35 !important;
+            transform: translateY(4px) !important;
+        }
+
+        .admin-page-enter {
+            animation: adminPageIn .26s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes adminPageIn {
+            0% {
+                opacity: 0.3;
+                transform: translateY(8px);
+            }
+            100% {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-
-
-        /* Anti flicker: jangan animasikan content-wrapper saat full page reload */
-        html,
-        body,
-        .wrapper,
-        .content-wrapper {
-            background-color: var(--admin-bg);
-        }
-
-        .main-sidebar {
-            will-change: auto;
-        }
-
-        .content-wrapper,
-        .main-header,
-        .main-sidebar {
-            backface-visibility: hidden;
-        }
-
-        .main-header {
-            min-height: 64px;
-            background: rgba(255, 255, 255, .96) !important;
-            border-bottom: 1px solid var(--admin-border);
-            box-shadow: 0 12px 30px rgba(15, 23, 42, .04);
-            backdrop-filter: blur(12px);
-        }
-
-        .main-header .nav-link {
-            color: #475569 !important;
-            font-weight: 700;
-        }
-
-        .main-header .nav-link:hover {
-            color: var(--admin-blue) !important;
-        }
-
-        .topbar-title {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            line-height: 1.25;
-        }
-
-        .topbar-title strong {
-            color: var(--admin-heading);
-            font-family: var(--admin-heading-font);
-            font-size: 15px;
-            font-weight: 900;
-            letter-spacing: -0.035em;
-        }
-
-        .topbar-title span {
-            color: var(--admin-muted);
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .navbar-badge {
-            width: 9px !important;
-            height: 9px !important;
-            top: 12px;
-            right: 9px;
-            border: 2px solid #ffffff;
-        }
-
-        .dropdown-menu {
-            border: 1px solid var(--admin-border);
-            border-radius: 16px;
-            box-shadow: 0 22px 60px rgba(15, 23, 42, .14);
-        }
-
-        .dropdown-header {
-            color: var(--admin-heading);
-            font-weight: 850;
-        }
-
-        .main-sidebar {
-            background: linear-gradient(180deg, #071f24 0%, #061c20 52%, #020617 100%) !important;
-            box-shadow: 18px 0 45px rgba(15, 23, 42, .12);
-        }
-
-        .sidebar {
-            padding: 16px 12px 20px;
-        }
-
-        .brand-panel {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 12px 18px;
-            margin-bottom: 8px;
-            border-bottom: 1px solid rgba(148, 163, 184, .16);
-        }
-
-        .brand-panel img {
-            width: 42px;
-            height: 42px;
-            object-fit: contain;
-            border-radius: 999px;
-            background: #ffffff;
-            padding: 4px;
-            border: 1px solid rgba(255, 255, 255, .22);
-        }
-
-        .brand-panel strong {
-            display: block;
-            color: #ffffff;
-            font-family: var(--admin-heading-font);
-            font-size: 16px;
-            font-weight: 900;
-            letter-spacing: -0.045em;
-            line-height: 1.2;
-        }
-
-        .brand-panel span {
-            display: block;
-            margin-top: 2px;
-            color: rgba(226, 232, 240, .68);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-        }
-
-        .user-panel {
-            align-items: center;
-            padding: 12px !important;
-            margin: 0 0 14px !important;
-            border: 1px solid rgba(148, 163, 184, .15);
-            border-radius: 18px;
-            background: rgba(255, 255, 255, .06);
-        }
-
-        .user-panel .image {
-            padding-left: 0;
-        }
-
-        .user-panel img,
-        .admin-avatar {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 999px;
-            border: 2px solid rgba(255, 255, 255, .18);
-        }
-
-        .admin-avatar {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--admin-blue);
-            color: #ffffff;
-            font-weight: 900;
-        }
-
-        .user-panel .info {
-            padding: 0 0 0 10px;
-            line-height: 1.25;
-        }
-
-        .user-panel .info a {
-            color: #ffffff !important;
-            font-weight: 800;
-            font-size: 13px;
-        }
-
-        .user-role {
-            display: block;
-            margin-top: 3px;
-            color: rgba(226, 232, 240, .60);
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .form-control-sidebar,
-        .btn-sidebar {
-            background: rgba(255, 255, 255, .08) !important;
-            border-color: rgba(148, 163, 184, .16) !important;
-            color: #ffffff !important;
-        }
-
-        .form-control-sidebar::placeholder {
-            color: rgba(226, 232, 240, .50);
-        }
-
-        .nav-sidebar {
-            margin-top: 12px;
-        }
-
-        .nav-sidebar .nav-item {
-            margin-bottom: 4px;
-        }
-
-        .nav-sidebar .nav-link {
-            min-height: 42px;
-            border-radius: 14px;
-            color: rgba(226, 232, 240, .76) !important;
-            font-weight: 750;
-            transition: .2s ease;
-        }
-
-        .nav-sidebar .nav-link p {
-            font-size: 13px;
-        }
-
-        .nav-sidebar .nav-link .nav-icon {
-            color: rgba(226, 232, 240, .68);
-            width: 22px;
-            font-size: 14px;
-        }
-
-        .nav-sidebar .nav-link:hover {
-            background: rgba(255, 255, 255, .08) !important;
-            color: #ffffff !important;
-        }
-
-        .nav-sidebar .nav-link.active {
-            background: rgba(37, 99, 235, .95) !important;
-            color: #ffffff !important;
-            box-shadow: 0 12px 28px rgba(37, 99, 235, .22);
-        }
-
-        .nav-treeview {
-            padding: 5px 0 5px 10px;
-        }
-
-        .nav-treeview .nav-link {
-            min-height: 38px;
-            border-radius: 12px;
-            color: rgba(226, 232, 240, .68) !important;
-        }
-
-        .nav-treeview .nav-link p {
-            font-size: 12.5px;
-        }
-
-        .nav-treeview .nav-link.active {
-            background: rgba(255, 255, 255, .12) !important;
-        }
-
-        .content-header {
-            padding: 26px 24px 10px;
-        }
-
-        .content-header h1,
-        .content-header h2,
-        .content-header h3 {
-            color: var(--admin-heading);
-            font-family: var(--admin-heading-font);
-            font-weight: 900;
-            letter-spacing: -0.045em;
-        }
-
-        .breadcrumb {
-            padding: 0;
-            margin: 0;
-            background: transparent;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .breadcrumb a {
-            color: var(--admin-blue);
-        }
-
-        .breadcrumb-item.active {
-            color: var(--admin-muted);
-        }
-
-        .content {
-            padding: 14px 24px 28px;
-        }
-
-        .card,
-        .small-box,
-        .info-box {
-            border: 1px solid var(--admin-border);
-            border-radius: var(--admin-radius);
-            box-shadow: var(--admin-shadow);
-            overflow: hidden;
-        }
-
-        .card-header {
-            background: #ffffff;
-            border-bottom: 1px solid var(--admin-border);
-            padding: 16px 18px;
-        }
-
-        .card-title {
-            color: var(--admin-heading);
-            font-weight: 850;
-        }
-
-        .card-body {
-            padding: 18px;
-        }
-
-        .btn {
-            border-radius: 12px;
-            font-weight: 800;
-        }
-
-        .btn-primary {
-            background: var(--admin-blue);
-            border-color: var(--admin-blue);
-        }
-
-        .btn-primary:hover {
-            background: var(--admin-blue-hover);
-            border-color: var(--admin-blue-hover);
-        }
-
-        .table {
-            color: var(--admin-text);
-        }
-
-        .table thead th {
-            background: #f8fafc;
-            border-bottom: 1px solid var(--admin-border);
-            color: var(--admin-heading);
-            font-size: 12px;
-            letter-spacing: .04em;
-            text-transform: uppercase;
-        }
-
-        @media (max-width: 767.98px) {
-            .content-header {
-                padding: 22px 16px 8px;
-            }
-
-            .content {
-                padding: 12px 16px 24px;
-            }
-
-            .topbar-title span {
-                display: none;
-            }
-        }
-
-
-    
-        /* No footer - new47 */
-        .content-wrapper {
-            padding-bottom: 28px;
-        }
-
     </style>
 
     @yield('css')
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed p3m-admin-elegant @yield('body_class')">
     <div class="wrapper">
-        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        @php
+            $navAvatarPath = !empty($user->image) ? 'storage/photo-user/' . $user->image : null;
+            $navAvatarExists = $navAvatarPath && file_exists(public_path($navAvatarPath));
+            $navInitial = strtoupper(substr($user->name ?? 'A', 0, 1));
+        @endphp
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light" id="admin-topnav" data-turbo-permanent>
+            {{-- Left: hamburger + breadcrumb --}}
             <ul class="navbar-nav align-items-center">
                 <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button" aria-label="Toggle sidebar">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button" aria-label="Toggle sidebar"
+                        data-turbo="false">
                         <i class="fas fa-bars"></i>
                     </a>
                 </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <div class="topbar-title ml-2">
-                        <strong>Dashboard P3M</strong>
-                        <span>Panel pengelola website</span>
+                <li class="nav-item d-none d-sm-flex">
+                    <div class="admin-topbar-breadcrumb">
+                        <span class="admin-topbar-workspace">Admin Workspace</span>
+                        <i class="fas fa-chevron-right admin-topbar-sep"></i>
+                        <span class="admin-topbar-page" id="js-admin-topbar-page">Dashboard</span>
                     </div>
                 </li>
             </ul>
 
-            <ul class="navbar-nav ml-auto align-items-center">
-                <li class="nav-item d-none d-md-inline-block">
-                    <a href="{{ route('tampilan') }}" class="nav-link" target="_blank">
-                        <i class="fas fa-globe mr-1"></i> Lihat Website
+            {{-- Right: actions + user chip --}}
+            <ul class="navbar-nav ml-auto align-items-center admin-topbar-actions">
+
+                {{-- Lihat Website --}}
+                <li class="nav-item d-none d-md-flex">
+                    <a href="{{ route('tampilan') }}" class="topbar-website-btn admin-topbar-website" target="_blank"
+                        rel="noopener" data-turbo="false">
+                        <i class="fas fa-globe"></i>
+                        <span>Website P3M</span>
                     </a>
                 </li>
 
+                <li class="nav-item admin-topbar-divider d-none d-md-flex"></li>
+
+                {{-- Notification Bell --}}
                 <li class="nav-item dropdown">
-                    <a class="nav-link" data-toggle="dropdown" href="#" aria-label="Notifikasi">
+                    <a class="nav-link topbar-notif-btn p-0" data-toggle="dropdown" href="#"
+                        aria-label="Notifikasi" data-turbo="false">
                         <i class="far fa-bell"></i>
-                        @if(($totalNotif ?? 0) > 0)
-                            <span class="badge badge-danger navbar-badge"></span>
+                        @if (($totalNotif ?? 0) > 0)
+                            <span class="notif-dot"></span>
                         @endif
                     </a>
-                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                        <span class="dropdown-item dropdown-header">
-                            {{ $totalNotif ?? 0 }} Aktivitas Terbaru
-                        </span>
-
-                        <div class="dropdown-divider"></div>
-
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right p3m-notif-dropdown">
+                        <div class="p3m-notif-header">
+                            <span class="p3m-notif-label">Notifikasi</span>
+                            <span class="p3m-notif-badge">{{ $totalNotif ?? 0 }}</span>
+                        </div>
                         @forelse(($notifikasi ?? collect()) as $n)
-                            <a href="{{ route('notif.open', $n['tipe']) }}" class="dropdown-item">
-                                <i class="fas fa-circle text-primary mr-2" style="font-size: 8px;"></i>
-                                {{ $n['judul'] }}
-                            </a>
+                            <form action="{{ route('notif.open', $n['tipe']) }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    class="dropdown-item border-0 bg-transparent text-left w-100 p3m-notif-item">
+                                    <i class="fas fa-circle p3m-notif-dot-icon"></i>
+                                    {{ $n['judul'] }}
+                                </button>
+                            </form>
                         @empty
-                            <span class="dropdown-item text-muted text-center">
+                            <div class="p3m-notif-empty">
+                                <i class="far fa-bell-slash"></i>
                                 Tidak ada aktivitas
-                            </span>
+                            </div>
                         @endforelse
+                        @if (($totalNotif ?? 0) > 0)
+                            <div class="p3m-notif-footer">
+                                <a href="#">Lihat semua</a>
+                            </div>
+                        @endif
                     </div>
                 </li>
+
+                <li class="nav-item admin-topbar-divider d-none d-sm-flex"></li>
+
+                {{-- User Chip Dropdown --}}
+                <li class="nav-item dropdown d-none d-sm-flex">
+                    <button type="button" class="topbar-user-chip" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false" data-turbo="false" id="adminUserDropdownTrigger">
+                        <div class="topbar-user-avatar">
+                            @if ($navAvatarExists)
+                                <img src="{{ asset($navAvatarPath) }}" alt="{{ $user->name }}">
+                            @else
+                                {{ $navInitial }}
+                            @endif
+                        </div>
+                        <div class="topbar-user-info">
+                            <span class="topbar-user-name">{{ $user->name }}</span>
+                            <span class="topbar-user-role">Pengelola P3M</span>
+                        </div>
+                        <i class="fas fa-chevron-down admin-topbar-caret"></i>
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-right dosen-user-dropdown"
+                        aria-labelledby="adminUserDropdownTrigger">
+                        <div class="dosen-dropdown-header">
+                            <span class="dosen-dropdown-name">{{ $user->name }}</span>
+                            <span class="dosen-dropdown-role">Pengelola P3M</span>
+                        </div>
+
+                        <div class="dosen-dropdown-body">
+                            <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}"
+                                class="dropdown-item dosen-dropdown-item">
+                                <i class="fas fa-user-circle"></i>
+                                <span>Profil Saya</span>
+                            </a>
+
+                            <hr class="dosen-dropdown-divider">
+
+                            <form action="{{ route('logout') }}" method="POST" id="admin-nav-logout-form">
+                                @csrf
+                                <button type="button" class="dropdown-item dosen-dropdown-item dosen-dropdown-logout"
+                                    id="js-admin-nav-logout-btn">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Logout Akun</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+
             </ul>
         </nav>
 
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <aside class="main-sidebar sidebar-dark-primary elevation-4" id="p3m-sidebar" data-turbo-permanent>
+            <a href="{{ route('dash.dashadmin') }}" class="brand-link p3m-brand">
+                <img src="{{ asset('mte/assets/img/Pusat_Penelitian.png') }}" alt="Logo P3M">
+                <span>
+                    <strong>P3M Polibang</strong>
+                    <span>Admin Panel</span>
+                </span>
+            </a>
+
             <div class="sidebar">
-                <a href="{{ route('dash.dashadmin') }}" class="brand-panel">
-                    <img src="{{ asset('mte/assets/img/Pusat_Penelitian.png') }}" alt="Logo P3M">
-                    <span>
-                        <strong>P3M Polibang</strong>
-                        <span>Admin Panel</span>
-                    </span>
-                </a>
 
                 @php
-                    $avatarPath = !empty($user->image) ? 'storage/photo-user/'.$user->image : null;
+                    $avatarPath = !empty($user->image) ? 'storage/photo-user/' . $user->image : null;
                     $avatarExists = $avatarPath && file_exists(public_path($avatarPath));
                     $avatarInitial = strtoupper(substr($user->name ?? 'P', 0, 1));
                 @endphp
 
                 <div class="user-panel d-flex">
                     <div class="image">
-                        @if($avatarExists)
+                        @if ($avatarExists)
                             <img src="{{ asset($avatarPath) }}" alt="{{ $user->name ?? 'User' }}">
                         @else
                             <span class="admin-avatar">{{ $avatarInitial }}</span>
                         @endif
                     </div>
                     <div class="info">
-                        <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}" class="d-block">{{ $user->name }}</a>
+                        <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}"
+                            class="d-block">{{ $user->name }}</a>
                         <span class="user-role">Pengelola P3M</span>
                     </div>
                 </div>
 
                 <div class="form-inline mb-2">
                     <div class="input-group" data-widget="sidebar-search">
-                        <input class="form-control form-control-sidebar" type="search" placeholder="Cari menu..." aria-label="Search">
+                        <input class="form-control form-control-sidebar" type="search" placeholder="Cari menu..."
+                            aria-label="Search">
                         <div class="input-group-append">
                             <button class="btn btn-sidebar" type="button">
                                 <i class="fas fa-search fa-fw"></i>
@@ -521,24 +247,28 @@ to {
                 </div>
 
                 <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
+                        data-accordion="false">
                         <li class="nav-item {{ request()->routeIs('dash.*', 'index') ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link {{ request()->routeIs('dash.*', 'index') ? 'active' : '' }}">
+                            <a href="#"
+                                class="nav-link {{ request()->routeIs('dash.*', 'index') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-home"></i>
                                 <p>
                                     Halaman Utama
-                                    <i class="right fas fa-angle-left"></i>
+                                    <i class="right fas fa-chevron-right"></i>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('dash.dashboard') }}" class="nav-link {{ request()->routeIs('dash.dashboard', 'dash.create_dash', 'dash.edit_dash') ? 'active' : '' }}">
+                                    <a href="{{ route('dash.dashboard') }}"
+                                        class="nav-link {{ request()->routeIs('dash.dashboard', 'dash.create_dash', 'dash.edit_dash') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-clipboard-list"></i>
                                         <p>Dashboard</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('index') }}" class="nav-link {{ request()->routeIs('index') ? 'active' : '' }}">
+                                    <a href="{{ route('index') }}"
+                                        class="nav-link {{ request()->routeIs('index') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-user-shield"></i>
                                         <p>Admin</p>
                                     </a>
@@ -546,29 +276,34 @@ to {
                             </ul>
                         </li>
 
-                        <li class="nav-item {{ request()->routeIs('pengelola.*', 'tentang.*', 'panduan.*') ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link {{ request()->routeIs('pengelola.*', 'tentang.*', 'panduan.*') ? 'active' : '' }}">
+                        <li
+                            class="nav-item {{ request()->routeIs('pengelola.*', 'tentang.*', 'panduan.*') ? 'menu-open' : '' }}">
+                            <a href="#"
+                                class="nav-link {{ request()->routeIs('pengelola.*', 'tentang.*', 'panduan.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-id-card-alt"></i>
                                 <p>
                                     Profil P3M
-                                    <i class="right fas fa-angle-left"></i>
+                                    <i class="right fas fa-chevron-right"></i>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('pengelola.index') }}" class="nav-link {{ request()->routeIs('pengelola.*') ? 'active' : '' }}">
+                                    <a href="{{ route('pengelola.index') }}"
+                                        class="nav-link {{ request()->routeIs('pengelola.*') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-users"></i>
                                         <p>Pengelola P3M</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('tentang.index') }}" class="nav-link {{ request()->routeIs('tentang.*') ? 'active' : '' }}">
+                                    <a href="{{ route('tentang.index') }}"
+                                        class="nav-link {{ request()->routeIs('tentang.*') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-address-card"></i>
                                         <p>Tentang P3M</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('panduan.index') }}" class="nav-link {{ request()->routeIs('panduan.*') ? 'active' : '' }}">
+                                    <a href="{{ route('panduan.index') }}"
+                                        class="nav-link {{ request()->routeIs('panduan.*') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-book-reader"></i>
                                         <p>Panduan P3M</p>
                                     </a>
@@ -576,41 +311,48 @@ to {
                             </ul>
                         </li>
 
-                        <li class="nav-item {{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*', 'jurnal.*') ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link {{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*', 'jurnal.*') ? 'active' : '' }}">
+                        <li
+                            class="nav-item {{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*', 'jurnal.*') ? 'menu-open' : '' }}">
+                            <a href="#"
+                                class="nav-link {{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*', 'jurnal.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-layer-group"></i>
                                 <p>
                                     Seputar P3M
-                                    <i class="right fas fa-angle-left"></i>
+                                    <i class="right fas fa-chevron-right"></i>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('category.index') }}" class="nav-link {{ request()->routeIs('category.*') ? 'active' : '' }}">
+                                    <a href="{{ route('category.index') }}"
+                                        class="nav-link {{ request()->routeIs('category.*') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-list-alt"></i>
                                         <p>Kategori Berita</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('news.index') }}" class="nav-link {{ request()->routeIs('news.*') ? 'active' : '' }}">
+                                    <a href="{{ route('news.index') }}"
+                                        class="nav-link {{ request()->routeIs('news.*') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-newspaper"></i>
                                         <p>Kegiatan P3M</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('agenda.index') }}" class="nav-link {{ request()->routeIs('agenda.*') ? 'active' : '' }}">
+                                    <a href="{{ route('agenda.index') }}"
+                                        class="nav-link {{ request()->routeIs('agenda.*') ? 'active' : '' }}">
                                         <i class="nav-icon far fa-calendar-alt"></i>
                                         <p>Berita P3M</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('dokumen.index') }}" class="nav-link {{ request()->routeIs('dokumen.*') ? 'active' : '' }}">
+                                    <a href="{{ route('dokumen.index') }}"
+                                        class="nav-link {{ request()->routeIs('dokumen.*') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-folder"></i>
                                         <p>Dokumen P3M</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('jurnal.index') }}" class="nav-link {{ request()->routeIs('jurnal.*') ? 'active' : '' }}">
+                                    <a href="{{ route('jurnal.index') }}"
+                                        class="nav-link {{ request()->routeIs('jurnal.*') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-journal-whills"></i>
                                         <p>Jurnal P3M</p>
                                     </a>
@@ -618,35 +360,39 @@ to {
                             </ul>
                         </li>
 
-                        <li class="nav-item {{ request()->routeIs('plppm.*') ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link {{ request()->routeIs('plppm.*') ? 'active' : '' }}">
+                        <li class="nav-item {{ request()->routeIs('plppm.*', 'detail.detail', 'detail.detailk') ? 'menu-open' : '' }}">
+                            <a href="#" class="nav-link {{ request()->routeIs('plppm.*', 'detail.detail', 'detail.detailk') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-file-signature"></i>
                                 <p>
                                     Pengajuan & Laporan
-                                    <i class="right fas fa-angle-left"></i>
+                                    <i class="right fas fa-chevron-right"></i>
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('plppm.lpengabdian') }}" class="nav-link {{ request()->routeIs('plppm.lpengabdian') ? 'active' : '' }}">
+                                    <a href="{{ route('plppm.lpengabdian') }}"
+                                        class="nav-link {{ request()->routeIs('plppm.lpengabdian') ? 'active' : '' }}">
                                         <i class="nav-icon far fa-file"></i>
                                         <p>Pengajuan Pengabdian</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('plppm.lpeneleitian') }}" class="nav-link {{ request()->routeIs('plppm.lpeneleitian') ? 'active' : '' }}">
+                                    <a href="{{ route('plppm.lpeneleitian') }}"
+                                        class="nav-link {{ request()->routeIs('plppm.lpeneleitian') ? 'active' : '' }}">
                                         <i class="nav-icon far fa-file"></i>
                                         <p>Pengajuan Penelitian</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('plppm.kpengabdian') }}" class="nav-link {{ request()->routeIs('plppm.kpengabdian') ? 'active' : '' }}">
+                                    <a href="{{ route('plppm.kpengabdian') }}"
+                                        class="nav-link {{ request()->routeIs('plppm.kpengabdian') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-folder"></i>
                                         <p>Laporan Pengabdian</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('plppm.kpenelitian') }}" class="nav-link {{ request()->routeIs('plppm.kpenelitian') ? 'active' : '' }}">
+                                    <a href="{{ route('plppm.kpenelitian') }}"
+                                        class="nav-link {{ request()->routeIs('plppm.kpenelitian') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-folder"></i>
                                         <p>Laporan Penelitian</p>
                                     </a>
@@ -655,13 +401,17 @@ to {
                         </li>
 
                         <li class="nav-item mt-2">
-                            <a href="{{ route('logout') }}" class="nav-link">
-                                <i class="nav-icon fas fa-sign-out-alt"></i>
-                                <p>Logout Akun</p>
-                            </a>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="button" class="nav-link w-100 text-left border-0 bg-transparent admin-logout-link" id="js-admin-sidebar-logout-btn">
+                                    <i class="nav-icon fas fa-sign-out-alt"></i>
+                                    <p>Logout Akun</p>
+                                </button>
+                            </form>
                         </li>
                     </ul>
                 </nav>
+
             </div>
         </aside>
 
@@ -669,82 +419,583 @@ to {
         <aside class="control-sidebar control-sidebar-dark"></aside>
     </div>
 
-    <script src="{{ asset('lte/plugins/jquery/jquery.min.js') }}"></script>
-    <script src="{{ asset('lte/plugins/jquery-ui/jquery-ui.min.js') }}"></script>
-    <script>
+    @include('components.global-alert')
+    @include('components.upload-validation')
+
+    <script src="{{ asset('lte/plugins/jquery/jquery.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/jquery-ui/jquery-ui.min.js') }}" data-turbo-eval="false"></script>
+    <script data-turbo-eval="false">
         $.widget.bridge('uibutton', $.ui.button)
     </script>
-    <script src="{{ asset('lte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('lte/plugins/chart.js/Chart.min.js') }}"></script>
-    <script src="{{ asset('lte/plugins/sparklines/sparkline.js') }}"></script>
-    <script src="{{ asset('lte/plugins/jqvmap/jquery.vmap.min.js') }}"></script>
-    <script src="{{ asset('lte/plugins/jqvmap/maps/jquery.vmap.usa.js') }}"></script>
-    <script src="{{ asset('lte/plugins/jquery-knob/jquery.knob.min.js') }}"></script>
-    <script src="{{ asset('lte/plugins/moment/moment.min.js') }}"></script>
-    <script src="{{ asset('lte/plugins/daterangepicker/daterangepicker.js') }}"></script>
-    <script src="{{ asset('lte/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js') }}"></script>
-    <script src="{{ asset('lte/plugins/summernote/summernote-bs4.min.js') }}"></script>
-    <script src="{{ asset('lte/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}"></script>
-    <script src="{{ asset('lte/dist/js/adminlte.js') }}"></script>
+    <script src="{{ asset('lte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/chart.js/Chart.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/sparklines/sparkline.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/jqvmap/jquery.vmap.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/jqvmap/maps/jquery.vmap.usa.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/jquery-knob/jquery.knob.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/moment/moment.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/daterangepicker/daterangepicker.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js') }}"
+        data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/summernote/summernote-bs4.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}" data-turbo-eval="false">
+    </script>
+    <script src="{{ asset('lte/dist/js/adminlte.js') }}" data-turbo-eval="false"></script>
 
-    <script>
-        const editorElement = document.querySelector('#editor');
+    {{-- DataTables plugins loaded globally once with data-turbo-eval="false" so SPA visits never fail --}}
+    <script src="{{ asset('lte/plugins/datatables/jquery.dataTables.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}" data-turbo-eval="false"></script>
 
-        if (editorElement && window.ClassicEditor) {
-            ClassicEditor
-                .create(editorElement)
-                .then(editor => {
-                    window.editor = editor;
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-        }
+    <script data-turbo-eval="false">
+        /**
+         * P3M ADMIN — STABLE NAVIGATION LAYER
+         *
+         * Goals:
+         * - Keep page/sidebar scroll stable during Turbo navigation.
+         * - Keep the permanent sidebar responsive.
+         * - Update active navigation using the DESTINATION URL.
+         * - Avoid repeated teardown/rebuild of treeview state.
+         * - Avoid forced inline display changes that trigger layout jumps.
+         * - Register listeners once and safely re-use them across Turbo visits.
+         */
+        (function() {
+            'use strict';
 
-        const inputFile = document.getElementById('image');
-        const fileLabel = document.querySelector('.custom-file-label');
-        const previewOutput = document.getElementById('preview-image');
+            const PAGE_SCROLL_KEY = 'p3m.admin.navigation.page-scroll';
+            const SIDEBAR_SCROLL_KEY = 'p3m.admin.navigation.sidebar-scroll';
 
-        if (inputFile && fileLabel) {
-            inputFile.addEventListener('change', function (event) {
-                const file = event.target.files && event.target.files[0];
+            let navigationState = {
+                destinationUrl: null,
+                restoring: false
+            };
 
-                if (!file) {
+            function getPageScrollElement() {
+                return document.scrollingElement || document.documentElement;
+            }
+
+            function getSidebarScrollElement() {
+                const sidebar = document.getElementById('p3m-sidebar');
+
+                if (!sidebar) {
+                    return null;
+                }
+
+                // OverlayScrollbars may create a dedicated viewport.
+                return sidebar.querySelector('.os-viewport') ||
+                    sidebar.querySelector('.sidebar') ||
+                    sidebar;
+            }
+
+            function normalizeUrl(url) {
+                try {
+                    const parsed = new URL(url, window.location.origin);
+                    parsed.hash = '';
+                    return parsed.href;
+                } catch (error) {
+                    return String(url || '').split('#')[0];
+                }
+            }
+
+            function isInternalTurboUrl(url) {
+                try {
+                    const parsed = new URL(url, window.location.href);
+
+                    if (parsed.origin !== window.location.origin) {
+                        return false;
+                    }
+
+                    // Let normal browser/Turbo hash navigation handle in-page anchors.
+                    if (
+                        parsed.pathname === window.location.pathname &&
+                        parsed.search === window.location.search &&
+                        parsed.hash
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                } catch (error) {
+                    return false;
+                }
+            }
+
+            function readNumber(key) {
+                try {
+                    const value = Number(sessionStorage.getItem(key));
+                    return Number.isFinite(value) && value >= 0 ? value : 0;
+                } catch (error) {
+                    return 0;
+                }
+            }
+
+            function saveNavigationScroll() {
+                const pageScroller = getPageScrollElement();
+                const sidebarScroller = getSidebarScrollElement();
+
+                try {
+                    sessionStorage.setItem(
+                        PAGE_SCROLL_KEY,
+                        String(pageScroller ? pageScroller.scrollTop : window.scrollY || 0)
+                    );
+
+                    if (sidebarScroller) {
+                        sessionStorage.setItem(
+                            SIDEBAR_SCROLL_KEY,
+                            String(sidebarScroller.scrollTop || 0)
+                        );
+                    }
+                } catch (error) {
+                    // Navigation remains fully functional if storage is unavailable.
+                }
+            }
+
+            function getSavedNavigationScroll() {
+                return {
+                    page: readNumber(PAGE_SCROLL_KEY),
+                    sidebar: readNumber(SIDEBAR_SCROLL_KEY)
+                };
+            }
+
+            function setScrollPosition(position) {
+                const pageScroller = getPageScrollElement();
+                const sidebarScroller = getSidebarScrollElement();
+
+                if (pageScroller) {
+                    pageScroller.scrollTop = position.page;
+                    window.scrollTo(0, position.page);
+                }
+
+                if (sidebarScroller) {
+                    sidebarScroller.scrollTop = position.sidebar;
+                }
+            }
+
+            function restoreNavigationScroll() {
+                if (navigationState.restoring) {
                     return;
                 }
 
-                fileLabel.textContent = file.name;
+                navigationState.restoring = true;
 
-                if (previewOutput) {
-                    const reader = new FileReader();
-                    reader.onload = function () {
-                        previewOutput.src = reader.result;
+                const position = getSavedNavigationScroll();
+
+                // First restore immediately after Turbo has swapped the document.
+                setScrollPosition(position);
+
+                // Then restore after the browser has completed the next layout pass.
+                requestAnimationFrame(function() {
+                    setScrollPosition(position);
+
+                    requestAnimationFrame(function() {
+                        setScrollPosition(position);
+                        navigationState.restoring = false;
+                    });
+                });
+            }
+
+            function findActiveSidebarLink(url) {
+                const currentUrl = normalizeUrl(url);
+                const sidebar = document.getElementById('p3m-sidebar');
+
+                if (!sidebar) {
+                    return null;
+                }
+
+                const links = Array.from(
+                    sidebar.querySelectorAll('a.nav-link[href]')
+                );
+
+                let exactMatch = null;
+                let bestMatch = null;
+                let longestMatch = 0;
+
+                links.forEach(function(link) {
+                    const href = link.getAttribute('href');
+
+                    if (!href || href === '#' || href.startsWith('javascript:')) {
+                        return;
+                    }
+
+                    const normalizedHref = normalizeUrl(link.href);
+
+                    if (normalizedHref === currentUrl) {
+                        exactMatch = link;
+                        return;
+                    }
+
+                    if (
+                        normalizedHref &&
+                        normalizedHref.length > 0 &&
+                        currentUrl.startsWith(normalizedHref) &&
+                        normalizedHref.length > longestMatch
+                    ) {
+                        longestMatch = normalizedHref.length;
+                        bestMatch = link;
+                    }
+                });
+
+                return exactMatch || bestMatch;
+            }
+
+            function withTreeviewTransitionsDisabled(callback) {
+                const sidebar = document.getElementById('p3m-sidebar');
+
+                if (!sidebar) {
+                    callback();
+                    return;
+                }
+
+                const treeviews = Array.from(
+                    sidebar.querySelectorAll('.nav-treeview')
+                );
+
+                const previousTransitions = treeviews.map(function(treeview) {
+                    return {
+                        element: treeview,
+                        transition: treeview.style.transition,
+                        animation: treeview.style.animation
                     };
-                    reader.readAsDataURL(file);
+                });
+
+                treeviews.forEach(function(treeview) {
+                    treeview.style.transition = 'none';
+                    treeview.style.animation = 'none';
+                });
+
+                try {
+                    callback();
+                } finally {
+                    requestAnimationFrame(function() {
+                        previousTransitions.forEach(function(entry) {
+                            entry.element.style.transition = entry.transition;
+                            entry.element.style.animation = entry.animation;
+                        });
+                    });
+                }
+            }
+
+            function updateSidebarActiveState(url) {
+                const sidebar = document.getElementById('p3m-sidebar');
+
+                if (!sidebar) {
+                    return;
+                }
+
+                const activeLink = findActiveSidebarLink(url);
+                const sidebarScroller = getSidebarScrollElement();
+                const previousSidebarScroll = sidebarScroller ? sidebarScroller.scrollTop : 0;
+
+                withTreeviewTransitionsDisabled(function() {
+                    const allLinks = sidebar.querySelectorAll('.nav-link');
+
+                    allLinks.forEach(function(link) {
+                        link.classList.remove('active');
+                    });
+
+                    if (!activeLink) {
+                        return;
+                    }
+
+                    activeLink.classList.add('active');
+
+                    const treeview = activeLink.closest('.nav-treeview');
+
+                    if (treeview) {
+                        const parentItem = treeview.closest('.nav-item');
+
+                        if (parentItem) {
+                            parentItem.classList.add('menu-open');
+                            treeview.style.display = 'block';
+
+                            const parentLink = parentItem.querySelector(':scope > .nav-link');
+
+                            if (parentLink) {
+                                parentLink.classList.add('active');
+                            }
+                        }
+                    }
+                    /* Note: With data-accordion="false", multiple dropdown groups can be opened simultaneously.
+                       We do NOT forcibly close other .menu-open groups so user-opened dropdowns stay open. */
+                });
+
+                // Class changes can alter the tree height. Restore the exact
+                // sidebar position so the menu itself does not visibly jump.
+                if (sidebarScroller) {
+                    sidebarScroller.scrollTop = previousSidebarScroll;
+
+                    requestAnimationFrame(function() {
+                        sidebarScroller.scrollTop = previousSidebarScroll;
+                    });
+                }
+
+                updateAdminTopbarPage();
+            }
+
+            function updateAdminTopbarPage() {
+                const pageElement = document.getElementById('js-admin-topbar-page');
+
+                if (!pageElement) {
+                    return;
+                }
+
+                const activeLink = document.querySelector(
+                    '#p3m-sidebar .nav-treeview .nav-link.active'
+                ) || document.querySelector(
+                    '#p3m-sidebar .nav-link.active:not([href="#"])'
+                );
+
+                if (!activeLink) {
+                    return;
+                }
+
+                const paragraph = activeLink.querySelector('p');
+
+                if (!paragraph) {
+                    return;
+                }
+
+                const textNode = Array.from(paragraph.childNodes).find(function(node) {
+                    return node.nodeType === Node.TEXT_NODE && node.textContent.trim();
+                });
+
+                const pageName = textNode ?
+                    textNode.textContent.trim() :
+                    paragraph.textContent.trim();
+
+                if (pageName) {
+                    pageElement.textContent = pageName;
+                }
+            }
+
+            function initializePageComponents() {
+                // CKEditor
+                const editorElement = document.querySelector('#editor');
+
+                if (
+                    editorElement &&
+                    window.ClassicEditor &&
+                    !editorElement.classList.contains('ck-applied')
+                ) {
+                    window.ClassicEditor
+                        .create(editorElement)
+                        .then(function(editor) {
+                            window.editor = editor;
+                            editorElement.classList.add('ck-applied');
+                        })
+                        .catch(function(error) {
+                            console.error('CKEditor initialization failed:', error);
+                        });
+                }
+
+                // Image preview
+                const inputFile = document.getElementById('image');
+                const fileLabel = document.querySelector('.custom-file-label');
+                const previewOutput = document.getElementById('preview-image');
+
+                if (inputFile && fileLabel && !inputFile.dataset.p3mPreviewReady) {
+                    inputFile.dataset.p3mPreviewReady = 'true';
+
+                    inputFile.addEventListener('change', function(event) {
+                        const file = event.target.files && event.target.files[0];
+
+                        if (!file) {
+                            return;
+                        }
+
+                        fileLabel.textContent = file.name;
+
+                        if (!previewOutput) {
+                            return;
+                        }
+
+                        const reader = new FileReader();
+
+                        reader.onload = function() {
+                            previewOutput.src = reader.result;
+                        };
+
+                        reader.readAsDataURL(file);
+                    });
+                }
+
+                // Notification links
+                document.querySelectorAll('.notif-table').forEach(function(element) {
+                    if (element.dataset.p3mNotifReady === 'true') {
+                        return;
+                    }
+
+                    element.dataset.p3mNotifReady = 'true';
+
+                    element.addEventListener('click', function(event) {
+                        event.preventDefault();
+
+                        const tipe = this.dataset.tipe;
+                        const link = this.dataset.link;
+
+                        if (!tipe || !link) {
+                            return;
+                        }
+
+                        fetch('/notif/read-table/' + encodeURIComponent(tipe), {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                credentials: 'same-origin'
+                            })
+                            .then(function() {
+                                saveNavigationScroll();
+
+                                if (typeof Turbo !== 'undefined') {
+                                    navigationState.destinationUrl = normalizeUrl(link);
+                                    Turbo.visit(link);
+                                } else {
+                                    window.location.href = link;
+                                }
+                            })
+                            .catch(function() {
+                                window.location.href = link;
+                            });
+                    });
+                });
+            }
+
+            function triggerPageEnterAnimation() {
+                const cw = document.querySelector('.content-wrapper');
+                if (!cw) return;
+                cw.classList.remove('admin-page-enter', 'admin-page-exit');
+                void cw.offsetWidth; /* reflow */
+                cw.classList.add('admin-page-enter');
+            }
+
+            // Browser should not fight Turbo with its own scroll restoration.
+            if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+            }
+
+            // Capture the destination BEFORE Turbo renders the next page.
+            document.addEventListener('turbo:before-visit', function(event) {
+                const destination = event.detail && event.detail.url;
+
+                if (!destination || !isInternalTurboUrl(destination)) {
+                    return;
+                }
+
+                navigationState.destinationUrl = normalizeUrl(destination);
+                saveNavigationScroll();
+
+                const cw = document.querySelector('.content-wrapper');
+                if (cw) cw.classList.add('admin-page-exit');
+            });
+
+            // Use the destination URL, not the current URL, so active state is
+            // not rendered twice (old menu -> new menu), which was causing the jump.
+            document.addEventListener('turbo:before-render', function() {
+                if (navigationState.destinationUrl) {
+                    updateSidebarActiveState(navigationState.destinationUrl);
                 }
             });
-        }
 
-        document.querySelectorAll('.notif-table').forEach(el => {
-            el.addEventListener('click', function(e) {
-                e.preventDefault();
-
-                const tipe = this.dataset.tipe;
-                const link = this.dataset.link;
-
-                fetch('/notif/read-table/' + tipe, {
-                    method: 'POST',
-                    headers: {
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    }
-                }).then(() => {
-                    window.location.href = link;
-                });
+            document.addEventListener('turbo:render', function() {
+                requestAnimationFrame(triggerPageEnterAnimation);
             });
-        });
+
+            document.addEventListener('turbo:load', function() {
+                const url = navigationState.destinationUrl || window.location.href;
+
+                updateSidebarActiveState(url);
+                updateAdminTopbarPage();
+                initializePageComponents();
+                restoreNavigationScroll();
+                requestAnimationFrame(triggerPageEnterAnimation);
+
+                navigationState.destinationUrl = null;
+            });
+
+            document.addEventListener('turbo:before-cache', function() {
+                const cw = document.querySelector('.content-wrapper');
+                if (cw) cw.classList.remove('admin-page-enter', 'admin-page-exit');
+            });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                updateSidebarActiveState(window.location.href);
+                updateAdminTopbarPage();
+                initializePageComponents();
+                triggerPageEnterAnimation();
+            });
+
+            // Save the current sidebar/page position immediately when a real
+            // sidebar navigation link is activated. Group toggle links (#) are
+            // intentionally ignored so opening a group never changes scroll.
+            $(document)
+                .off('click.p3mAdminNavigation', '#p3m-sidebar a.nav-link')
+                .on('click.p3mAdminNavigation', '#p3m-sidebar a.nav-link', function() {
+                    const href = this.getAttribute('href');
+
+                    if (!href || href === '#' || href.startsWith('javascript:')) {
+                        return;
+                    }
+
+                    saveNavigationScroll();
+                    navigationState.destinationUrl = normalizeUrl(this.href);
+                });
+
+            // Close dropdown upon Turbo navigation
+            document.addEventListener('turbo:before-visit', function() {
+                $('.dosen-user-dropdown').removeClass('show').closest('.dropdown').removeClass('show');
+                $('#adminUserDropdownTrigger').attr('aria-expanded', 'false');
+            });
+
+            // Smooth logout confirmation for both Navbar & Sidebar
+            $(document).on('click', '#js-admin-nav-logout-btn, .admin-logout-link', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const $target = $(this);
+                const $form = $target.closest('form');
+                if (!$form.length) return;
+
+                if (typeof window.p3mConfirm === 'function') {
+                    window.p3mConfirm({
+                        title: 'Logout dari Akun?',
+                        html: 'Anda akan keluar dari sesi Admin Workspace saat ini.<br><span style="font-size:13px;color:#9ca3af;">Anda perlu login kembali untuk mengakses data.</span>',
+                        icon: 'warning',
+                        confirmText: '<i class="fas fa-sign-out-alt" style="font-size:12px;"></i>&nbsp; Ya, Logout',
+                        confirmClass: 'p3m-swal-btn-danger',
+                        onConfirm: function() {
+                            $form.submit();
+                        }
+                    });
+                } else if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Logout dari Akun?',
+                        text: 'Anda akan keluar dari sesi Admin Workspace saat ini.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Ya, Logout',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $form.submit();
+                        }
+                    });
+                } else {
+                    if (confirm('Apakah Anda yakin ingin logout dari akun ini?')) {
+                        $form.submit();
+                    }
+                }
+            });
+        })();
     </script>
 
     @yield('scripts')
+
+    {{-- Global Image Cropper Component --}}
+    <x-image-cropper />
 </body>
 
 </html>

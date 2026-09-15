@@ -57,18 +57,40 @@ class JurnalController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'jurnalname' => 'required',
-            'link' => 'required',
-        ]);
-        if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
+        $link = trim($request->input('link', ''));
+        if ($link !== '' && !preg_match("~^(?:f|ht)tps?://~i", $link)) {
+            if (preg_match("~^([a-z0-9-]+\.)+[a-z]{2,}~i", $link) || str_starts_with(strtolower($link), 'localhost')) {
+                $link = 'https://' . $link;
+                $request->merge(['link' => $link]);
+            }
+        }
 
-        $data = new JurnalModel();
-        $data['jurnalname']      = $request->jurnalname;
-        $data['link']       = $request->link;
-        // $data->generated_name = $nama_docs;
-        $data->save();
-        return redirect()->route('jurnal.index');
+        $validator = Validator::make($request->all(), [
+            'jurnalname' => 'required|string|max:255',
+            'link'       => 'required|url|max:500',
+        ], [
+            'jurnalname.required' => 'Judul jurnal wajib diisi.',
+            'jurnalname.string'   => 'Judul jurnal harus berupa teks.',
+            'jurnalname.max'      => 'Judul jurnal maksimal 255 karakter.',
+            'link.required'       => 'Tautan jurnal wajib diisi.',
+            'link.url'            => 'Format tautan jurnal harus berupa URL yang valid (contoh: https://...).',
+            'link.max'            => 'Tautan jurnal maksimal 500 karakter.',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors($validator)
+                ->with('form_context', 'create_jurnal')
+                ->with('error', $validator->errors()->first());
+        }
+
+        JurnalModel::create([
+            'jurnalname' => $request->jurnalname,
+            'link'       => $link,
+        ]);
+
+        return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil ditambahkan!');
     }
 
     public function edit(Request $request, $id)
@@ -81,26 +103,50 @@ class JurnalController extends Controller
 
     public function update(Request $request,  $id)
     {
-        $find = JurnalModel::find($id);
+        $find = JurnalModel::findOrFail($id);
+
+        $link = trim($request->input('link', ''));
+        if ($link !== '' && !preg_match("~^(?:f|ht)tps?://~i", $link)) {
+            if (preg_match("~^([a-z0-9-]+\.)+[a-z]{2,}~i", $link) || str_starts_with(strtolower($link), 'localhost')) {
+                $link = 'https://' . $link;
+                $request->merge(['link' => $link]);
+            }
+        }
+
         $validator = Validator::make($request->all(), [
-            'jurnalname' => 'required',
-            'link' => 'required',
+            'jurnalname' => 'required|string|max:255',
+            'link'       => 'required|url|max:500',
+        ], [
+            'jurnalname.required' => 'Judul jurnal wajib diisi.',
+            'jurnalname.string'   => 'Judul jurnal harus berupa teks.',
+            'jurnalname.max'      => 'Judul jurnal maksimal 255 karakter.',
+            'link.required'       => 'Tautan jurnal wajib diisi.',
+            'link.url'            => 'Format tautan jurnal harus berupa URL yang valid (contoh: https://...).',
+            'link.max'            => 'Tautan jurnal maksimal 500 karakter.',
         ]);
-        if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
 
-        $data['jurnalname']      = $request->jurnalname;
-        $data['link']       = $request->link;
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors($validator)
+                ->with('form_context', 'edit_jurnal_' . $id)
+                ->with('error', $validator->errors()->first());
+        }
 
-        $find->update($data);
-        return redirect()->route('jurnal.index');
+        $find->update([
+            'jurnalname' => $request->jurnalname,
+            'link'       => $link,
+        ]);
+
+        return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil diperbarui!');
     }
 
     //DELETE DATA
     public function delete($id)
     {
-        $panduan = JurnalModel::findOrFail($id);
-        $panduan->delete();
-        return redirect()->route('jurnal.index');
+        $jurnal = JurnalModel::findOrFail($id);
+        $jurnal->delete();
+        return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil dihapus!');
     }
 
 

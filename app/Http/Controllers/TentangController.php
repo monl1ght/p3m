@@ -74,7 +74,7 @@ class TentangController extends Controller
 
         M_tentang::create($data);
 
-        return redirect()->route('tentang.index');
+        return redirect()->route('tentang.index')->with('success', 'Data Tentang P3M berhasil ditambahkan!');
     }
     public function edit($id)
     {
@@ -86,7 +86,7 @@ class TentangController extends Controller
 
     public function update(Request $request, $id)
     {
-        $find = M_tentang::find($id);
+        $find = M_tentang::findOrFail($id);
         $validator = Validator::make($request->all(), [
             'visi' => 'required',
             'misi' => 'required',
@@ -164,6 +164,6 @@ class TentangController extends Controller
 
         $find->update($data);
 
-        return redirect()->route('tentang.index');
+        return redirect()->route('tentang.index')->with('success', 'Data Tentang P3M berhasil diperbarui!');
     }
 }

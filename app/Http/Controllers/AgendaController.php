@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class AgendaController extends Controller
 {
@@ -86,7 +87,7 @@ class AgendaController extends Controller
 
         AgendaModel::create($data);
 
-        return redirect()->route('agenda.index', compact('pagetitle'));
+        return redirect()->route('agenda.index')->with('success', 'Agenda berhasil ditambahkan!');
     }
 
     public function edit($id)
@@ -99,7 +100,7 @@ class AgendaController extends Controller
 
     public function update(Request $request, $id)
     {
-        $find = AgendaModel::find($id);
+        $find = AgendaModel::findOrFail($id);
         $validator = Validator::make($request->all(), [
             'title' => 'required',
             'date' => 'required',
@@ -141,7 +142,7 @@ class AgendaController extends Controller
 
                     // Dapatkan ekstensi gambar
                     $extension = explode('/', $type)[1];
-                    $filename = date('d-m-Y-H-i-s') . '-' . uniqid() . '.' . $extension;
+                    $filename = Str::uuid() . '.' . $extension;
                     $path = 'photo-agenda/' . $filename;
 
                     // Simpan gambar ke storage
@@ -180,7 +181,7 @@ class AgendaController extends Controller
 
         $find->update($data);
 
-        return redirect()->route('agenda.index');
+        return redirect()->route('agenda.index')->with('success', 'Agenda berhasil diperbarui!');
     }
     public function delete(Request $request, $id)
     {
@@ -219,7 +220,7 @@ class AgendaController extends Controller
     public function read(Request $request, $id)
     {
         $user = Auth::user();
-        $data = AgendaModel::find($id);
+        $data = AgendaModel::findOrFail($id);
         // $categories = M_categories::all();
         $pagetitle = 'Detail Data Kegiatan';
         return view('agenda.read', compact('data', 'pagetitle', 'user'));

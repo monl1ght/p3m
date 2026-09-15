@@ -16,3 +16,11 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+.phpunit.result.cache
+*.backup
+route_list.json
+tree_*.txt
+/public/uploud/*
+!/public/uploud/.gitkeep
+/public/uplouds/*
+!/public/uplouds/.gitkeep

@@ -14,8 +14,8 @@ class CategoryController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $categories = M_categories::all();
-        $pagetitle = 'Kategory Berita';
+        $categories = M_categories::withCount('news')->get();
+        $pagetitle = 'Kategori Berita';
         return view('category.index', compact('categories', 'pagetitle', 'user'));
     }
 
@@ -31,18 +31,25 @@ class CategoryController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'slug' => 'required',
+        ], [
+            'name.required' => 'Nama kategori wajib diisi.',
+            'slug.required' => 'Slug kategori wajib diisi.',
         ]);
 
-        if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
+        if ($validator->fails()) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors($validator)
+                ->with('form_context', 'create_category');
+        }
 
-        // dd($request->all());
-
-        $data['name']      = $request->name;
-        $data['slug']       = $request->slug;
+        $data['name'] = $request->name;
+        $data['slug'] = \Illuminate\Support\Str::slug($request->slug ?: $request->name);
 
         M_categories::create($data);
 
-        return redirect()->route('category.index');
+        return redirect()->route('category.index')->with('success', 'Kategori berhasil ditambahkan!');
     }
 
     public function edit(Request $request, $id)
@@ -55,17 +62,40 @@ class CategoryController extends Controller
 
     public function ubah(Request $request, $id)
     {
-        $find = M_categories::find($id);
+        $find = M_categories::findOrFail($id);
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'slug' => 'required',
+        ], [
+            'name.required' => 'Nama kategori wajib diisi.',
+            'slug.required' => 'Slug kategori wajib diisi.',
         ]);
-        if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors($validator)
+                ->with('form_context', 'edit_category_' . $id);
+        }
 
         $data['name'] = $request->name;
-        $data['slug'] = $request->slug;
+        $data['slug'] = \Illuminate\Support\Str::slug($request->slug ?: $request->name);
 
         $find->update($data);
-        return redirect()->route('category.index');
+        return redirect()->route('category.index')->with('success', 'Kategori berhasil diperbarui!');
+    }
+
+    public function delete($id)
+    {
+        $category = M_categories::findOrFail($id);
+        $newsCount = $category->news()->count();
+
+        if ($newsCount > 0) {
+            return redirect()->route('category.index')->with('error', "Kategori '{$category->name}' tidak dapat dihapus karena masih digunakan oleh {$newsCount} berita.");
+        }
+
+        $category->delete();
+        return redirect()->route('category.index')->with('success', 'Kategori berhasil dihapus!');
     }
 }
