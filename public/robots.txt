@@ -1,2 +1,19 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /dash/
+Disallow: /dosdash/
+Disallow: /category/
+Disallow: /news/
+Disallow: /plppm/
+Disallow: /login
+Disallow: /register
+Disallow: /proses-login
+Disallow: /proses-register
+Disallow: /storage/uppdf/
+Disallow: /dokumen-pengajuan/
+Disallow: /p3m/surat-tugas/
+Disallow: /p3m/surat-tugaspen/
+Disallow: /Propengabdian/
+Disallow: /Lappengabdian/
+
+Sitemap: https://p3m.polibang.ac.id/sitemap.xml

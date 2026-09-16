@@ -1,4 +1,93 @@
 @extends('layout.views')
+
+@php
+    $rawDesc = strip_tags(html_entity_decode($berita->content ?? ''));
+    $metaExcerpt = Str::limit(trim(preg_replace('/\s+/', ' ', $rawDesc)), 155);
+
+    $defaultBanner = asset('mte/assets/img/banner-p3m.jpg');
+    $imageSrc = $defaultBanner;
+    if (!empty($berita->image)) {
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists('photo-news/' . $berita->image) || file_exists(public_path('storage/photo-news/' . $berita->image))) {
+            $imageSrc = asset('storage/photo-news/' . $berita->image);
+        }
+    }
+@endphp
+
+@section('title', $berita->title)
+@section('meta_description', $metaExcerpt)
+@section('meta_keywords', ($berita->category->name ?? 'Kegiatan P3M') . ', Berita P3M, Polibang Jepara, Penelitian Dosen, Pengabdian Masyarakat')
+@section('canonical', route('tampilan.detail', ['id' => $berita->id]))
+@section('og_type', 'article')
+@section('og_image', $imageSrc)
+
+@section('og_extra')
+<meta property="article:published_time" content="{{ \Carbon\Carbon::parse($berita->date ?? $berita->created_at)->toIso8601String() }}">
+<meta property="article:modified_time" content="{{ \Carbon\Carbon::parse($berita->updated_at ?? $berita->created_at)->toIso8601String() }}">
+<meta property="article:section" content="{{ optional($berita->category)->name ?? 'Kegiatan P3M' }}">
+<meta property="article:author" content="{{ optional($berita->user)->name ?? 'P3M Politeknik Balekambang Jepara' }}">
+@endsection
+
+@section('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "@id": "{{ route('tampilan.detail', ['id' => $berita->id]) }}#breadcrumbs",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Beranda",
+          "item": "{{ route('tampilan') }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Kegiatan P3M",
+          "item": "{{ route('tampilan.berita') }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "{{ addslashes($berita->title) }}",
+          "item": "{{ route('tampilan.detail', ['id' => $berita->id]) }}"
+        }
+      ]
+    },
+    {
+      "@type": "NewsArticle",
+      "@id": "{{ route('tampilan.detail', ['id' => $berita->id]) }}#article",
+      "isPartOf": {
+        "@id": "{{ url('/') }}#website"
+      },
+      "headline": "{{ addslashes($berita->title) }}",
+      "description": "{{ addslashes($metaExcerpt) }}",
+      "image": [
+        "{{ $imageSrc }}"
+      ],
+      "datePublished": "{{ \Carbon\Carbon::parse($berita->date ?? $berita->created_at)->toIso8601String() }}",
+      "dateModified": "{{ \Carbon\Carbon::parse($berita->updated_at ?? $berita->created_at)->toIso8601String() }}",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ route('tampilan.detail', ['id' => $berita->id]) }}"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "{{ optional($berita->user)->name ?? 'Pengelola P3M' }}"
+      },
+      "publisher": {
+        "@id": "{{ url('/') }}#organization"
+      },
+      "articleSection": "{{ optional($berita->category)->name ?? 'Kegiatan P3M' }}",
+      "inLanguage": "id-ID"
+    }
+  ]
+}
+</script>
+@endsection
+
 @section('isi')
 
 <style>
@@ -576,7 +665,7 @@ body {
                 <li class="current">Detail Kegiatan</li>
             </ol>
         </nav>
-        <h1>Detail Kegiatan</h1>
+        <span class="page-title-heading h1 d-block">Detail Kegiatan</span>
         <small>Pusat Penelitian dan Pengabdian Kepada Masyarakat POLIBANG</small>
     </div>
 </div>

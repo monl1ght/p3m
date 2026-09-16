@@ -1,4 +1,33 @@
 @extends('layout.views')
+
+@section('title', 'Data Penelitian Dosen P3M')
+@section('meta_description', 'Direktori dan rekapitulasi data penelitian dosen yang telah disetujui serta didanai oleh P3M Politeknik Balekambang Jepara.')
+@section('meta_keywords', 'Penelitian Dosen, Riset Terapan, Penelitian Polibang, P3M Politeknik Balekambang, Proposal Penelitian')
+@section('canonical', route('tampilan.penelitian'))
+
+@section('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "{{ route('tampilan') }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Data Penelitian P3M",
+      "item": "{{ route('tampilan.penelitian') }}"
+    }
+  ]
+}
+</script>
+@endsection
+
 @section('isi')
 
 <style>

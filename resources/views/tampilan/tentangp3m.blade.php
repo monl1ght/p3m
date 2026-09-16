@@ -1,4 +1,47 @@
 @extends('layout.views')
+
+@section('title', 'Tentang P3M - Profil, Visi, dan Misi')
+@section('meta_description', 'Profil lengkap, visi, misi, dan komitmen Pusat Penelitian dan Pengabdian Kepada Masyarakat (P3M) Politeknik Balekambang Jepara.')
+@section('meta_keywords', 'Tentang P3M, Profil P3M Polibang, Visi Misi P3M, Balekambang Jepara, Lembaga Riset Vokasi')
+@section('canonical', route('tampilan.tentangp3m'))
+
+@section('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Beranda",
+          "item": "{{ route('tampilan') }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Tentang P3M",
+          "item": "{{ route('tampilan.tentangp3m') }}"
+        }
+      ]
+    },
+    {
+      "@type": "AboutPage",
+      "@id": "{{ route('tampilan.tentangp3m') }}#about",
+      "url": "{{ route('tampilan.tentangp3m') }}",
+      "name": "Tentang P3M Politeknik Balekambang Jepara",
+      "description": "Profil lengkap, visi, misi, dan komitmen Pusat Penelitian dan Pengabdian Kepada Masyarakat (P3M) Politeknik Balekambang Jepara.",
+      "mainEntity": {
+        "@id": "{{ url('/') }}#organization"
+      }
+    }
+  ]
+}
+</script>
+@endsection
+
 @section('isi')
     <style>
         /* ── PROFIL P3M (TENTANG KAMI) STYLES ───────────────── */

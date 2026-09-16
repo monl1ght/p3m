@@ -12,8 +12,8 @@
   --background-color: #ffffff;
   --default-color: #475569;
   --heading-color: #0f172a;
-  --accent-color: #059669;
-  --accent-hover-color: #047857;
+  --accent-color: #047857;
+  --accent-hover-color: #065f46;
   --surface-color: #ffffff;
   --contrast-color: #ffffff;
 
@@ -947,7 +947,7 @@ section,
   padding: calc(var(--header-height) + 58px) 0 46px;
   background:
     linear-gradient(90deg, rgba(6, 63, 53, .92), rgba(7, 31, 36, .72)),
-    url("../img/polibang.png") center / cover no-repeat;
+    url("../img/polibang.webp") center / cover no-repeat;
   color: #fff;
 }
 
@@ -1505,6 +1505,9 @@ section,
 
   .page-title {
     padding-top: 112px;
+    background:
+      linear-gradient(90deg, rgba(6, 63, 53, .92), rgba(7, 31, 36, .72)),
+      url("../img/polibang-mobile.webp") center / cover no-repeat;
   }
 }
 

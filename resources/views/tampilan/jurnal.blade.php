@@ -1,4 +1,33 @@
 @extends('layout.views')
+
+@section('title', 'Publikasi Jurnal Ilmiah P3M')
+@section('meta_description', 'Publikasi berkala ilmiah, jurnal riset terapan, dan prosiding sivitas akademika P3M Politeknik Balekambang Jepara.')
+@section('meta_keywords', 'Jurnal P3M, Jurnal Polibang, Publikasi Ilmiah Balekambang, Jurnal Maktab, Riset Terapan Dosen')
+@section('canonical', route('tampilan.jurnal'))
+
+@section('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "{{ route('tampilan') }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Jurnal P3M",
+      "item": "{{ route('tampilan.jurnal') }}"
+    }
+  ]
+}
+</script>
+@endsection
+
 @section('isi')
 
 <style>

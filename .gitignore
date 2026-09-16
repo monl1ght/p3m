@@ -24,3 +24,5 @@ tree_*.txt
 !/public/uploud/.gitkeep
 /public/uplouds/*
 !/public/uplouds/.gitkeep
+/scratch
+*-raw.png

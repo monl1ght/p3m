@@ -1,4 +1,74 @@
 @extends('layout.views')
+
+@php
+    $rawAgendaDesc = strip_tags(html_entity_decode($agen->keterangan ?? ''));
+    $agendaExcerpt = Str::limit(trim(preg_replace('/\s+/', ' ', $rawAgendaDesc)), 155);
+    $eventDate = !empty($agen->date) ? \Carbon\Carbon::parse($agen->date)->format('Y-m-d') : null;
+    $eventTime = !empty($agen->time) ? \Carbon\Carbon::parse($agen->time)->format('H:i:s') : '08:00:00';
+    $startIso = ($eventDate ? $eventDate . 'T' . $eventTime : now()->toIso8601String());
+@endphp
+
+@section('title', $agen->title)
+@section('meta_description', $agendaExcerpt ?: 'Informasi dan jadwal agenda kegiatan ' . $agen->title . ' P3M Politeknik Balekambang Jepara.')
+@section('meta_keywords', $agen->title . ', Agenda P3M, Kegiatan Polibang, Jadwal P3M Balekambang')
+@section('canonical', route('tampilan.detailagenda', ['id' => $agen->id]))
+
+@section('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "@id": "{{ route('tampilan.detailagenda', ['id' => $agen->id]) }}#breadcrumbs",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Beranda",
+          "item": "{{ route('tampilan') }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Agenda Kegiatan",
+          "item": "{{ route('tampilan.agenda') }}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "{{ addslashes($agen->title) }}",
+          "item": "{{ route('tampilan.detailagenda', ['id' => $agen->id]) }}"
+        }
+      ]
+    },
+    {
+      "@type": "Event",
+      "@id": "{{ route('tampilan.detailagenda', ['id' => $agen->id]) }}#event",
+      "name": "{{ addslashes($agen->title) }}",
+      "description": "{{ addslashes($agendaExcerpt ?: $agen->title) }}",
+      "startDate": "{{ $startIso }}",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": {
+        "@type": "Place",
+        "name": "{{ addslashes(!empty($agen->lokasi) ? $agen->lokasi : 'Kampus Politeknik Balekambang Jepara') }}",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Jepara",
+          "addressRegion": "Jawa Tengah",
+          "addressCountry": "ID"
+        }
+      },
+      "organizer": {
+        "@id": "{{ url('/') }}#organization"
+      }
+    }
+  ]
+}
+</script>
+@endsection
+
 @section('isi')
 
 <style>
@@ -144,14 +214,15 @@
 
 <div class="page-title" data-aos="fade">
     <div class="container">
-        <nav class="breadcrumbs">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
             <ol>
                 <li><a href="{{ route('tampilan') }}">Home</a></li>
-                <li class="current">{{ $pagetitle }}</li>
+                <li><a href="{{ route('tampilan.agenda') }}">Agenda P3M</a></li>
+                <li class="current">{{ Str::limit($agen->title, 40) }}</li>
             </ol>
         </nav>
-        <h1>{{ $pagetitle }}</h1>
-        <small>Politeknik Balekambang Jepara</small>
+        <span class="page-title-heading h1 d-block">Detail Agenda</span>
+        <small>Pusat Penelitian dan Pengabdian Kepada Masyarakat POLIBANG</small>
     </div>
 </div>
 
@@ -162,7 +233,7 @@
                 <article class="portfolio-description" data-aos="fade-up" data-aos-delay="300">
                     <div class="section-label">Detail Agenda</div>
 
-                    <h2>{{ $agen->title }}</h2>
+                    <h1 class="agenda-main-title" style="font-size: clamp(1.6rem, 2.5vw, 2.2rem); font-weight: 800; color: #0f172a; margin-bottom: 20px;">{{ $agen->title }}</h1>
 
                     <div class="card-meta">
                         <i class="far fa-calendar-alt"></i>

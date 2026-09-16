@@ -1,4 +1,33 @@
 @extends('layout.views')
+
+@section('title', 'Agenda Kegiatan P3M')
+@section('meta_description', 'Jadwal dan kalender agenda kegiatan penelitian, pengabdian, workshop, dan seminar P3M Politeknik Balekambang Jepara.')
+@section('meta_keywords', 'Agenda P3M, Jadwal Kegiatan Polibang, Seminar Penelitian, Workshop Pengabdian Balekambang')
+@section('canonical', route('tampilan.agenda'))
+
+@section('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "{{ route('tampilan') }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Agenda P3M",
+      "item": "{{ route('tampilan.agenda') }}"
+    }
+  ]
+}
+</script>
+@endsection
+
 @section('isi')
 
 <style>

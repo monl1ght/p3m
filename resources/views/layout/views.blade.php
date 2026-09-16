@@ -4,375 +4,168 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>P3M POLIBANG</title>
-    <meta name="description" content="Pusat Penelitian dan Pengabdian Kepada Masyarakat Politeknik Balekambang Jepara">
-    <meta name="keywords" content="P3M, Polibang, Penelitian, Pengabdian Masyarakat">
+    @php
+        // Resolusi judul halaman secara konsisten untuk SERP & Social Graph
+        if (View::hasSection('title')) {
+            $seoTitle = trim(View::getSection('title'));
+        } elseif (isset($pagetitle) && request()->routeIs('tampilan') === false) {
+            $seoTitle = trim($pagetitle);
+        } else {
+            $seoTitle = '';
+        }
+
+        $siteBrand = 'P3M Politeknik Balekambang Jepara';
+        if ($seoTitle !== '') {
+            $fullTitle = str_contains($seoTitle, 'P3M') ? $seoTitle . ' - Politeknik Balekambang Jepara' : $seoTitle . ' - ' . $siteBrand;
+        } else {
+            $fullTitle = 'P3M POLIBANG - Pusat Penelitian dan Pengabdian Masyarakat Politeknik Balekambang Jepara';
+        }
+
+        $defaultDescription = 'Pusat Penelitian dan Pengabdian Kepada Masyarakat (P3M) Politeknik Balekambang Jepara memfasilitasi riset inovatif, hilirisasi pengabdian masyarakat, dan publikasi jurnal ilmiah.';
+        $seoDescription = View::hasSection('meta_description') ? trim(View::getSection('meta_description')) : $defaultDescription;
+        $seoKeywords = View::hasSection('meta_keywords') ? trim(View::getSection('meta_keywords')) : 'P3M Polibang, Penelitian Dosen, Pengabdian Masyarakat, Jurnal Polibang, Riset Politeknik Balekambang Jepara';
+        $seoCanonical = View::hasSection('canonical') ? trim(View::getSection('canonical')) : request()->url();
+        $seoImage = View::hasSection('og_image') ? trim(View::getSection('og_image')) : asset('mte/assets/img/clients/polibang.png');
+        $seoType = View::hasSection('og_type') ? trim(View::getSection('og_type')) : 'website';
+    @endphp
+
+    <title>{{ $fullTitle }}</title>
+    <meta name="description" content="{{ $seoDescription }}">
+    <meta name="keywords" content="{{ $seoKeywords }}">
+    <meta name="author" content="P3M Politeknik Balekambang Jepara">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+    <link rel="canonical" href="{{ $seoCanonical }}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{{ $seoType }}">
+    <meta property="og:url" content="{{ $seoCanonical }}">
+    <meta property="og:title" content="{{ $fullTitle }}">
+    <meta property="og:description" content="{{ $seoDescription }}">
+    <meta property="og:image" content="{{ $seoImage }}">
+    <meta property="og:site_name" content="{{ $siteBrand }}">
+    <meta property="og:locale" content="id_ID">
+    @yield('og_extra')
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ $seoCanonical }}">
+    <meta name="twitter:title" content="{{ $fullTitle }}">
+    <meta name="twitter:description" content="{{ $seoDescription }}">
+    <meta name="twitter:image" content="{{ $seoImage }}">
+
+    <!-- Structured Data (JSON-LD Organization & WebSite) -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "EducationalOrganization",
+          "@id": "{{ url('/') }}#organization",
+          "name": "P3M Politeknik Balekambang Jepara",
+          "url": "{{ url('/') }}",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "{{ asset('mte/assets/img/clients/polibang.png') }}",
+            "width": 192,
+            "height": 192
+          },
+          "description": "Pusat Penelitian dan Pengabdian Kepada Masyarakat Politeknik Balekambang Jepara.",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Gemiring, Nalumsari",
+            "addressLocality": "Jepara",
+            "addressRegion": "Jawa Tengah",
+            "postalCode": "59466",
+            "addressCountry": "ID"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+62-3301-90210",
+            "contactType": "Customer Support",
+            "email": "p3mpolibang@gmail.com"
+          },
+          "parentOrganization": {
+            "@type": "CollegeOrUniversity",
+            "name": "Politeknik Balekambang Jepara",
+            "url": "https://polibang.ac.id"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "{{ url('/') }}#website",
+          "url": "{{ url('/') }}",
+          "name": "P3M Politeknik Balekambang Jepara",
+          "description": "Pusat Penelitian dan Pengabdian Kepada Masyarakat",
+          "publisher": {
+            "@id": "{{ url('/') }}#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "{{ route('tampilan.berita') }}?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          },
+          "inLanguage": "id-ID"
+        }
+      ]
+    }
+    </script>
+    @yield('schema')
 
     <link href="{{ asset('mte/assets/img/icon_log.ico') }}" rel="icon">
     <link href="{{ asset('mte/assets/img/icon_log.ico') }}" rel="apple-touch-icon">
 
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
-        rel="stylesheet">
 
+    <!-- Preload Critical LCP Hero Image -->
+    @hasSection('preload')
+        @yield('preload')
+    @elseif(request()->routeIs('tampilan'))
+        <link rel="preload" as="image" href="{{ asset('mte/assets/img/banner-p3m.webp') }}" type="image/webp" fetchpriority="high">
+    @else
+        <link rel="preload" as="image" href="{{ asset('mte/assets/img/polibang-mobile.webp') }}" type="image/webp" media="(max-width: 768px)" fetchpriority="high">
+        <link rel="preload" as="image" href="{{ asset('mte/assets/img/polibang.webp') }}" type="image/webp" media="(min-width: 769px)" fetchpriority="high">
+    @endif
+
+    <!-- Core Layout Styles -->
     <link href="{{ asset('mte/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('mte/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
-    <link href="{{ asset('mte/assets/vendor/aos/aos.css') }}" rel="stylesheet">
-    <link href="{{ asset('mte/assets/vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('mte/assets/vendor/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="{{ asset('mte/assets/css/main.css') }}?v={{ filemtime(public_path('mte/assets/css/main.css')) }}" rel="stylesheet">
 
-    <link href="{{ asset('mte/assets/css/main.css') }}" rel="stylesheet">
+    <!-- Non-Blocking Google Fonts & Secondary Stylesheets -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+        media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
+    </noscript>
+
+    <link rel="stylesheet" href="{{ asset('mte/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="{{ asset('mte/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}">
+    </noscript>
+
+    <link rel="stylesheet" href="{{ asset('mte/assets/vendor/aos/aos.css') }}" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="{{ asset('mte/assets/vendor/aos/aos.css') }}">
+    </noscript>
+
+    <link rel="stylesheet" href="{{ asset('mte/assets/vendor/swiper/swiper-bundle.min.css') }}" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="{{ asset('mte/assets/vendor/swiper/swiper-bundle.min.css') }}">
+    </noscript>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    </noscript>
+
+    @stack('styles')
 
     <style>
-    /* =================================================================
-       PREMIUM MOBILE HEADER & SCOPED MOBILE DRAWER (Only <= 991.98px)
-       ================================================================= */
-    @media (max-width: 991.98px) {
-        .header-mobile {
-            display: block !important;
-            min-height: 64px;
-            background: #ffffff;
-            border-bottom: 1px solid #f1f5f9;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
-            position: relative;
-            z-index: 1060;
-            padding: 0 20px;
-        }
-
-        .header-mobile .container-fluid {
-            padding: 0 !important;
-            margin: 0 !important;
-            max-width: 100% !important;
-        }
-
-        .mobile-header-inner {
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .mobile-brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .mobile-brand-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #ecfdf5;
-            border: 1px solid #a7f3d0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.12);
-        }
-
-        .mobile-brand-logo img {
-            width: 26px;
-            height: 26px;
-            object-fit: contain;
-        }
-
-        .mobile-brand-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
-        }
-
-        .mobile-brand-title {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 15px;
-            font-weight: 800;
-            color: #0f172a;
-            letter-spacing: -0.01em;
-            line-height: 1.2;
-        }
-
-        .mobile-brand-sub {
-            font-family: 'Inter', sans-serif;
-            font-size: 11px;
-            color: #64748b;
-            font-weight: 500;
-            letter-spacing: 0.01em;
-            line-height: 1.2;
-        }
-
-        .mobile-header-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .mobile-action-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 1px solid #e2e8f0;
-            background: #ffffff;
-            color: #1e293b;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .mobile-action-btn:hover {
-            background: #f8fafc;
-            color: #059669;
-            border-color: #cbd5e1;
-        }
-
-        .mobile-action-btn:active {
-            transform: scale(0.94);
-        }
-
-        .mobile-action-btn.mobile-drawer-toggle {
-            font-size: 22px;
-        }
-
-        /* Circular Close Button: Same 40px size, zero shift */
-        .mobile-action-btn.mobile-drawer-toggle.is-active {
-            width: 40px;
-            height: 40px;
-            background: #059669;
-            border-color: #059669;
-            color: #ffffff;
-            font-size: 19px;
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
-            transform: none;
-        }
-
-        .mobile-search-expand {
-            display: none;
-            padding: 0 0 12px;
-            animation: slideDown 0.2s ease-out forwards;
-        }
-
-        .mobile-search-expand.show {
-            display: block;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .mobile-search-form {
-            position: relative;
-            display: flex;
-            align-items: center;
-            background: #f8fafc;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            padding: 5px 12px;
-        }
-
-        .mobile-search-form .search-icon {
-            color: #94a3b8;
-            font-size: 14px;
-            margin-right: 8px;
-        }
-
-        .mobile-search-form input {
-            border: none;
-            background: transparent;
-            font-size: 13.5px;
-            color: #0f172a;
-            width: 100%;
-            outline: none;
-            padding: 6px 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        .mobile-search-form .search-close-btn {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 16px;
-            padding: 0 4px;
-            cursor: pointer;
-        }
-
-        /* ── ELEGANT DROPDOWN MENU UNDER NAVBAR (Sesuai Referensi Pengguna) ── */
-        .mobile-collapse-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            width: 100%;
-            background-color: #ffffff !important;
-            border-top: 1px solid #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            box-shadow: 0 20px 30px rgba(15, 23, 42, 0.08);
-            padding: 24px 20px 32px 20px;
-            max-height: calc(100vh - 64px);
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            z-index: 1060;
-        }
-
-        .mobile-collapse-menu.show {
-            display: block;
-            animation: collapseSlideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes collapseSlideDown {
-            from { transform: translateY(-6px); }
-            to { transform: translateY(0); }
-        }
-
-        /* Mobile Nav List */
-        .mobile-nav-wrap {
-            display: block;
-        }
-
-        .mobile-nav-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 22px;
-        }
-
-        .mobile-nav-item {
-            width: 100%;
-        }
-
-        .mobile-nav-link,
-        .mobile-nav-parent {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 2px 0 2px 22px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 16px;
-            font-weight: 700;
-            color: #2b3649;
-            text-decoration: none;
-            background: transparent;
-            cursor: pointer;
-            border: none;
-            width: 100%;
-            text-align: left;
-            transition: color 0.18s ease;
-        }
-
-        .mobile-nav-link:hover,
-        .mobile-nav-parent:hover {
-            color: #059669;
-        }
-
-        /* Active Item: Vertical Bar on Left + P3M Green Text (Sesuai Referensi) */
-        .mobile-nav-link.active,
-        .mobile-nav-parent.active {
-            color: #059669 !important;
-            font-weight: 700 !important;
-        }
-
-        .mobile-nav-link.active::before,
-        .mobile-nav-parent.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3.5px;
-            height: 22px;
-            background-color: #059669;
-            border-radius: 4px;
-        }
-
-        .mobile-nav-parent .arrow-icon {
-            color: #94a3b8;
-            font-size: 14px;
-            margin-right: 4px;
-            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;
-        }
-
-        .mobile-nav-parent.active .arrow-icon {
-            color: #059669;
-        }
-
-        .mobile-nav-item.is-open .arrow-icon {
-            transform: rotate(180deg);
-            color: #059669;
-        }
-
-        .mobile-nav-item.is-open > .mobile-nav-parent {
-            color: #059669;
-        }
-
-        /* Subnav List */
-        .mobile-subnav-list {
-            display: none;
-            list-style: none;
-            margin: 12px 0 4px 22px;
-            padding: 2px 0 2px 14px;
-            border-left: 2px solid #e2e8f0;
-        }
-
-        .mobile-nav-item.is-open .mobile-subnav-list {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            animation: subnavFade 0.2s ease forwards;
-        }
-
-        @keyframes subnavFade {
-            from { opacity: 0; transform: translateY(-3px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .mobile-subnav-list a {
-            display: block;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 14.5px;
-            font-weight: 600;
-            color: #64748b;
-            text-decoration: none;
-            transition: color 0.15s ease;
-        }
-
-        .mobile-subnav-list a:hover {
-            color: #059669;
-        }
-
-        .mobile-subnav-list a.active {
-            color: #059669;
-            font-weight: 700;
-        }
-    }
-
-    @media (min-width: 992px) {
-        .header-mobile,
-        .mobile-collapse-menu {
-            display: none !important;
-        }
-    }
-
-    .scroll-top {
-        background-color: #059669 !important;
-        box-shadow: 0 8px 24px rgba(5, 150, 105, 0.3) !important;
-    }
-    .scroll-top:hover {
-        background-color: #047857 !important;
-        color: #ffffff !important;
-    }
-    </style>
+@media (max-width:991.98px){.header-mobile{display:block !important;min-height:64px;background:#ffffff;border-bottom:1px solid #f1f5f9;box-shadow:0 1px 3px rgba(15,23,42,0.03);position:relative;z-index:1060;padding:0 20px}.header-mobile .container-fluid{padding:0 !important;margin:0 !important;max-width:100% !important}.mobile-header-inner{height:64px;display:flex;align-items:center;justify-content:space-between;width:100%}.mobile-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none}.mobile-brand-logo{width:40px;height:40px;border-radius:50%;background:#ecfdf5;border:1px solid #a7f3d0;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(5,150,105,0.12)}.mobile-brand-logo img{width:26px;height:26px;object-fit:contain}.mobile-brand-meta{display:flex;flex-direction:column;gap:1px}.mobile-brand-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;color:#0f172a;letter-spacing:-0.01em;line-height:1.2}.mobile-brand-sub{font-family:'Inter',sans-serif;font-size:11px;color:#64748b;font-weight:500;letter-spacing:0.01em;line-height:1.2}.mobile-header-actions{display:flex;align-items:center;gap:8px}.mobile-action-btn{width:40px;height:40px;border-radius:50%;border:1px solid #e2e8f0;background:#ffffff;color:#1e293b;display:inline-flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all 0.22s cubic-bezier(0.16,1,0.3,1)}.mobile-action-btn:hover{background:#f8fafc;color:#059669;border-color:#cbd5e1}.mobile-action-btn:active{transform:scale(0.94)}.mobile-action-btn.mobile-drawer-toggle{font-size:22px}.mobile-action-btn.mobile-drawer-toggle.is-active{width:40px;height:40px;background:#059669;border-color:#059669;color:#ffffff;font-size:19px;box-shadow:0 4px 12px rgba(5,150,105,0.35);transform:none}.mobile-search-expand{display:none;padding:0 0 12px;animation:slideDown 0.2s ease-out forwards}.mobile-search-expand.show{display:block}@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}.mobile-search-form{position:relative;display:flex;align-items:center;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;padding:5px 12px}.mobile-search-form .search-icon{color:#94a3b8;font-size:14px;margin-right:8px}.mobile-search-form input{border:none;background:transparent;font-size:13.5px;color:#0f172a;width:100%;outline:none;padding:6px 0;font-family:'Plus Jakarta Sans',sans-serif}.mobile-search-form .search-close-btn{background:none;border:none;color:#94a3b8;font-size:16px;padding:0 4px;cursor:pointer}.mobile-collapse-menu{display:none;position:absolute;top:100%;left:0;right:0;width:100%;background-color:#ffffff !important;border-top:1px solid #f8fafc;border-bottom:1px solid #e2e8f0;box-shadow:0 20px 30px rgba(15,23,42,0.08);padding:24px 20px 32px 20px;max-height:calc(100vh - 64px);overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:1060}.mobile-collapse-menu.show{display:block;animation:collapseSlideDown 0.18s cubic-bezier(0.16,1,0.3,1) forwards}@keyframes collapseSlideDown{from{transform:translateY(-6px)}to{transform:translateY(0)}}.mobile-nav-wrap{display:block}.mobile-nav-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:22px}.mobile-nav-item{width:100%}.mobile-nav-link,.mobile-nav-parent{position:relative;display:flex;align-items:center;justify-content:space-between;padding:2px 0 2px 22px;font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#2b3649;text-decoration:none;background:transparent;cursor:pointer;border:none;width:100%;text-align:left;transition:color 0.18s ease}.mobile-nav-link:hover,.mobile-nav-parent:hover{color:#059669}.mobile-nav-link.active,.mobile-nav-parent.active{color:#059669 !important;font-weight:700 !important}.mobile-nav-link.active::before,.mobile-nav-parent.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3.5px;height:22px;background-color:#059669;border-radius:4px}.mobile-nav-parent .arrow-icon{color:#94a3b8;font-size:14px;margin-right:4px;transition:transform 0.22s cubic-bezier(0.16,1,0.3,1),color 0.2s}.mobile-nav-parent.active .arrow-icon{color:#059669}.mobile-nav-item.is-open .arrow-icon{transform:rotate(180deg);color:#059669}.mobile-nav-item.is-open>.mobile-nav-parent{color:#059669}.mobile-subnav-list{display:none;list-style:none;margin:12px 0 4px 22px;padding:2px 0 2px 14px;border-left:2px solid #e2e8f0}.mobile-nav-item.is-open .mobile-subnav-list{display:flex;flex-direction:column;gap:14px;animation:subnavFade 0.2s ease forwards}@keyframes subnavFade{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}.mobile-subnav-list a{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:14.5px;font-weight:600;color:#64748b;text-decoration:none;transition:color 0.15s ease}.mobile-subnav-list a:hover{color:#059669}.mobile-subnav-list a.active{color:#059669;font-weight:700}}@media (min-width:992px){.header-mobile,.mobile-collapse-menu{display:none !important}}.scroll-top{background-color:#059669 !important;box-shadow:0 8px 24px rgba(5,150,105,0.3) !important}.scroll-top:hover{background-color:#047857 !important;color:#ffffff !important}
+</style>
 </head>
 
 <body class="index-page">
@@ -388,7 +181,7 @@
                     </div>
 
                     <a href="{{ route('tampilan') }}" class="brand-center">
-                        <img src="{{ asset('mte/assets/img/Pusat_Penelitian.png') }}" alt="Logo P3M Polibang">
+                        <img src="{{ asset('mte/assets/img/Pusat_Penelitian.webp') }}" alt="Logo P3M Polibang" width="34" height="32" fetchpriority="high">
                         <span>P3M Polibang</span>
                     </a>
 
@@ -405,7 +198,7 @@
                 <div class="mobile-header-inner">
                     <a href="{{ route('tampilan') }}" class="mobile-brand">
                         <div class="mobile-brand-logo">
-                            <img src="{{ asset('mte/assets/img/Pusat_Penelitian.png') }}" alt="Logo P3M Polibang">
+                            <img src="{{ asset('mte/assets/img/Pusat_Penelitian.webp') }}" alt="Logo P3M Polibang" width="26" height="25" fetchpriority="high">
                         </div>
                         <div class="mobile-brand-meta">
                             <span class="mobile-brand-title">P3M POLIBANG</span>
@@ -558,161 +351,8 @@
     </main>
 
     <style>
-        /* =================================================================
-       FOOTER REDESIGN (Mobile Only - Minimalist)
-       ================================================================= */
-        @media (max-width: 767px) {
-            .footer-mobile-only {
-                padding-top: 20px;
-                text-align: center;
-            }
-
-            /* Logo Section */
-            .footer-mobile-brand {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 12px;
-                margin-bottom: 30px;
-                text-decoration: none;
-            }
-
-            .footer-mobile-brand span {
-                font-family: "Plus Jakarta Sans", sans-serif;
-                font-size: 1.6rem;
-                font-weight: 800;
-                color: #ffffff;
-                letter-spacing: -0.02em;
-            }
-
-            /* Social Icons */
-            .footer-mobile-social {
-                display: flex;
-                justify-content: center;
-                gap: 30px;
-                margin-bottom: 40px;
-            }
-
-            .footer-mobile-social a {
-                color: #ffffff;
-                font-size: 22px;
-                transition: color 0.2s ease, transform 0.2s ease;
-            }
-
-            .footer-mobile-social a:hover {
-                color: #94a3b8;
-                transform: scale(1.1);
-            }
-
-            /* Accordion / Collapsible Menus */
-            .footer-mobile-menus {
-                max-width: 100%;
-                margin: 0 auto 30px;
-            }
-
-            .footer-mobile-menus details {
-                border-bottom: none;
-                margin-bottom: 15px;
-            }
-
-            .footer-mobile-menus summary {
-                list-style: none;
-                /* Hide default arrow */
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 8px;
-                font-size: 12px;
-                font-weight: 700;
-                letter-spacing: 0.15em;
-                text-transform: uppercase;
-                cursor: pointer;
-                padding: 10px 0;
-                color: #ffffff;
-                transition: color 0.2s;
-            }
-
-            .footer-mobile-menus summary::-webkit-details-marker {
-                display: none;
-            }
-
-            .footer-mobile-menus summary::after {
-                content: '\F282';
-                /* bi-chevron-down */
-                font-family: "bootstrap-icons";
-                font-size: 12px;
-                transition: transform 0.3s ease;
-            }
-
-            .footer-mobile-menus details[open] summary::after {
-                transform: rotate(180deg);
-            }
-
-            .footer-mobile-menus details[open] summary {
-                color: #94a3b8;
-            }
-
-            .footer-mobile-content {
-                padding: 10px 0 20px;
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .footer-mobile-content a,
-            .footer-mobile-content p {
-                color: #cbd5e1;
-                text-decoration: none;
-                font-size: 13.5px;
-                margin: 0;
-                transition: color 0.2s;
-            }
-
-            .footer-mobile-content a:hover {
-                color: #ffffff;
-            }
-
-            /* Divider */
-            .footer-mobile-divider {
-                width: 80%;
-                height: 1px;
-                background-color: rgba(255, 255, 255, 0.1);
-                margin: 0 auto 30px;
-                border: none;
-            }
-
-            /* Bottom Direct Links */
-            .footer-mobile-bottom {
-                display: flex;
-                flex-direction: column;
-                gap: 24px;
-                margin-bottom: 40px;
-            }
-
-            .footer-mobile-bottom a {
-                color: #ffffff;
-                text-decoration: none;
-                font-size: 11px;
-                font-weight: 700;
-                letter-spacing: 0.15em;
-                text-transform: uppercase;
-                transition: color 0.2s;
-            }
-
-            .footer-mobile-bottom a:hover {
-                color: #94a3b8;
-            }
-
-            /* Copyright */
-            .footer-mobile-copy {
-                font-size: 11px;
-                color: #64748b;
-                letter-spacing: 0.05em;
-                text-transform: uppercase;
-                padding-bottom: 20px;
-            }
-        }
-    </style>
+@media (max-width:767px){.footer-mobile-only{padding-top:20px;text-align:center}.footer-mobile-brand{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:30px;text-decoration:none}.footer-mobile-brand span{font-family:"Plus Jakarta Sans",sans-serif;font-size:1.6rem;font-weight:800;color:#ffffff;letter-spacing:-0.02em}.footer-mobile-social{display:flex;justify-content:center;gap:30px;margin-bottom:40px}.footer-mobile-social a{color:#ffffff;font-size:22px;transition:color 0.2s ease,transform 0.2s ease}.footer-mobile-social a:hover{color:#94a3b8;transform:scale(1.1)}.footer-mobile-menus{max-width:100%;margin:0 auto 30px}.footer-mobile-menus details{border-bottom:none;margin-bottom:15px}.footer-mobile-menus summary{list-style:none;display:flex;justify-content:center;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;padding:10px 0;color:#ffffff;transition:color 0.2s}.footer-mobile-menus summary::-webkit-details-marker{display:none}.footer-mobile-menus summary::after{content:'\F282';font-family:"bootstrap-icons";font-size:12px;transition:transform 0.3s ease}.footer-mobile-menus details[open] summary::after{transform:rotate(180deg)}.footer-mobile-menus details[open] summary{color:#94a3b8}.footer-mobile-content{padding:10px 0 20px;display:flex;flex-direction:column;gap:12px}.footer-mobile-content a,.footer-mobile-content p{color:#cbd5e1;text-decoration:none;font-size:13.5px;margin:0;transition:color 0.2s}.footer-mobile-content a:hover{color:#ffffff}.footer-mobile-divider{width:80%;height:1px;background-color:rgba(255,255,255,0.1);margin:0 auto 30px;border:none}.footer-mobile-bottom{display:flex;flex-direction:column;gap:24px;margin-bottom:40px}.footer-mobile-bottom a{color:#ffffff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;transition:color 0.2s}.footer-mobile-bottom a:hover{color:#94a3b8}.footer-mobile-copy{font-size:11px;color:#64748b;letter-spacing:0.05em;text-transform:uppercase;padding-bottom:20px}}
+</style>
 
     <footer id="footer" class="footer">
         <section id="clients" class="clients section">
@@ -756,13 +396,13 @@
                         }
                     </script>
                     <div class="swiper-wrapper align-items-center">
-                        <div class="swiper-slide"><img src="{{ asset('mte/assets/img/clients/polibang.png') }}"
-                                class="img-fluid" alt="Polibang"></div>
-                        <div class="swiper-slide"><img src="{{ asset('mte/assets/img/clients/ponpes.jpg') }}"
-                                class="img-fluid" alt="Pondok Pesantren"></div>
+                        <div class="swiper-slide"><img src="{{ asset('mte/assets/img/clients/polibang.webp') }}"
+                                class="img-fluid" alt="Politeknik Balekambang Jepara" loading="lazy" width="69" height="80"></div>
+                        <div class="swiper-slide"><img src="{{ asset('mte/assets/img/clients/ponpes.webp') }}"
+                                class="img-fluid" alt="Pondok Pesantren Balekambang Jepara" loading="lazy" width="160" height="48"></div>
                         <div class="swiper-slide"><img
-                                src="{{ asset('mte/assets/img/clients/Pusat_Penelitian.png') }}" class="img-fluid"
-                                alt="P3M"></div>
+                                src="{{ asset('mte/assets/img/clients/Pusat_Penelitian.webp') }}" class="img-fluid"
+                                alt="Pusat Penelitian dan Pengabdian Kepada Masyarakat P3M POLIBANG" loading="lazy" width="69" height="65"></div>
                     </div>
                 </div>
             </div>
@@ -774,7 +414,7 @@
                 <div class="row gy-4">
                     <div class="col-lg-4 col-md-6 footer-about">
                         <a href="{{ route('tampilan') }}" class="footer-brand">
-                            <img src="{{ asset('mte/assets/img/Pusat_Penelitian.png') }}" alt="Logo P3M">
+                            <img src="{{ asset('mte/assets/img/Pusat_Penelitian.webp') }}" alt="Logo Resmi P3M Politeknik Balekambang Jepara" width="44" height="44">
                             <span>P3M Polibang</span>
                         </a>
                         <div class="footer-contact pt-3">
@@ -889,15 +529,12 @@
         <i class="bi bi-arrow-up-short"></i>
     </a>
 
-    <script src="{{ asset('mte/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('mte/assets/vendor/php-email-form/validate.js') }}"></script>
-    <script src="{{ asset('mte/assets/vendor/aos/aos.js') }}"></script>
-    <script src="{{ asset('mte/assets/vendor/glightbox/js/glightbox.min.js') }}"></script>
-    <script src="{{ asset('mte/assets/vendor/swiper/swiper-bundle.min.js') }}"></script>
-    <script src="{{ asset('mte/assets/vendor/waypoints/noframework.waypoints.js') }}"></script>
-    <script src="{{ asset('mte/assets/vendor/imagesloaded/imagesloaded.pkgd.min.js') }}"></script>
-    <script src="{{ asset('mte/assets/vendor/isotope-layout/isotope.pkgd.min.js') }}"></script>
-    <script src="{{ asset('mte/assets/js/main.js') }}"></script>
+    <!-- Essential Scripts with Defer (Non-Blocking) -->
+    <script src="{{ asset('mte/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}" defer></script>
+    <script src="{{ asset('mte/assets/vendor/aos/aos.js') }}" defer></script>
+    <script src="{{ asset('mte/assets/vendor/swiper/swiper-bundle.min.js') }}" defer></script>
+    <script src="{{ asset('mte/assets/js/main.js') }}" defer></script>
+    @stack('scripts')
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {

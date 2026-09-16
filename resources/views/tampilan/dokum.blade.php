@@ -1,4 +1,33 @@
 @extends('layout.views')
+
+@section('title', 'Dokumen dan Berkas Resmi P3M')
+@section('meta_description', 'Kumpulan dokumen resmi, formulir, dan berkas administrasi penelitian serta pengabdian masyarakat P3M Politeknik Balekambang Jepara.')
+@section('meta_keywords', 'Dokumen P3M, Berkas Penelitian Polibang, Formulir Pengabdian, Format Laporan P3M')
+@section('canonical', route('tampilan.dokumen'))
+
+@section('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "{{ route('tampilan') }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Dokumen P3M",
+      "item": "{{ route('tampilan.dokumen') }}"
+    }
+  ]
+}
+</script>
+@endsection
+
 @section('isi')
 
 <style>
@@ -332,7 +361,7 @@ body {
                                     {{ $d->namefile }}
                                 </td>
                                 <td style="text-align: center;">
-                                    <a href="{{ $docUrl }}" target="_blank" class="btn-download-premium" aria-label="Unduh dokumen" title="Unduh">
+                                    <a href="{{ $docUrl }}" target="_blank" class="btn-download-premium" aria-label="Unduh dokumen {{ $d->namefile }}" title="Unduh {{ $d->namefile }}">
                                         <i class="fas fa-cloud-download-alt"></i>
                                         Unduh
                                     </a>

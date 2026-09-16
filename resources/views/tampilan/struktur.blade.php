@@ -1,9 +1,38 @@
 @extends('layout.views')
+
+@section('title', 'Struktur Organisasi P3M')
+@section('meta_description', 'Susunan pengelola dan struktur organisasi Pusat Penelitian dan Pengabdian Kepada Masyarakat (P3M) Politeknik Balekambang Jepara.')
+@section('meta_keywords', 'Struktur Organisasi P3M, Pengelola P3M Polibang, Dosen Peneliti, Manajemen P3M Balekambang')
+@section('canonical', route('tampilan.struktur'))
+
+@section('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "{{ route('tampilan') }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Struktur Organisasi",
+      "item": "{{ route('tampilan.struktur') }}"
+    }
+  ]
+}
+</script>
+@endsection
+
 @section('isi')
 <style>
 /* ── STRUKTUR ORGANISASI P3M STYLES ───────────────── */
 :root {
-    --primary-light: #059669;
+    --primary-light: #047857;
     --primary-dark: #047857;
     --primary-soft: #ecfdf5;
     --primary-border: #a7f3d0;
@@ -116,6 +145,7 @@ body {
     flex-grow: 1;
 }
 
+.team-info h3,
 .team-info h4 {
     font-family: "Plus Jakarta Sans", sans-serif;
     font-size: 18px;
@@ -129,7 +159,7 @@ body {
 .team-role {
     font-size: 13px;
     font-weight: 600;
-    color: #059669;
+    color: #047857;
     line-height: 1.45;
     margin: 0 0 16px 0;
     max-width: 320px;
@@ -231,6 +261,7 @@ body {
         text-align: center !important;
     }
 
+    .team-info h3,
     .team-info h4 {
         font-size: 16.5px !important;
         margin: 0 0 5px 0 !important;
@@ -265,7 +296,7 @@ body {
 }
 </style>
 
-<div class="page-title" data-aos="fade">
+<div class="page-title">
     <div class="container">
         <nav class="breadcrumbs">
             <ol>
@@ -291,12 +322,12 @@ body {
                 <div class="col-12 col-md-6 col-lg-5 d-flex" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 50 }}">
                     <div class="premium-team-card w-100">
                         <div class="team-avatar-wrap">
-                            <img src="{{ asset('storage/photo-pengelola/' . $d->image) }}" alt="{{ $d->nama_pengelola }}"
-                                onerror="this.src='{{ asset('mte/assets/img/polibang.png') }}';">
+                            <img src="{{ asset('storage/photo-pengelola/' . $d->image) }}" alt="{{ $d->nama_pengelola }} - {{ $d->jabatan_pengelola }}"
+                                onerror="this.src='{{ asset('mte/assets/img/polibang.webp') }}';" loading="lazy" width="105" height="130">
                         </div>
 
                         <div class="team-info">
-                            <h4>{{ $d->nama_pengelola }}</h4>
+                            <h3>{{ $d->nama_pengelola }}</h3>
                             <p class="team-role">{{ $d->jabatan_pengelola }}</p>
 
                             <div class="team-footer">

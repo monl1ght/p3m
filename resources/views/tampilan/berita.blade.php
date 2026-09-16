@@ -1,4 +1,33 @@
 @extends('layout.views')
+
+@section('title', 'Kegiatan dan Berita P3M')
+@section('meta_description', 'Kumpulan berita, liputan kegiatan, dan dokumentasi penelitian serta pengabdian masyarakat di lingkungan P3M Politeknik Balekambang Jepara.')
+@section('meta_keywords', 'Berita P3M, Kegiatan P3M Polibang, Riset Politeknik Balekambang, Pengabdian Balekambang Jepara')
+@section('canonical', route('tampilan.berita'))
+
+@section('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "{{ route('tampilan') }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Kegiatan P3M",
+      "item": "{{ route('tampilan.berita') }}"
+    }
+  ]
+}
+</script>
+@endsection
+
 @section('isi')
 
 <style>
@@ -235,7 +264,7 @@ body {
                 <div class="col-lg-4 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 100 }}">
                     <article class="premium-news-card w-100">
                         <div class="news-card-img-wrap">
-                            <img src="{{ asset('storage/photo-news/'.$d->image) }}" alt="{{ $d->title }}" onerror="this.src='{{ asset('mte/assets/img/polibang.png') }}';">
+                            <img src="{{ asset('storage/photo-news/'.$d->image) }}" alt="{{ $d->title }}" onerror="this.src='{{ asset('mte/assets/img/polibang.png') }}';" loading="lazy">
                         </div>
 
                         <div class="news-card-body">
@@ -250,7 +279,7 @@ body {
                             <p>{{ Str::words(strip_tags(html_entity_decode($d->content)), 16) }}</p>
 
                             <div class="news-card-footer">
-                                <a href="{{ route('tampilan.detail', ['id' => $d->id]) }}" class="btn-read-more">
+                                <a href="{{ route('tampilan.detail', ['id' => $d->id]) }}" class="btn-read-more" aria-label="Baca selengkapnya mengenai {{ $d->title }}">
                                     Baca Selengkapnya
                                     <i class="fas fa-arrow-right"></i>
                                 </a>

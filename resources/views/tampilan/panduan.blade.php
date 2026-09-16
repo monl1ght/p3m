@@ -1,4 +1,33 @@
 @extends('layout.views')
+
+@section('title', 'Buku Panduan P3M')
+@section('meta_description', 'Kumpulan buku panduan dan pedoman resmi pelaksanaan penelitian serta pengabdian kepada masyarakat (P3M) Politeknik Balekambang Jepara.')
+@section('meta_keywords', 'Panduan P3M, Buku Pedoman Penelitian, Panduan Pengabdian, Riset Dosen Polibang')
+@section('canonical', route('tampilan.panduan'))
+
+@section('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "{{ route('tampilan') }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Panduan P3M",
+      "item": "{{ route('tampilan.panduan') }}"
+    }
+  ]
+}
+</script>
+@endsection
+
 @section('isi')
 <style>
 /* ── PANDUAN P3M MODERN RESPONSIVE STYLES ───────────── */
@@ -359,7 +388,7 @@ body {
                                     <span>{{ $d->namefile }}</span>
                                 </td>
                                 <td style="text-align: center;">
-                                    <a href="{{ route('tampilan.unduh', $d->id) }}" class="btn-download-premium" title="Unduh Panduan">
+                                    <a href="{{ route('tampilan.unduh', $d->id) }}" class="btn-download-premium" title="Unduh Panduan" aria-label="Unduh panduan {{ $d->namefile }}">
                                         <i class="bi bi-download"></i>
                                         <span>Unduh</span>
                                     </a>

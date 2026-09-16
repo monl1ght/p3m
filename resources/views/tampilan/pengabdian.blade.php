@@ -1,4 +1,33 @@
 @extends('layout.views')
+
+@section('title', 'Data Pengabdian Masyarakat P3M')
+@section('meta_description', 'Dokumentasi dan rekapitulasi data kegiatan Pengabdian Kepada Masyarakat (PKM) dosen P3M Politeknik Balekambang Jepara.')
+@section('meta_keywords', 'Pengabdian Masyarakat, PKM Dosen, Hilirisasi Riset, Pengabdian Polibang Jepara, P3M Balekambang')
+@section('canonical', route('tampilan.pengabdian'))
+
+@section('schema')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "{{ route('tampilan') }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Data Pengabdian P3M",
+      "item": "{{ route('tampilan.pengabdian') }}"
+    }
+  ]
+}
+</script>
+@endsection
+
 @section('isi')
 
 <style>

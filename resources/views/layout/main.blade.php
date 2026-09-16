@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="turbo-root" content="/">
     <title>Sistem Informasi P3M POLIBANG</title>
 
