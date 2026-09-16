@@ -1007,11 +1007,6 @@
                         <h1>
                             {{ $pagetitle }}
                         </h1>
-
-                        <p>
-                            Lengkapi data laporan pengabdian dan informasi ketua sebelum mengirimkan laporan.
-                        </p>
-
                     </div>
 
 

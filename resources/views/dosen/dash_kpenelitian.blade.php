@@ -953,9 +953,6 @@
                             <h1 class="upp3m-card-title">
                                 {{ $pagetitle }}
                             </h1>
-                            <p class="upp3m-card-subtitle">
-                                Kelola dan pantau laporan hasil penelitian yang telah Anda unggah melalui P3M.
-                            </p>
                         </div>
 
                         <div class="upp3m-header-actions">

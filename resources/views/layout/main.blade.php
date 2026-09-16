@@ -48,23 +48,21 @@
 
         /* ── Silky smooth SPA page transitions ── */
         .content-wrapper {
-            will-change: opacity, transform;
-            transition: opacity .18s cubic-bezier(0.16, 1, 0.3, 1), transform .18s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: auto;
         }
 
         .admin-page-exit {
-            opacity: 0.35 !important;
-            transform: translateY(4px) !important;
+            opacity: .72 !important;
         }
 
         .admin-page-enter {
-            animation: adminPageIn .26s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation: adminPageIn .18s cubic-bezier(.16, 1, .3, 1) both;
         }
 
         @keyframes adminPageIn {
             0% {
-                opacity: 0.3;
-                transform: translateY(8px);
+                opacity: .72;
+                transform: translateY(3px);
             }
             100% {
                 opacity: 1;
@@ -76,7 +74,7 @@
     @yield('css')
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed p3m-admin-elegant @yield('body_class')">
+<body class="hold-transition sidebar-mini layout-fixed p3m-admin-elegant @yield('body_class')" data-turbo="false">
     <div class="wrapper">
         @php
             $navAvatarPath = !empty($user->image) ? 'storage/photo-user/' . $user->image : null;
@@ -204,7 +202,7 @@
         </nav>
 
         <aside class="main-sidebar sidebar-dark-primary elevation-4" id="p3m-sidebar" data-turbo-permanent>
-            <a href="{{ route('dash.dashadmin') }}" class="brand-link p3m-brand">
+            <a href="{{ route('dash.dashadmin') }}" class="brand-link p3m-brand" data-turbo="true">
                 <img src="{{ asset('mte/assets/img/Pusat_Penelitian.png') }}" alt="Logo P3M">
                 <span>
                     <strong>P3M Polibang</strong>
@@ -247,11 +245,12 @@
                     </div>
                 </div>
 
-                <nav class="mt-2">
+                <nav class="mt-2" data-turbo="true">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                         data-accordion="false">
                         <li class="nav-item {{ request()->routeIs('dash.*', 'index') ? 'menu-open' : '' }}">
-                            <a href="#"
+                            <a href="#" data-turbo="false" role="button" aria-controls="admin-nav-utama"
+                                aria-expanded="{{ request()->routeIs('dash.*', 'index') ? 'true' : 'false' }}"
                                 class="nav-link {{ request()->routeIs('dash.*', 'index') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-home"></i>
                                 <p>
@@ -259,7 +258,7 @@
                                     <i class="right fas fa-chevron-right"></i>
                                 </p>
                             </a>
-                            <ul class="nav nav-treeview">
+                            <ul class="nav nav-treeview" id="admin-nav-utama">
                                 <li class="nav-item">
                                     <a href="{{ route('dash.dashboard') }}"
                                         class="nav-link {{ request()->routeIs('dash.dashboard', 'dash.create_dash', 'dash.edit_dash') ? 'active' : '' }}">
@@ -279,7 +278,8 @@
 
                         <li
                             class="nav-item {{ request()->routeIs('pengelola.*', 'tentang.*', 'panduan.*') ? 'menu-open' : '' }}">
-                            <a href="#"
+                            <a href="#" data-turbo="false" role="button" aria-controls="admin-nav-profil"
+                                aria-expanded="{{ request()->routeIs('pengelola.*', 'tentang.*', 'panduan.*') ? 'true' : 'false' }}"
                                 class="nav-link {{ request()->routeIs('pengelola.*', 'tentang.*', 'panduan.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-id-card-alt"></i>
                                 <p>
@@ -287,7 +287,7 @@
                                     <i class="right fas fa-chevron-right"></i>
                                 </p>
                             </a>
-                            <ul class="nav nav-treeview">
+                            <ul class="nav nav-treeview" id="admin-nav-profil">
                                 <li class="nav-item">
                                     <a href="{{ route('pengelola.index') }}"
                                         class="nav-link {{ request()->routeIs('pengelola.*') ? 'active' : '' }}">
@@ -314,7 +314,8 @@
 
                         <li
                             class="nav-item {{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*', 'jurnal.*') ? 'menu-open' : '' }}">
-                            <a href="#"
+                            <a href="#" data-turbo="false" role="button" aria-controls="admin-nav-seputar"
+                                aria-expanded="{{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*', 'jurnal.*') ? 'true' : 'false' }}"
                                 class="nav-link {{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*', 'jurnal.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-layer-group"></i>
                                 <p>
@@ -322,7 +323,7 @@
                                     <i class="right fas fa-chevron-right"></i>
                                 </p>
                             </a>
-                            <ul class="nav nav-treeview">
+                            <ul class="nav nav-treeview" id="admin-nav-seputar">
                                 <li class="nav-item">
                                     <a href="{{ route('category.index') }}"
                                         class="nav-link {{ request()->routeIs('category.*') ? 'active' : '' }}">
@@ -362,14 +363,16 @@
                         </li>
 
                         <li class="nav-item {{ request()->routeIs('plppm.*', 'detail.detail', 'detail.detailk') ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link {{ request()->routeIs('plppm.*', 'detail.detail', 'detail.detailk') ? 'active' : '' }}">
+                            <a href="#" data-turbo="false" role="button" aria-controls="admin-nav-pengajuan"
+                                aria-expanded="{{ request()->routeIs('plppm.*', 'detail.detail', 'detail.detailk') ? 'true' : 'false' }}"
+                                class="nav-link {{ request()->routeIs('plppm.*', 'detail.detail', 'detail.detailk') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-file-signature"></i>
                                 <p>
                                     Pengajuan & Laporan
                                     <i class="right fas fa-chevron-right"></i>
                                 </p>
                             </a>
-                            <ul class="nav nav-treeview">
+                            <ul class="nav nav-treeview" id="admin-nav-pengajuan">
                                 <li class="nav-item">
                                     <a href="{{ route('plppm.lpengabdian') }}"
                                         class="nav-link {{ request()->routeIs('plppm.lpengabdian') ? 'active' : '' }}">
@@ -402,7 +405,7 @@
                         </li>
 
                         <li class="nav-item mt-2">
-                            <form action="{{ route('logout') }}" method="POST">
+                            <form action="{{ route('logout') }}" method="POST" data-turbo="false">
                                 @csrf
                                 <button type="button" class="nav-link w-100 text-left border-0 bg-transparent admin-logout-link" id="js-admin-sidebar-logout-btn">
                                     <i class="nav-icon fas fa-sign-out-alt"></i>
@@ -693,6 +696,7 @@
 
                     allLinks.forEach(function(link) {
                         link.classList.remove('active');
+                        link.removeAttribute('aria-current');
                     });
 
                     if (!activeLink) {
@@ -700,6 +704,7 @@
                     }
 
                     activeLink.classList.add('active');
+                    activeLink.setAttribute('aria-current', 'page');
 
                     const treeview = activeLink.closest('.nav-treeview');
 
@@ -731,7 +736,18 @@
                     });
                 }
 
+                updateTreeviewAccessibility(sidebar);
                 updateAdminTopbarPage();
+            }
+
+            function updateTreeviewAccessibility(sidebar) {
+                const targetSidebar = sidebar || document.getElementById('p3m-sidebar');
+                if (!targetSidebar) return;
+
+                targetSidebar.querySelectorAll('.nav-item > .nav-link[aria-controls]').forEach(function(link) {
+                    const item = link.closest('.nav-item');
+                    link.setAttribute('aria-expanded', item && item.classList.contains('menu-open') ? 'true' : 'false');
+                });
             }
 
             function updateAdminTopbarPage() {
@@ -866,10 +882,13 @@
 
             function triggerPageEnterAnimation() {
                 const cw = document.querySelector('.content-wrapper');
-                if (!cw) return;
+                if (!cw || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
                 cw.classList.remove('admin-page-enter', 'admin-page-exit');
-                void cw.offsetWidth; /* reflow */
-                cw.classList.add('admin-page-enter');
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        cw.classList.add('admin-page-enter');
+                    });
+                });
             }
 
             // Browser should not fight Turbo with its own scroll restoration.
@@ -900,10 +919,6 @@
                 }
             });
 
-            document.addEventListener('turbo:render', function() {
-                requestAnimationFrame(triggerPageEnterAnimation);
-            });
-
             document.addEventListener('turbo:load', function() {
                 const url = navigationState.destinationUrl || window.location.href;
 
@@ -911,7 +926,7 @@
                 updateAdminTopbarPage();
                 initializePageComponents();
                 restoreNavigationScroll();
-                requestAnimationFrame(triggerPageEnterAnimation);
+                triggerPageEnterAnimation();
 
                 navigationState.destinationUrl = null;
             });
@@ -942,6 +957,28 @@
 
                     saveNavigationScroll();
                     navigationState.destinationUrl = normalizeUrl(this.href);
+                });
+
+            // A group is a disclosure control, never an in-page hash link.
+            // Preserve the sidebar position while AdminLTE expands/collapses it.
+            $(document)
+                .off('click.p3mAdminTreeview', '#p3m-sidebar .nav-link[aria-controls]')
+                .on('click.p3mAdminTreeview', '#p3m-sidebar .nav-link[aria-controls]', function(event) {
+                    event.preventDefault();
+                    saveNavigationScroll();
+
+                    requestAnimationFrame(function() {
+                        updateTreeviewAccessibility();
+                        restoreNavigationScroll();
+                    });
+                });
+
+            $(document)
+                .off('keydown.p3mAdminTreeview', '#p3m-sidebar .nav-link[role="button"]')
+                .on('keydown.p3mAdminTreeview', '#p3m-sidebar .nav-link[role="button"]', function(event) {
+                    if (event.key !== ' ') return;
+                    event.preventDefault();
+                    $(this).trigger('click');
                 });
 
             // Close dropdown upon Turbo navigation

@@ -14,7 +14,6 @@
                         <div>
                             <span class="dosen-profile-eyebrow">Pengaturan akun</span>
                             <h1>Edit Profil</h1>
-                            <p>Perbarui informasi akun dosen P3M Anda.</p>
                         </div>
 
                         <ol class="breadcrumb">

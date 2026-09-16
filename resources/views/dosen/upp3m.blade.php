@@ -979,9 +979,6 @@
                             <h1 class="upp3m-card-title">
                                 {{ $pagetitle ?? 'Proposal Pengabdian Masyarakat' }}
                             </h1>
-                            <p class="upp3m-card-subtitle">
-                                Kelola dan pantau proposal pengabdian masyarakat Anda.
-                            </p>
                         </div>
 
                         <div class="upp3m-header-actions">

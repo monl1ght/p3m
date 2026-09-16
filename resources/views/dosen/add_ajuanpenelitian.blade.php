@@ -813,11 +813,6 @@
                         <h1>
                             {{ $pagetitle }}
                         </h1>
-
-                        <p>
-                            Lengkapi informasi proposal penelitian dan data ketua pengusul sebelum mengirimkan pengajuan.
-                        </p>
-
                     </div>
 
 

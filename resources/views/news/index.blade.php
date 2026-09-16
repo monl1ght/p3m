@@ -277,7 +277,6 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                 <div>
                     <span class="card-eyebrow">Seputar P3M</span>
                     <h1 class="card-head-title">Kegiatan P3M</h1>
-                    <p class="card-head-sub">Kelola publikasi kegiatan P3M Polibang, mulai dari judul, tanggal, gambar, kategori, hingga isi konten.</p>
                 </div>
                 <div class="card-head-actions">
                     <div class="stat-chip">

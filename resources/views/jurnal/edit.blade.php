@@ -183,7 +183,6 @@
                 <div class="form-card-head">
                     <span class="card-eyebrow">Seputar P3M</span>
                     <h1 class="card-head-title">Edit Jurnal P3M</h1>
-                    <p class="card-head-sub">Perbarui judul artikel karya ilmiah atau tautan web jurnal yang telah diindeks.</p>
                 </div>
 
                 <div class="form-card-body">

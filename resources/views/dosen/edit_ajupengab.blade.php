@@ -1111,10 +1111,6 @@
                         <h1>
                             {{ $pagetitle }}
                         </h1>
-
-                        <p>
-                            Perbarui informasi proposal dan anggota pengabdian Anda.
-                        </p>
                     </div>
 
 

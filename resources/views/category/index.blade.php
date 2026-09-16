@@ -368,7 +368,6 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                 <div>
                     <span class="card-eyebrow">Seputar P3M</span>
                     <h1 class="card-head-title">Kategori Berita</h1>
-                    <p class="card-head-sub">Kelola kategori kegiatan dan berita P3M agar konten publik lebih tertata dan mudah ditemukan.</p>
                 </div>
                 <div class="card-head-actions">
                     <div class="stat-chip">

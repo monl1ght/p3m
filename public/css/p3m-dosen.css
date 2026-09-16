@@ -337,6 +337,25 @@ body.p3m-dosen-shell .dosen-dropdown-logout:hover {
     color: #b91c1c !important;
 }
 
+/* Preserve the compact desktop appearance while giving touch users reliable
+   44px targets for the controls that are not part of the sidebar list. */
+@media (hover: none) and (pointer: coarse) {
+    body.p3m-dosen-shell .dosen-menu-toggle {
+        width: 44px !important;
+        height: 44px !important;
+    }
+
+    body.p3m-dosen-shell .dosen-user-chip {
+        min-height: 44px;
+        height: 44px;
+    }
+
+    body.p3m-dosen-shell .dosen-website-btn,
+    body.p3m-dosen-shell .dosen-dropdown-item {
+        min-height: 44px;
+    }
+}
+
 /* ==========================================================================
    SIDEBAR — sinkron dengan Admin geometry
    ========================================================================== */
@@ -550,6 +569,7 @@ body.p3m-dosen-shell .dosen-navigation {
     flex: 1 1 auto;
     min-height: 0;
     width: 100%;
+    padding-bottom: 2px;
 }
 
 body.p3m-dosen-shell .dosen-navigation .nav-item {
@@ -572,7 +592,22 @@ body.p3m-dosen-shell .dosen-nav-link {
     font-weight: 650 !important;
     line-height: 1.25 !important;
     text-decoration: none !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     transition: background .18s ease, color .18s ease;
+}
+
+body.p3m-dosen-shell .dosen-nav-link:focus-visible,
+body.p3m-dosen-shell .dosen-child-link:focus-visible,
+body.p3m-dosen-shell .dosen-menu-toggle:focus-visible,
+body.p3m-dosen-shell .dosen-user-chip:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, .88) !important;
+    outline-offset: 2px;
+}
+
+body.p3m-dosen-shell .dosen-menu-toggle:focus-visible,
+body.p3m-dosen-shell .dosen-user-chip:focus-visible {
+    outline-color: var(--dosen-green-500) !important;
 }
 
 body.p3m-dosen-shell .dosen-nav-link .nav-icon {
@@ -654,6 +689,8 @@ body.p3m-dosen-shell .dosen-child-link {
     font-size: 11.8px !important;
     font-weight: 600 !important;
     text-decoration: none !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     transition: background .18s ease, color .18s ease;
 }
 
@@ -814,6 +851,7 @@ body.p3m-dosen-shell .dosen-sidebar-footer span {
 
 @media (max-width: 991.98px) {
     body.p3m-dosen-shell .dosen-sidebar {
+        width: min(280px, calc(100vw - 16px)) !important;
         border-radius: 0 20px 20px 0 !important;
     }
 
@@ -1452,5 +1490,9 @@ body.p3m-dosen-shell .dosen-sidebar-footer span {
     body.p3m-dosen-shell *::before,
     body.p3m-dosen-shell *::after {
         transition: none !important;
+    }
+
+    .dosen-page-enter {
+        animation: none !important;
     }
 }

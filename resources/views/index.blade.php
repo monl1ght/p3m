@@ -433,7 +433,6 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                 <div>
                     <span class="card-eyebrow">Manajemen Akses</span>
                     <h1 class="card-head-title">{{ $pagetitle }}</h1>
-                    <p class="card-head-sub">Kelola akun pengelola &amp; dosen P3M Politeknik Balekambang Jepara secara ringkas dan mudah.</p>
                 </div>
                 <div class="card-head-actions">
                     <div class="stat-chip">

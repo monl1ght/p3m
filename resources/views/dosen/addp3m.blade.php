@@ -799,10 +799,6 @@
                         <h1>
                             {{ $pagetitle }}
                         </h1>
-
-                        <p>
-                            Lengkapi informasi proposal dan data ketua pengusul sebelum mengirimkan pengajuan.
-                        </p>
                     </div>
 
                     <ol class="breadcrumb addp3m-breadcrumb">

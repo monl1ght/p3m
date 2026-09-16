@@ -396,7 +396,6 @@ table.users-table {
                 <div>
                     <span class="card-eyebrow">Pengajuan & Laporan</span>
                     <h1 class="card-head-title">Laporan Penelitian Masyarakat</h1>
-                    <p class="card-head-sub">Kelola, verifikasi berkas, dan tinjau laporan kemajuan dan laporan akhir penelitian dari para dosen.</p>
                 </div>
                 <div class="card-head-actions">
                     <div class="stat-chip">

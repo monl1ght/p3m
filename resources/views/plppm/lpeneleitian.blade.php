@@ -396,7 +396,6 @@ table.users-table {
                 <div>
                     <span class="card-eyebrow">Pengajuan & Laporan</span>
                     <h1 class="card-head-title">Proposal Penelitian Masyarakat</h1>
-                    <p class="card-head-sub">Daftar usulan proposal penelitian dosen yang masuk untuk diverifikasi dan ditinjau.</p>
                 </div>
                 <div class="card-head-actions">
                     <div class="stat-chip">

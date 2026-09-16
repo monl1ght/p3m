@@ -182,7 +182,6 @@
                 <div class="form-card-head">
                     <span class="card-eyebrow">Seputar P3M</span>
                     <h1 class="card-head-title">Tambah Jurnal P3M</h1>
-                    <p class="card-head-sub">Masukkan judul artikel karya ilmiah dan tautan jurnal untuk diindeks pada portal P3M.</p>
                 </div>
 
                 <div class="form-card-body">

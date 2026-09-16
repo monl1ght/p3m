@@ -983,9 +983,6 @@
                             <h1 class="upp3m-card-title">
                                 {{ $pagetitle }}
                             </h1>
-                            <p class="upp3m-card-subtitle">
-                                Kelola dan unggah draf usulan penelitian Anda di sini untuk ditinjau oleh tim P3M.
-                            </p>
                         </div>
 
                         <div class="upp3m-header-actions">

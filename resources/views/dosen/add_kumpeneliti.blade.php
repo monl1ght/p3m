@@ -1115,11 +1115,6 @@
                         <h1>
                             {{ $pagetitle }}
                         </h1>
-
-                        <p>
-                            Lengkapi data laporan penelitian dan informasi ketua sebelum mengirimkan laporan.
-                        </p>
-
                     </div>
 
 

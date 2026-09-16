@@ -203,7 +203,6 @@
                 <div>
                     <span class="card-eyebrow">Profil P3M</span>
                     <h1 class="card-head-title">Tentang P3M</h1>
-                    <p class="card-head-sub">Kelola informasi visi, misi, dan deskripsi P3M yang tampil pada halaman publik website.</p>
                 </div>
                 <div class="card-head-actions">
                     <a href="{{ route('tentang.create') }}" class="btn-tentang-add">

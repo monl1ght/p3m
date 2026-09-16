@@ -1010,6 +1010,8 @@ body.p3m-admin-elegant .nav-sidebar>.nav-item>.nav-link {
     font-weight: 650 !important;
 
     text-decoration: none !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 
     transition:
         background .18s ease,
@@ -1117,6 +1119,8 @@ body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link {
 
     display: flex !important;
     align-items: center !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 
     border-radius: 10px !important;
 
@@ -1873,6 +1877,7 @@ body.p3m-admin-elegant .main-sidebar .nav-treeview .nav-link {
 
     /* Let AdminLTE own the drawer interaction; only keep the shell stable. */
     body.p3m-admin-elegant .main-sidebar {
+        width: min(280px, calc(100vw - 16px)) !important;
         backface-visibility: hidden;
     }
 
@@ -1892,5 +1897,9 @@ body.p3m-admin-elegant .main-sidebar .nav-treeview .nav-link {
     body.p3m-admin-elegant .main-sidebar .nav-treeview .nav-link {
         transition: none !important;
         scroll-behavior: auto !important;
+    }
+
+    .admin-page-enter {
+        animation: none !important;
     }
 }

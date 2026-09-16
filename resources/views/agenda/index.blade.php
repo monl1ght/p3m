@@ -286,7 +286,6 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                 <div>
                     <span class="card-eyebrow">Agenda P3M</span>
                     <h1 class="card-head-title">Agenda Kegiatan P3M</h1>
-                    <p class="card-head-sub">Kelola jadwal kegiatan P3M, mulai dari tanggal, waktu pelaksanaan, lokasi, hingga ringkasan agenda.</p>
                 </div>
                 <div class="card-head-actions">
                     <div class="stat-chip">

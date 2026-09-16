@@ -510,7 +510,6 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                 <div>
                     <span class="card-eyebrow">Profil P3M</span>
                     <h1 class="card-head-title">Pengelola P3M</h1>
-                    <p class="card-head-sub">Kelola profil pengelola yang ditampilkan pada halaman publik P3M Polibang.</p>
                 </div>
                 <div class="card-head-actions">
                     <div class="stat-chip">

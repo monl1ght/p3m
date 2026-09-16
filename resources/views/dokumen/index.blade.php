@@ -450,7 +450,6 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                 <div>
                     <span class="card-eyebrow">Dokumen P3M</span>
                     <h1 class="card-head-title">Dokumen P3M</h1>
-                    <p class="card-head-sub">Kelola dokumen resmi dan berkas publikasi P3M agar tertata rapi, mudah diakses, dan siap diunduh.</p>
                 </div>
                 <div class="card-head-actions">
                     <div class="stat-chip">

@@ -417,7 +417,6 @@ table.users-table {
                 <div>
                     <span class="card-eyebrow">Seputar P3M</span>
                     <h1 class="card-head-title">Jurnal P3M</h1>
-                    <p class="card-head-sub">Kelola indeks publikasi ilmiah dan tautan jurnal penelitian atau pengabdian civitas akademika.</p>
                 </div>
                 <div class="card-head-actions">
                     <div class="stat-chip">

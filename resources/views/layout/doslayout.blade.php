@@ -55,23 +55,21 @@
 
         /* ── Silky smooth SPA page transitions ── */
         .content-wrapper {
-            will-change: opacity, transform;
-            transition: opacity .18s cubic-bezier(0.16, 1, 0.3, 1), transform .18s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: auto;
         }
 
         .dosen-page-exit {
-            opacity: 0.35 !important;
-            transform: translateY(4px) !important;
+            opacity: .72 !important;
         }
 
         .dosen-page-enter {
-            animation: dosenPageIn .26s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation: dosenPageIn .18s cubic-bezier(.16, 1, .3, 1) both;
         }
 
         @keyframes dosenPageIn {
             0% {
-                opacity: 0.3;
-                transform: translateY(8px);
+                opacity: .72;
+                transform: translateY(3px);
             }
             100% {
                 opacity: 1;
@@ -83,7 +81,7 @@
     @yield('css')
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed p3m-admin-elegant p3m-dosen-shell @yield('body_class')">
+<body class="hold-transition sidebar-mini layout-fixed p3m-admin-elegant p3m-dosen-shell @yield('body_class')" data-turbo="false">
 
     <div class="wrapper">
 
@@ -151,7 +149,7 @@
                         </div>
 
                         <div class="dosen-dropdown-body">
-                            <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}"
+                            <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}" data-turbo="true"
                                 class="dropdown-item dosen-dropdown-item">
                                 <i class="fas fa-user-circle"></i>
                                 <span>Profil Saya</span>
@@ -176,7 +174,7 @@
 
         <aside class="main-sidebar sidebar-dark-primary elevation-4 dosen-sidebar" id="p3m-sidebar"
             data-turbo-permanent>
-            <a href="{{ route('dosen.dash') }}" class="dosen-brand">
+            <a href="{{ route('dosen.dash') }}" class="dosen-brand" data-turbo="true">
                 <div class="dosen-brand-logo">
                     <img src="{{ asset('mte/assets/img/Pusat_Penelitian.png') }}" alt="Logo P3M">
                 </div>
@@ -227,15 +225,17 @@
                         data-accordion="false">
 
                         <li class="nav-item">
-                            <a href="{{ route('dosen.dash') }}"
-                                class="nav-link dosen-nav-link {{ request()->routeIs('dosen.dash') ? 'active' : '' }}">
+                            <a href="{{ route('dosen.dash') }}" data-turbo="true"
+                                class="nav-link dosen-nav-link {{ request()->routeIs('dosen.dash') ? 'active' : '' }}"
+                                @if (request()->routeIs('dosen.dash')) aria-current="page" @endif>
                                 <i class="nav-icon fas fa-home"></i>
                                 <p>Dashboard Dosen</p>
                             </a>
                         </li>
 
                         <li class="nav-item {{ request()->routeIs('dosen.profil*') ? 'menu-open' : '' }}">
-                            <a href="#" data-turbo="false" role="button"
+                            <a href="#" data-turbo="false" role="button" aria-controls="dosen-nav-profil"
+                                aria-expanded="{{ request()->routeIs('dosen.profil*') ? 'true' : 'false' }}"
                                 class="nav-link dosen-nav-link {{ request()->routeIs('dosen.profil*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-user-cog"></i>
                                 <p>
@@ -244,10 +244,11 @@
                                 </p>
                             </a>
 
-                            <ul class="nav nav-treeview">
+                            <ul class="nav nav-treeview" id="dosen-nav-profil">
                                 <li class="nav-item">
-                                    <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}"
-                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.profil*') ? 'active' : '' }}">
+                                    <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}" data-turbo="true"
+                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.profil*') ? 'active' : '' }}"
+                                        @if (request()->routeIs('dosen.profil*')) aria-current="page" @endif>
                                         <i class="nav-icon fas fa-id-card"></i>
                                         <p>Setting Akun</p>
                                     </a>
@@ -257,7 +258,8 @@
 
                         <li
                             class="nav-item {{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab', 'dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') ? 'menu-open' : '' }}">
-                            <a href="#" data-turbo="false" role="button"
+                            <a href="#" data-turbo="false" role="button" aria-controls="dosen-nav-pengabdian"
+                                aria-expanded="{{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab', 'dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') ? 'true' : 'false' }}"
                                 class="nav-link dosen-nav-link {{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab', 'dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-hand-holding-heart"></i>
                                 <p>
@@ -266,18 +268,20 @@
                                 </p>
                             </a>
 
-                            <ul class="nav nav-treeview">
+                            <ul class="nav nav-treeview" id="dosen-nav-pengabdian">
                                 <li class="nav-item">
-                                    <a href="{{ route('dosen.upp3m') }}"
-                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab') ? 'active' : '' }}">
+                                    <a href="{{ route('dosen.upp3m') }}" data-turbo="true"
+                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab') ? 'active' : '' }}"
+                                        @if (request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab')) aria-current="page" @endif>
                                         <i class="nav-icon far fa-file-alt"></i>
                                         <p>Pengajuan Pengabdian</p>
                                     </a>
                                 </li>
 
                                 <li class="nav-item">
-                                    <a href="{{ route('dosen.dash_kpengabdian') }}"
-                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') ? 'active' : '' }}">
+                                    <a href="{{ route('dosen.dash_kpengabdian') }}" data-turbo="true"
+                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') ? 'active' : '' }}"
+                                        @if (request()->routeIs('dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian')) aria-current="page" @endif>
                                         <i class="nav-icon fas fa-folder-open"></i>
                                         <p>Laporan Pengabdian</p>
                                     </a>
@@ -287,7 +291,8 @@
 
                         <li
                             class="nav-item {{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian', 'dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') ? 'menu-open' : '' }}">
-                            <a href="#" data-turbo="false" role="button"
+                            <a href="#" data-turbo="false" role="button" aria-controls="dosen-nav-penelitian"
+                                aria-expanded="{{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian', 'dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') ? 'true' : 'false' }}"
                                 class="nav-link dosen-nav-link {{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian', 'dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-microscope"></i>
                                 <p>
@@ -296,18 +301,20 @@
                                 </p>
                             </a>
 
-                            <ul class="nav nav-treeview">
+                            <ul class="nav nav-treeview" id="dosen-nav-penelitian">
                                 <li class="nav-item">
-                                    <a href="{{ route('dosen.dash_ajuanpenelitian') }}"
-                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian') ? 'active' : '' }}">
+                                    <a href="{{ route('dosen.dash_ajuanpenelitian') }}" data-turbo="true"
+                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian') ? 'active' : '' }}"
+                                        @if (request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian')) aria-current="page" @endif>
                                         <i class="nav-icon far fa-file-alt"></i>
                                         <p>Pengajuan Penelitian</p>
                                     </a>
                                 </li>
 
                                 <li class="nav-item">
-                                    <a href="{{ route('dosen.dash_kpenelitian') }}"
-                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') ? 'active' : '' }}">
+                                    <a href="{{ route('dosen.dash_kpenelitian') }}" data-turbo="true"
+                                        class="nav-link dosen-child-link {{ request()->routeIs('dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') ? 'active' : '' }}"
+                                        @if (request()->routeIs('dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti')) aria-current="page" @endif>
                                         <i class="nav-icon fas fa-folder-open"></i>
                                         <p>Laporan Penelitian</p>
                                     </a>
@@ -388,11 +395,30 @@
             const NAV_LINK_SELECTOR = `${SIDEBAR_SELECTOR} a.nav-link[href]`;
 
             let destinationUrl = null;
+            let sidebarScrollTop = 0;
 
             /* ── Utilities ─────────────────────────────────────────────────── */
 
             function getSidebar() {
                 return document.querySelector(SIDEBAR_SELECTOR);
+            }
+
+            function getSidebarScrollContainer() {
+                return getSidebar()?.querySelector('.sidebar') || null;
+            }
+
+            function rememberSidebarScrollPosition() {
+                const scrollContainer = getSidebarScrollContainer();
+                if (scrollContainer) sidebarScrollTop = scrollContainer.scrollTop;
+            }
+
+            function restoreSidebarScrollPosition() {
+                const scrollContainer = getSidebarScrollContainer();
+                if (!scrollContainer) return;
+
+                requestAnimationFrame(() => {
+                    scrollContainer.scrollTop = sidebarScrollTop;
+                });
             }
 
             function normalizeUrl(url) {
@@ -444,11 +470,18 @@
                 const activeLink = findActiveLink(url);
 
                 /* Remove all active states first */
-                sidebar.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                sidebar.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    link.removeAttribute('aria-current');
+                });
 
-                if (!activeLink) return;
+                if (!activeLink) {
+                    updateTreeviewAccessibility(sidebar);
+                    return;
+                }
 
                 activeLink.classList.add('active');
+                activeLink.setAttribute('aria-current', 'page');
 
                 /* Determine whether the active link lives inside a sub-menu */
                 const treeview = activeLink.closest('.nav-treeview');
@@ -469,6 +502,16 @@
                  * We do NOT forcibly close sibling .menu-open groups so that groups opened by the user
                  * (e.g. Profil) remain open as the user browses sub-menus in another group (e.g. Penelitian).
                  */
+                updateTreeviewAccessibility(sidebar);
+            }
+
+            function updateTreeviewAccessibility(sidebar = getSidebar()) {
+                if (!sidebar) return;
+
+                sidebar.querySelectorAll('.nav-item > .nav-link[aria-controls]').forEach(link => {
+                    const item = link.closest('.nav-item');
+                    link.setAttribute('aria-expanded', item?.classList.contains('menu-open') ? 'true' : 'false');
+                });
             }
 
             /* ── Topbar breadcrumb ─────────────────────────────────────────── */
@@ -534,16 +577,18 @@
                 syncSidebarState(url || window.location.href);
                 updateTopbarPage();
                 initializePageComponents();
+                restoreSidebarScrollPosition();
             }
 
             /* ── Page enter animation ──────────────────────────────────────── */
 
             function triggerPageEnterAnimation() {
                 const cw = document.querySelector('.content-wrapper');
-                if (!cw) return;
+                if (!cw || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
                 cw.classList.remove('dosen-page-enter', 'dosen-page-exit');
-                void cw.offsetWidth; /* reflow */
-                cw.classList.add('dosen-page-enter');
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => cw.classList.add('dosen-page-enter'));
+                });
             }
 
             /* ── Turbo event hooks ─────────────────────────────────────────── */
@@ -551,6 +596,7 @@
             /* Close topbar dropdown before any navigation and start exit transition */
             document.addEventListener('turbo:before-visit', function(e) {
                 destinationUrl = e.detail && e.detail.url ? e.detail.url : null;
+                rememberSidebarScrollPosition();
 
                 if (typeof $ !== 'undefined') {
                     $('.dosen-user-dropdown').removeClass('show').closest('.dropdown').removeClass('show');
@@ -565,25 +611,22 @@
             document.addEventListener('turbo:before-render', function() {
                 if (destinationUrl) {
                     syncSidebarState(destinationUrl);
+                    restoreSidebarScrollPosition();
                 }
-            });
-
-            /* Animate content in after Turbo swaps the body */
-            document.addEventListener('turbo:render', function() {
-                requestAnimationFrame(triggerPageEnterAnimation);
             });
 
             /* Sync sidebar + init page components on every Turbo load */
             document.addEventListener('turbo:load', function() {
                 const url = destinationUrl || window.location.href;
                 refreshDosenShell(url);
-                requestAnimationFrame(triggerPageEnterAnimation);
+                triggerPageEnterAnimation();
                 destinationUrl = null;
             });
 
             /* Strip the animation class before Turbo caches the page so the
                cached snapshot starts clean (no mid-animation state stored). */
             document.addEventListener('turbo:before-cache', function() {
+                rememberSidebarScrollPosition();
                 const cw = document.querySelector('.content-wrapper');
                 if (cw) cw.classList.remove('dosen-page-enter', 'dosen-page-exit');
             });
@@ -593,6 +636,29 @@
                 refreshDosenShell();
                 triggerPageEnterAnimation();
             }, { once: true });
+
+            /* Keep AdminLTE's visual treeview state and its ARIA contract in sync.
+               Space activates role="button" controls just like a native button. */
+            document.addEventListener('click', function(event) {
+                const toggle = event.target.closest(`${SIDEBAR_SELECTOR} .nav-link[aria-controls]`);
+                if (!toggle) return;
+
+                /* Treeview controls are buttons, not hash navigation. Keeping the
+                   scroll position here also protects it from AdminLTE's slide animation. */
+                event.preventDefault();
+                rememberSidebarScrollPosition();
+                requestAnimationFrame(() => {
+                    updateTreeviewAccessibility();
+                    restoreSidebarScrollPosition();
+                });
+            });
+
+            document.addEventListener('keydown', function(event) {
+                const toggle = event.target.closest(`${SIDEBAR_SELECTOR} .nav-link[role="button"]`);
+                if (!toggle || event.key !== ' ') return;
+                event.preventDefault();
+                toggle.click();
+            });
 
             /* ── Logout confirmation ───────────────────────────────────────── */
 

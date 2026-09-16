@@ -1169,11 +1169,6 @@
                         <h1>
                             {{ $pagetitle }}
                         </h1>
-
-                        <p>
-                            Perbarui data laporan pengabdian dan anggota yang tersimpan pada P3M.
-                        </p>
-
                     </div>
 
 
