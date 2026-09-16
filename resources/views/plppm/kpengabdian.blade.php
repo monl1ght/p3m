@@ -301,6 +301,9 @@ table.users-table {
 .dataTables_wrapper .dataTables_paginate { display: none !important; }
 
 /* Modal Non-Approve */
+.p3m-modal {
+    z-index: 1060 !important;
+}
 .p3m-modal .modal-content {
     border: none; border-radius: var(--r-xl);
     box-shadow: 0 28px 70px rgba(0,30,20,.18); overflow: hidden;
@@ -532,40 +535,6 @@ table.users-table {
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Modal Non-approve -->
-                                <div class="modal fade p3m-modal" id="modal-nonapprove-{{ $d->id }}" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
-                                    <div class="modal-dialog modal-dialog-centered" role="document">
-                                        <div class="modal-content text-left">
-                                            <form action="{{ route('plppm.kumpulan.status', ['tipe' => 'kum_pengabdian', 'id' => $d->id]) }}" method="POST">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="status" value="non-approve">
-                                                <div class="modal-header">
-                                                    <div class="modal-icon modal-icon-danger"><i class="fas fa-ban"></i></div>
-                                                    <div class="modal-head-text">
-                                                        <h5>Catatan Penolakan / Revisi</h5>
-                                                        <p>Berikan instruksi perbaikan atau alasan penolakan bagi laporan pengabdian.</p>
-                                                    </div>
-                                                    <button type="button" class="modal-close-btn" data-dismiss="modal" aria-label="Tutup">&times;</button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <div class="form-field mb-0">
-                                                        <label>Catatan Admin <span class="req">*</span></label>
-                                                        <textarea name="reason" class="form-input" rows="4" required placeholder="Tuliskan catatan perbaikan atau alasan laporan pengabdian ini belum dapat disetujui..."></textarea>
-                                                        <span class="form-hint">Catatan ini akan langsung terlihat oleh dosen pengabdi pada riwayat status.</span>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn-modal-cancel" data-dismiss="modal">Batal</button>
-                                                    <button type="submit" class="btn-modal-submit btn-danger">
-                                                        <i class="fas fa-times"></i> Simpan Penolakan
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
                             </td>
                         </tr>
                         @endforeach
@@ -581,6 +550,42 @@ table.users-table {
         </div>
     </section>
 </div>
+
+{{-- Modals Non-Approve / Tolak & Revisi --}}
+@foreach ($penelitians as $d)
+<div class="modal fade p3m-modal" id="modal-nonapprove-{{ $d->id }}" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content text-left">
+            <form action="{{ route('plppm.kumpulan.status', ['tipe' => 'kum_pengabdian', 'id' => $d->id]) }}" method="POST">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="status" value="non-approve">
+                <div class="modal-header">
+                    <div class="modal-icon modal-icon-danger"><i class="fas fa-ban"></i></div>
+                    <div class="modal-head-text">
+                        <h5>Catatan Penolakan / Revisi</h5>
+                        <p>Berikan instruksi perbaikan atau alasan penolakan bagi laporan pengabdian.</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" data-dismiss="modal" aria-label="Tutup">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-field mb-0">
+                        <label>Catatan Admin <span class="req">*</span></label>
+                        <textarea name="reason" class="form-input" rows="4" required placeholder="Tuliskan catatan perbaikan atau alasan laporan pengabdian ini belum dapat disetujui..."></textarea>
+                        <span class="form-hint">Catatan ini akan langsung terlihat oleh dosen pengabdi pada riwayat status.</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-cancel" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn-modal-submit btn-danger">
+                        <i class="fas fa-times"></i> Simpan Penolakan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 @endsection
 
 @section('scripts')
