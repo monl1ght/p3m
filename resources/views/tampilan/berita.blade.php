@@ -264,7 +264,7 @@ body {
                 <div class="col-lg-4 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 100 }}">
                     <article class="premium-news-card w-100">
                         <div class="news-card-img-wrap">
-                            <img src="{{ asset('storage/photo-news/'.$d->image) }}" alt="{{ $d->title }}" onerror="this.src='{{ asset('mte/assets/img/polibang.png') }}';" loading="lazy">
+                            <img src="{{ asset('storage/photo-news/'.$d->image) }}" alt="{{ $d->title }}" onerror="this.src='{{ asset('mte/assets/img/polibang.png') }}';" loading="lazy" width="400" height="220" decoding="async">
                         </div>
 
                         <div class="news-card-body">

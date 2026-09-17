@@ -177,6 +177,7 @@
             border-bottom: none;
         }
 
+        .portfolio-info ul li h4,
         .portfolio-info ul li h6 {
             font-size: 15px;
             font-weight: 700;
@@ -186,16 +187,19 @@
             text-justify: inter-word !important;
         }
 
+        .portfolio-info ul li h4 a,
         .portfolio-info ul li h6 a {
             color: #0f172a;
             text-decoration: none;
             transition: color 0.2s;
         }
 
+        .portfolio-info ul li h4 a:hover,
         .portfolio-info ul li h6 a:hover {
             color: var(--primary-light);
         }
 
+        .portfolio-info ul li h4 i,
         .portfolio-info ul li h6 i {
             color: var(--primary-light);
             margin-right: 6px;
@@ -230,6 +234,7 @@
                 text-justify: inter-word !important;
             }
 
+            .portfolio-info ul li h4,
             .portfolio-info ul li h6 {
                 text-align: justify !important;
                 text-justify: inter-word !important;
@@ -292,12 +297,12 @@
                         <ul>
                             @foreach ($berita as $news)
                                 <li>
-                                    <h6 style="text-align: justify; text-justify: inter-word;">
+                                    <h4 style="text-align: justify; text-justify: inter-word;">
                                         <i class="far fa-newspaper"></i>
                                         <a href="{{ route('tampilan.detail', ['id' => $news->id]) }}">
                                             {{ $news->title }}
                                         </a>
-                                    </h6>
+                                    </h4>
                                     <p style="text-align: justify; text-justify: inter-word; margin: 0;">{{ Str::words(strip_tags(html_entity_decode($news->content)), 12) }}</p>
                                 </li>
                             @endforeach

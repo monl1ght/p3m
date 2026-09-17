@@ -149,6 +149,7 @@
     border-top: 1px solid #f1f5f9;
 }
 
+.portfolio-info h2,
 .portfolio-info h3 {
     font-family: "Plus Jakarta Sans", sans-serif;
     font-size: 20px;
@@ -176,6 +177,7 @@
     border: none;
 }
 
+.portfolio-info ul li h3,
 .portfolio-info ul li h6 {
     font-size: 15px;
     font-weight: 700;
@@ -183,16 +185,19 @@
     margin: 0;
 }
 
+.portfolio-info ul li h3 a,
 .portfolio-info ul li h6 a {
     color: #0f172a;
     text-decoration: none;
     transition: color 0.2s;
 }
 
+.portfolio-info ul li h3 a:hover,
 .portfolio-info ul li h6 a:hover {
     color: #059669;
 }
 
+.portfolio-info ul li h3 i,
 .portfolio-info ul li h6 i {
     color: #059669;
     margin-right: 6px;
@@ -260,17 +265,17 @@
 
             <div class="col-lg-4">
                 <aside class="portfolio-info" data-aos="fade-up" data-aos-delay="200">
-                    <h3>Agenda Lainnya</h3>
+                    <h2 class="sidebar-title">Agenda Lainnya</h2>
 
                     <ul>
                         @foreach($agenda as $recentAgenda)
                             <li>
-                                <h6>
+                                <h3>
                                     <a href="{{ route('tampilan.detailagenda', ['id' => $recentAgenda->id]) }}">
                                         <i class="far fa-calendar-check"></i>
                                         {{ $recentAgenda->title }}
                                     </a>
-                                </h6>
+                                </h3>
                                 <p>{{ Str::words(strip_tags(html_entity_decode($recentAgenda->keterangan)), 10) }}</p>
                             </li>
                         @endforeach

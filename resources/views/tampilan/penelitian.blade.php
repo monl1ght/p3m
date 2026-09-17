@@ -400,6 +400,7 @@ body {
         border: 1px solid var(--p3m-border);
     }
 
+    .mobile-empty-state h3,
     .mobile-empty-state h4 {
         font-family: "Plus Jakarta Sans", sans-serif;
         font-size: 17px;
@@ -543,7 +544,7 @@ body {
                     <div class="empty-icon-wrap">
                         <i class="bi bi-journal-x"></i>
                     </div>
-                    <h4>Belum Ada Penelitian</h4>
+                    <h3 class="mobile-empty-title">Belum Ada Penelitian</h3>
                     <p>Saat ini belum ada data penelitian yang telah disetujui untuk dipublikasikan.</p>
                 </div>
             @endforelse

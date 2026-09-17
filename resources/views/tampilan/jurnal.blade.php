@@ -359,7 +359,7 @@ body {
                                     {{ $d->jurnalname }}
                                 </td>
                                 <td style="text-align: center;">
-                                    <a href="{{ $d->link }}" target="_blank" class="btn-download-premium" title="Buka Jurnal">
+                                    <a href="{{ $d->link }}" target="_blank" rel="noopener noreferrer" class="btn-download-premium" title="Buka Jurnal {{ $d->jurnalname }}" aria-label="Kunjungi jurnal {{ $d->jurnalname }}">
                                         Kunjungi <i class="fas fa-external-link-alt ms-1"></i>
                                     </a>
                                 </td>
@@ -390,7 +390,7 @@ body {
                             <h3 class="mobile-jurnal-title">{{ $d->jurnalname }}</h3>
                         </div>
                     </div>
-                    <a href="{{ $d->link }}" target="_blank" class="btn-mobile-jurnal-visit" aria-label="Kunjungi jurnal {{ $d->jurnalname }}">
+                    <a href="{{ $d->link }}" target="_blank" rel="noopener noreferrer" class="btn-mobile-jurnal-visit" aria-label="Kunjungi jurnal {{ $d->jurnalname }}">
                         <span>Kunjungi Jurnal</span>
                         <i class="fas fa-external-link-alt"></i>
                     </a>

@@ -152,6 +152,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Carbon::setLocale('id');
+
+        if (request()->header('X-Forwarded-Proto') === 'https' || config('app.env') === 'production') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         View::composer('*', function ($view) {
             $notifikasi = collect();
 

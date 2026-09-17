@@ -175,9 +175,9 @@
             <div class="container-xl">
                 <div class="header-top-grid">
                     <div class="header-social">
-                        <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-                        <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                        <a href="#" aria-label="Twitter P3M Polibang" title="Twitter P3M Polibang" rel="noopener noreferrer"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" aria-label="Instagram P3M Polibang" title="Instagram P3M Polibang" rel="noopener noreferrer"><i class="bi bi-instagram"></i></a>
+                        <a href="#" aria-label="YouTube P3M Polibang" title="YouTube P3M Polibang" rel="noopener noreferrer"><i class="bi bi-youtube"></i></a>
                     </div>
 
                     <a href="{{ route('tampilan') }}" class="brand-center">
@@ -449,11 +449,11 @@
                         <h4>Follow Us</h4>
                         <p>Kenali kami juga melalui media sosial.</p>
                         <div class="social-links d-flex">
-                            <a href="#" target="_blank" aria-label="Twitter"><i
+                            <a href="#" target="_blank" aria-label="Twitter P3M Polibang" title="Twitter P3M Polibang" rel="noopener noreferrer"><i
                                     class="bi bi-twitter-x"></i></a>
-                            <a href="#" target="_blank" aria-label="Instagram"><i
+                            <a href="#" target="_blank" aria-label="Instagram P3M Polibang" title="Instagram P3M Polibang" rel="noopener noreferrer"><i
                                     class="bi bi-instagram"></i></a>
-                            <a href="#" target="_blank" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                            <a href="#" target="_blank" aria-label="YouTube P3M Polibang" title="YouTube P3M Polibang" rel="noopener noreferrer"><i class="bi bi-youtube"></i></a>
                         </div>
                     </div>
                 </div>
@@ -476,10 +476,10 @@
 
                 <!-- 2. Social Icons -->
                 <div class="footer-mobile-social">
-                    <a href="#" target="_blank" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-                    <a href="#" target="_blank" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
-                    <a href="#" target="_blank" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-                    <a href="#" target="_blank" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                    <a href="#" target="_blank" aria-label="Instagram P3M Polibang" title="Instagram P3M Polibang" rel="noopener noreferrer"><i class="bi bi-instagram"></i></a>
+                    <a href="#" target="_blank" aria-label="Twitter P3M Polibang" title="Twitter P3M Polibang" rel="noopener noreferrer"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" target="_blank" aria-label="Facebook P3M Polibang" title="Facebook P3M Polibang" rel="noopener noreferrer"><i class="bi bi-facebook"></i></a>
+                    <a href="#" target="_blank" aria-label="YouTube P3M Polibang" title="YouTube P3M Polibang" rel="noopener noreferrer"><i class="bi bi-youtube"></i></a>
                 </div>
 
                 <!-- 3. Collapsible Menus (Accordions) -->

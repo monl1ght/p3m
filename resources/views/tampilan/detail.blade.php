@@ -472,6 +472,7 @@ body {
     font-size: 12px;
 }
 
+.sidebar-news-item h3,
 .sidebar-news-item h6 {
     font-family: "Plus Jakarta Sans", sans-serif;
     font-size: 14.5px;
@@ -486,6 +487,7 @@ body {
     transition: color 0.2s;
 }
 
+.sidebar-news-item:hover h3,
 .sidebar-news-item:hover h6 {
     color: #059669;
 }
@@ -645,6 +647,7 @@ body {
         padding: 14px;
     }
 
+    .sidebar-news-item h3,
     .sidebar-news-item h6 {
         font-size: 14px;
     }
@@ -711,6 +714,9 @@ body {
                              alt="{{ $berita->title }}" 
                              class="article-hero-img" 
                              loading="eager"
+                             width="800"
+                             height="420"
+                             decoding="async"
                              onerror="this.onerror=null; this.src='{{ $defaultBanner }}';">
                         
                         <div class="article-hero-badge">
@@ -804,7 +810,7 @@ body {
                     <aside class="sidebar-card" data-aos="fade-up" data-aos-delay="200">
                         <div class="sidebar-header">
                             <span class="sidebar-eyebrow">AGENDA & INFORMASI</span>
-                            <h3 class="sidebar-title">Kegiatan Terbaru</h3>
+                            <h2 class="sidebar-title">Kegiatan Terbaru</h2>
                         </div>
 
                         <div class="sidebar-news-list">
@@ -821,7 +827,7 @@ body {
                                         <i class="far fa-calendar-alt"></i>
                                         <span>{{ \Carbon\Carbon::parse($news->date ?? $news->created_at)->translatedFormat('d M Y') }}</span>
                                     </div>
-                                    <h6>{{ $news->title }}</h6>
+                                    <h3>{{ $news->title }}</h3>
                                     <p>{{ Str::words(strip_tags(html_entity_decode($news->content)), 12) }}</p>
                                 </a>
                             @empty
