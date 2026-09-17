@@ -150,7 +150,7 @@
             <div class="row g-4 g-lg-5 align-items-center">
 
                 {{-- Gambar --}}
-                <div class="col-lg-5" data-aos="fade-right" data-aos-duration="700">
+                <div class="col-lg-6" data-aos="fade-right" data-aos-duration="700">
                     <div class="about-img-wrap">
                         @php
                             $aboutImg = asset('mte/assets/img/polibang.png');
@@ -167,7 +167,7 @@
                 </div>
 
                 {{-- Copy --}}
-                <div class="col-lg-4" data-aos="fade-up" data-aos-duration="700" data-aos-delay="100">
+                <div class="col-lg-6" data-aos="fade-left" data-aos-duration="700" data-aos-delay="100">
                     <div class="about-label">Tentang P3M</div>
                     <h2 class="about-heading">Penelitian & Pengabdian Masyarakat</h2>
 
@@ -184,28 +184,6 @@
                         <span>Selengkapnya</span>
                         <i class="bi bi-arrow-up-right"></i>
                     </a>
-                </div>
-
-                {{-- Stats --}}
-                <div class="col-lg-3" data-aos="fade-left" data-aos-duration="700" data-aos-delay="200">
-                    <div class="stats-grid">
-                        <div class="stat-box">
-                            <span class="stat-number">{{ $berita->count() }}+</span>
-                            <span class="stat-label">Kegiatan</span>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-number">{{ $agenda->count() }}+</span>
-                            <span class="stat-label">Berita P3M</span>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-number">{{ $pengelola->count() }}+</span>
-                            <span class="stat-label">Pengelola</span>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-number">{{ $categories->count() }}+</span>
-                            <span class="stat-label">Kategori</span>
-                        </div>
-                    </div>
                 </div>
 
             </div>
