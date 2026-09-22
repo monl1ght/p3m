@@ -34,7 +34,7 @@
     <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/43.1.0/ckeditor5.css" data-turbo-track="reload">
 
     <script src="https://cdn.ckeditor.com/ckeditor5/35.3.1/classic/ckeditor.js" data-turbo-track="reload"></script>
-    <link rel="stylesheet" href="{{ asset('css/p3m-admin.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ asset('css/p3m-admin.css') }}?v={{ file_exists(public_path('css/p3m-admin.css')) ? filemtime(public_path('css/p3m-admin.css')) : time() }}" data-turbo-track="reload">
     <link rel="stylesheet" href="{{ asset('lte/plugins/sweetalert2/sweetalert2.min.css') }}" data-turbo-track="reload">
     <script src="{{ asset('lte/plugins/sweetalert2/sweetalert2.all.min.js') }}" data-turbo-eval="false"></script>
 
@@ -1191,7 +1191,7 @@
     </script>
 
     {{-- Global Custom Dropdown System --}}
-    <script src="{{ asset('js/p3m-dropdown.js') }}" data-turbo-eval="false" data-turbo-track="reload"></script>
+    <script src="{{ asset('js/p3m-dropdown.js') }}?v={{ file_exists(public_path('js/p3m-dropdown.js')) ? filemtime(public_path('js/p3m-dropdown.js')) : time() }}" data-turbo-eval="false" data-turbo-track="reload"></script>
 
     @yield('scripts')
 
