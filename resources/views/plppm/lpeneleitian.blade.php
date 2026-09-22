@@ -409,12 +409,40 @@ table.users-table {
             <div class="table-toolbar">
                 <div class="toolbar-left">
                     <span>Tampilkan</span>
-                    <select class="toolbar-select" id="pageLengthSelect">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                    </select>
+                    <x-p3m-dropdown
+                        id="pageLengthSelect"
+                        value="10"
+                        :compact="true"
+                        :options="[
+                            ['value' => '10', 'label' => '10'],
+                            ['value' => '25', 'label' => '25'],
+                            ['value' => '50', 'label' => '50'],
+                            ['value' => '100', 'label' => '100'],
+                        ]"
+                    />
                     <span>data</span>
+
+                    @php
+                        $currentStatus = '';
+                        if (request('status')) {
+                            $reqSt = strtolower(request('status'));
+                            if ($reqSt === 'proses' || $reqSt === 'diproses') $currentStatus = 'Diproses';
+                            elseif ($reqSt === 'approve' || $reqSt === 'disetujui') $currentStatus = 'Disetujui';
+                            elseif ($reqSt === 'reject' || $reqSt === 'non-approve' || $reqSt === 'ditolak') $currentStatus = 'Ditolak';
+                        }
+                    @endphp
+
+                    <x-p3m-dropdown
+                        id="filterStatus"
+                        value="{{ $currentStatus }}"
+                        class="ml-1"
+                        :options="[
+                            ['value' => '', 'label' => 'Semua Status', 'icon' => 'fas fa-sliders-h p3m-dropdown-icon', 'divider' => true],
+                            ['value' => 'Diproses', 'label' => 'Diproses', 'dot' => 'dot-warning'],
+                            ['value' => 'Disetujui', 'label' => 'Disetujui', 'dot' => 'dot-success'],
+                            ['value' => 'Ditolak', 'label' => 'Ditolak', 'dot' => 'dot-danger'],
+                        ]"
+                    />
                 </div>
                 <div class="search-wrap">
                     <i class="fas fa-search search-icon"></i>
@@ -593,55 +621,97 @@ table.users-table {
 <script src="{{ asset('lte/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}"></script>
 <script src="{{ asset('lte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
 <script>
-$(function () {
-    var table = $('#usulanTable').DataTable({
-        responsive: true,
-        lengthChange: false,
-        searching: true,
-        ordering: false,
-        info: true,
-        autoWidth: false,
-        pageLength: 10,
-        language: {
-            search: "",
-            searchPlaceholder: "Cari usulan, ketua peneliti, bidang...",
-            info: "Menampilkan _START_-_END_ dari _TOTAL_ data",
-            paginate: {
-                previous: '<i class="fas fa-chevron-left"></i>',
-                next:     '<i class="fas fa-chevron-right"></i>'
+(function () {
+    function initUsulanTable() {
+        if ($.fn.DataTable.isDataTable('#usulanTable')) {
+            $('#usulanTable').DataTable().destroy();
+        }
+
+        var table = $('#usulanTable').DataTable({
+            responsive: true,
+            lengthChange: false,
+            searching: true,
+            ordering: false,
+            info: true,
+            autoWidth: false,
+            pageLength: 10,
+            language: {
+                search: "",
+                searchPlaceholder: "Cari usulan, ketua peneliti, bidang...",
+                info: "Menampilkan _START_-_END_ dari _TOTAL_ data",
+                paginate: {
+                    previous: '<i class="fas fa-chevron-left"></i>',
+                    next:     '<i class="fas fa-chevron-right"></i>'
+                },
+                emptyTable: "Belum ada usulan proposal penelitian",
+                zeroRecords: "Tidak ada usulan yang sesuai dengan pencarian"
             },
-            emptyTable: "Belum ada usulan proposal penelitian",
-            zeroRecords: "Tidak ada usulan yang sesuai dengan pencarian"
-        },
-        drawCallback: function () {
-            var info = this.api().page.info();
-            var from  = info.recordsDisplay === 0 ? 0 : info.start + 1;
-            var to    = Math.min(info.end, info.recordsDisplay);
-            $('#tableInfo').text('Menampilkan ' + from + '\u2013' + to + ' dari ' + info.recordsDisplay + ' data');
+            drawCallback: function () {
+                var info = this.api().page.info();
+                var from  = info.recordsDisplay === 0 ? 0 : info.start + 1;
+                var to    = Math.min(info.end, info.recordsDisplay);
+                $('#tableInfo').text('Menampilkan ' + from + '\u2013' + to + ' dari ' + info.recordsDisplay + ' data');
 
-            var $container = $(this.api().table().container());
-            var $dtPg = $container.find('.dataTables_paginate');
-            var $ul = $('<ul class="dt-pagination pagination"></ul>');
-            $dtPg.find('li').each(function () { $ul.append($(this).clone(true)); });
-            $('#tablePagination').html('').append($ul);
+                var $container = $(this.api().table().container());
+                var $dtPg = $container.find('.dataTables_paginate');
+                var $ul = $('<ul class="dt-pagination pagination"></ul>');
+                $dtPg.find('li').each(function () { $ul.append($(this).clone(true)); });
+                $('#tablePagination').html('').append($ul);
 
-            $('#tablePagination').find('li').each(function (i) {
-                var $orig = $dtPg.find('li').eq(i);
-                $(this).find('a, span').on('click', function (e) {
-                    e.preventDefault();
-                    $orig.find('a, span').first().trigger('click');
+                $('#tablePagination').find('li').each(function (i) {
+                    var $orig = $dtPg.find('li').eq(i);
+                    $(this).find('a, span').on('click', function (e) {
+                        e.preventDefault();
+                        $orig.find('a, span').first().trigger('click');
+                    });
                 });
-            });
 
-            // Re-bind P3M SweetAlert2 action listeners on DataTable redraw
-            if (typeof window.p3mBindActions === 'function') {
-                window.p3mBindActions();
+                // Re-bind P3M SweetAlert2 action listeners on DataTable redraw
+                if (typeof window.p3mBindActions === 'function') {
+                    window.p3mBindActions();
+                }
             }
+        });
+
+        $('#tableSearch').off('input keyup').on('input keyup', function () { table.search(this.value).draw(); });
+        $('#pageLengthSelect').off('change').on('change', function () { table.page.len(+this.value).draw(); });
+
+        $('#filterStatus').off('change').on('change', function () {
+            var val = $(this).val();
+            table.column(4).search(val ? val : '').draw();
+
+            var params = new URLSearchParams(window.location.search);
+            if (val) {
+                params.set('status', val.toLowerCase());
+            } else {
+                params.delete('status');
+            }
+            var query = params.toString() ? '?' + params.toString() : '';
+            window.history.replaceState({}, '', window.location.pathname + query);
+        });
+
+        // Initial filter if set
+        var initStatus = $('#filterStatus').val();
+        if (initStatus) {
+            table.column(4).search(initStatus);
+        }
+        table.draw();
+    }
+
+    var initTimer = null;
+    function scheduleInit() {
+        clearTimeout(initTimer);
+        initTimer = setTimeout(initUsulanTable, 20);
+    }
+
+    document.addEventListener('turbo:load', scheduleInit);
+    document.addEventListener('turbo:before-cache', function() {
+        if ($.fn.DataTable.isDataTable('#usulanTable')) {
+            $('#usulanTable').DataTable().destroy();
         }
     });
 
-    $('#tableSearch').on('keyup', function () { table.search(this.value).draw(); });
-    $('#pageLengthSelect').on('change', function () { table.page.len(+this.value).draw(); });
-});
+    scheduleInit();
+})();
 </script>
 @endsection

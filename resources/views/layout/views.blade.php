@@ -274,13 +274,12 @@
                         </li>
 
                         <li class="mobile-nav-item has-dropdown">
-                            <div class="mobile-nav-parent {{ request()->routeIs('tampilan.jurnal') ? 'active' : '' }}">
+                            <div class="mobile-nav-parent">
                                 <span class="nav-text">Jurnal P3M</span>
                                 <i class="bi bi-chevron-down arrow-icon"></i>
                             </div>
                             <ul class="mobile-subnav-list">
-                                <li><a href="{{ route('tampilan.jurnal') }}" class="{{ request()->routeIs('tampilan.jurnal') ? 'active' : '' }}">List Jurnal P3M</a></li>
-                                <li><a href="https://www.polibang.ac.id/maktab" target="_blank" rel="noopener noreferrer">Jurnal Maktab</a></li>
+                                <li><a href="https://www.polibang.ac.id/javas" target="_blank" rel="noopener noreferrer">Javas Jurnal</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -332,13 +331,12 @@
                     </li>
 
                     <li class="dropdown">
-                        <a href="#" class="{{ request()->routeIs('tampilan.jurnal') ? 'active' : '' }}">
+                        <a href="#">
                             <span>Jurnal P3M</span>
                             <i class="bi bi-chevron-down toggle-dropdown"></i>
                         </a>
                         <ul>
-                            <li><a href="{{ route('tampilan.jurnal') }}" class="{{ request()->routeIs('tampilan.jurnal') ? 'active' : '' }}">List Jurnal P3M</a></li>
-                            <li><a href="https://www.polibang.ac.id/maktab" target="_blank" rel="noopener noreferrer">Jurnal Maktab</a></li>
+                            <li><a href="https://www.polibang.ac.id/javas" target="_blank" rel="noopener noreferrer">Javas Jurnal</a></li>
                         </ul>
                     </li>
                 </ul>

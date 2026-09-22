@@ -178,8 +178,13 @@ class AppServiceProvider extends ServiceProvider
                 ],
                 'laporan_penelitian' => [
                     'table' => 'kum_penelitian_models',
-                    'judul' => '%d Pengajuan Pengabdian',
+                    'judul' => '%d Laporan Penelitian',
                     'link' => route('plppm.kpenelitian')
+                ],
+                'jurnal_dosen' => [
+                    'table' => 'dosen_jurnal_uploads',
+                    'judul' => '%d Jurnal Dosen',
+                    'link' => route('plppm.jurnal_dosen')
                 ],
             ];
             foreach ($sources as $tipe => $cfg) {

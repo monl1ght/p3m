@@ -71,6 +71,7 @@
                 opacity: .72;
                 transform: translateY(3px);
             }
+
             100% {
                 opacity: 1;
                 transform: translateY(0);
@@ -81,7 +82,8 @@
     @yield('css')
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed p3m-admin-elegant p3m-dosen-shell @yield('body_class')" data-turbo="false">
+<body class="hold-transition sidebar-mini layout-fixed p3m-admin-elegant p3m-dosen-shell @yield('body_class')"
+    data-turbo="false">
 
     <div class="wrapper">
 
@@ -203,7 +205,8 @@
                     </div>
 
                     <div class="dosen-sidebar-user-copy">
-                        <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}" data-turbo="true">{{ $user->name }}</a>
+                        <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}"
+                            data-turbo="true">{{ $user->name }}</a>
                         <span>Dosen POLIBANG</span>
                     </div>
                 </div>
@@ -246,7 +249,8 @@
 
                             <ul class="nav nav-treeview" id="dosen-nav-profil">
                                 <li class="nav-item">
-                                    <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}" data-turbo="true"
+                                    <a href="{{ route('dosen.profil', ['id' => Auth::user()->id]) }}"
+                                        data-turbo="true"
                                         class="nav-link dosen-child-link {{ request()->routeIs('dosen.profil*') ? 'active' : '' }}"
                                         @if (request()->routeIs('dosen.profil*')) aria-current="page" @endif>
                                         <i class="nav-icon fas fa-id-card"></i>
@@ -256,11 +260,20 @@
                             </ul>
                         </li>
 
+                        @php
+                            $currentJurnalKat = request('kategori') ?? ($kategori ?? ($jurnal->kategori ?? null));
+                            $isJurnalPengabdian =
+                                request()->routeIs('dosen.jurnal_upload.*') && $currentJurnalKat === 'pengabdian';
+                            $isJurnalPenelitian =
+                                request()->routeIs('dosen.jurnal_upload.*') &&
+                                ($currentJurnalKat === 'penelitian' || !$currentJurnalKat);
+                        @endphp
+
                         <li
-                            class="nav-item {{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab', 'dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') ? 'menu-open' : '' }}">
+                            class="nav-item {{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab', 'dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') || $isJurnalPengabdian ? 'menu-open' : '' }}">
                             <a href="#" data-turbo="false" role="button" aria-controls="dosen-nav-pengabdian"
-                                aria-expanded="{{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab', 'dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') ? 'true' : 'false' }}"
-                                class="nav-link dosen-nav-link {{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab', 'dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') ? 'active' : '' }}">
+                                aria-expanded="{{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab', 'dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') || $isJurnalPengabdian ? 'true' : 'false' }}"
+                                class="nav-link dosen-nav-link {{ request()->routeIs('dosen.upp3m', 'dosen.addp3m', 'dosen.edit_ajupengab', 'dosen.dash_kpengabdian', 'dosen.addkpengabdian', 'dosen.edit_kpengabdian') || $isJurnalPengabdian ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-hand-holding-heart"></i>
                                 <p>
                                     Pengabdian Masyarakat
@@ -286,14 +299,24 @@
                                         <p>Laporan Pengabdian</p>
                                     </a>
                                 </li>
+
+                                <li class="nav-item">
+                                    <a href="{{ route('dosen.jurnal_upload.index', ['kategori' => 'pengabdian']) }}"
+                                        data-turbo="true"
+                                        class="nav-link dosen-child-link {{ $isJurnalPengabdian ? 'active' : '' }}"
+                                        @if ($isJurnalPengabdian) aria-current="page" @endif>
+                                        <i class="nav-icon fas fa-file-upload"></i>
+                                        <p>Upload Jurnal Pengabdian</p>
+                                    </a>
+                                </li>
                             </ul>
                         </li>
 
                         <li
-                            class="nav-item {{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian', 'dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') ? 'menu-open' : '' }}">
+                            class="nav-item {{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian', 'dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') || $isJurnalPenelitian ? 'menu-open' : '' }}">
                             <a href="#" data-turbo="false" role="button" aria-controls="dosen-nav-penelitian"
-                                aria-expanded="{{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian', 'dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') ? 'true' : 'false' }}"
-                                class="nav-link dosen-nav-link {{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian', 'dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') ? 'active' : '' }}">
+                                aria-expanded="{{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian', 'dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') || $isJurnalPenelitian ? 'true' : 'false' }}"
+                                class="nav-link dosen-nav-link {{ request()->routeIs('dosen.dash_ajuanpenelitian', 'dosen.add_ajuanpenelitian', 'dosen.edit_ajuanpenelitian', 'dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti') || $isJurnalPenelitian ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-microscope"></i>
                                 <p>
                                     Penelitian
@@ -317,6 +340,16 @@
                                         @if (request()->routeIs('dosen.dash_kpenelitian', 'dosen.add_kumnpeneliti', 'dosen.edit_kpenliti')) aria-current="page" @endif>
                                         <i class="nav-icon fas fa-folder-open"></i>
                                         <p>Laporan Penelitian</p>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a href="{{ route('dosen.jurnal_upload.index', ['kategori' => 'penelitian']) }}"
+                                        data-turbo="true"
+                                        class="nav-link dosen-child-link {{ $isJurnalPenelitian ? 'active' : '' }}"
+                                        @if ($isJurnalPenelitian) aria-current="page" @endif>
+                                        <i class="nav-icon fas fa-file-upload"></i>
+                                        <p>Upload Jurnal Penelitian</p>
                                     </a>
                                 </li>
                             </ul>
@@ -366,16 +399,20 @@
     <script src="{{ asset('lte/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js') }}"
         data-turbo-eval="false"></script>
     <script src="{{ asset('lte/plugins/summernote/summernote-bs4.min.js') }}" data-turbo-eval="false"></script>
-    <script src="{{ asset('lte/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}" data-turbo-eval="false">
+    </script>
     <script src="{{ asset('lte/dist/js/adminlte.js') }}" data-turbo-eval="false"></script>
     {{-- CKEditor loaded after jQuery, with data-turbo-eval="false" so it is never re-evaluated on Turbo visits --}}
     <script src="https://cdn.ckeditor.com/ckeditor5/35.3.1/classic/ckeditor.js" data-turbo-eval="false"></script>
 
     {{-- DataTables plugins loaded globally once with data-turbo-eval="false" so SPA visits never fail --}}
     <script src="{{ asset('lte/plugins/datatables/jquery.dataTables.min.js') }}" data-turbo-eval="false"></script>
-    <script src="{{ asset('lte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}" data-turbo-eval="false"></script>
-    <script src="{{ asset('lte/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}" data-turbo-eval="false"></script>
-    <script src="{{ asset('lte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}" data-turbo-eval="false"></script>
+    <script src="{{ asset('lte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}" data-turbo-eval="false">
+    </script>
+    <script src="{{ asset('lte/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}" data-turbo-eval="false">
+    </script>
+    <script src="{{ asset('lte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}" data-turbo-eval="false">
+    </script>
 
     <script data-turbo-eval="false">
         (function() {
@@ -510,7 +547,8 @@
 
                 sidebar.querySelectorAll('.nav-item > .nav-link[aria-controls]').forEach(link => {
                     const item = link.closest('.nav-item');
-                    link.setAttribute('aria-expanded', item?.classList.contains('menu-open') ? 'true' : 'false');
+                    link.setAttribute('aria-expanded', item?.classList.contains('menu-open') ? 'true' :
+                    'false');
                 });
             }
 
@@ -548,7 +586,11 @@
                     if (!preview) return;
 
                     const reader = new FileReader();
-                    reader.addEventListener('load', () => { preview.src = reader.result; }, { once: true });
+                    reader.addEventListener('load', () => {
+                        preview.src = reader.result;
+                    }, {
+                        once: true
+                    });
                     reader.readAsDataURL(file);
                 });
             }
@@ -607,8 +649,11 @@
                 if (cw) cw.classList.add('dosen-page-exit');
             });
 
-            /* Sync sidebar active state BEFORE DOM swap so menu highlights immediately */
-            document.addEventListener('turbo:before-render', function() {
+            /* Sync sidebar active state & body class BEFORE DOM swap so menu highlights immediately */
+            document.addEventListener('turbo:before-render', function(event) {
+                if (event.detail && event.detail.newBody) {
+                    document.body.className = event.detail.newBody.className;
+                }
                 if (destinationUrl) {
                     syncSidebarState(destinationUrl);
                     restoreSidebarScrollPosition();
@@ -635,7 +680,9 @@
             document.addEventListener('DOMContentLoaded', function() {
                 refreshDosenShell();
                 triggerPageEnterAnimation();
-            }, { once: true });
+            }, {
+                once: true
+            });
 
             /* Keep AdminLTE's visual treeview state and its ARIA contract in sync.
                Space activates role="button" controls just like a native button. */
@@ -680,7 +727,9 @@
                         icon: 'warning',
                         confirmText: '<i class="fas fa-sign-out-alt" style="font-size:12px;"></i>&nbsp; Ya, Logout',
                         confirmClass: 'p3m-swal-btn-danger',
-                        onConfirm: function() { form.submit(); }
+                        onConfirm: function() {
+                            form.submit();
+                        }
                     });
                 } else if (typeof Swal !== 'undefined') {
                     Swal.fire({
@@ -692,7 +741,9 @@
                         cancelButtonColor: '#6b7280',
                         confirmButtonText: 'Ya, Logout',
                         cancelButtonText: 'Batal'
-                    }).then(result => { if (result.isConfirmed) form.submit(); });
+                    }).then(result => {
+                        if (result.isConfirmed) form.submit();
+                    });
                 } else {
                     if (confirm('Apakah Anda yakin ingin logout dari akun ini?')) form.submit();
                 }
@@ -700,6 +751,9 @@
 
         })();
     </script>
+
+    {{-- Global Custom Dropdown System --}}
+    <script src="{{ asset('js/p3m-dropdown.js') }}" data-turbo-eval="false" data-turbo-track="reload"></script>
 
     @yield('scripts')
 

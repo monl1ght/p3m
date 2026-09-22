@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ajuan_penelitianModel;
+use App\Models\DosenJurnalUpload;
 use App\Models\kum_penelitianModel;
 use App\Models\kum_pengabdianModel;
 use App\Models\p3mModel;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class ViewlprnController extends Controller
@@ -318,5 +320,159 @@ class ViewlprnController extends Controller
             'statusHistories' => $statusHistories,
             'layout'         => ($user->role === 'admin') ? 'layout.main' : 'layout.doslayout'
         ]);
+    }
+
+    /**
+     * List semua jurnal dosen untuk verifikasi admin.
+     */
+    public function jurnalDosen(Request $request)
+    {
+        $user = Auth::user();
+        $pagetitle = 'List Jurnal P3M';
+
+        // Tandai berkas jurnal yang belum dibaca admin
+        DosenJurnalUpload::whereNull('read_at')->update(['read_at' => now()]);
+
+        $query = DosenJurnalUpload::with('user')->orderBy('created_at', 'desc');
+
+        if ($request->filled('kategori') && in_array($request->kategori, ['penelitian', 'pengabdian'])) {
+            $query->where('kategori', $request->kategori);
+        }
+
+        if ($request->filled('status') && in_array($request->status, ['diproses', 'diterima', 'direvisi', 'ditolak'])) {
+            $query->where('status', $request->status);
+        }
+
+        $jurnals = $query->get();
+
+        return view('plppm.jurnal_dosen', compact('user', 'pagetitle', 'jurnals'));
+    }
+
+    /**
+     * Admin: update status jurnal dosen (diterima / diproses / ditolak / direvisi).
+     */
+    public function updateStatusJurnal(Request $request, $id)
+    {
+        $jurnal = DosenJurnalUpload::findOrFail($id);
+
+        $request->validate([
+            'status'  => 'required|in:diterima,direvisi,ditolak,diproses,approve,proses,non-approve',
+            'catatan' => 'nullable|string|max:2000',
+            'reason'  => 'nullable|string|max:2000',
+        ], [
+            'status.required' => 'Status verifikasi wajib dipilih.',
+            'status.in'       => 'Status verifikasi tidak valid.',
+            'catatan.max'     => 'Catatan maksimal 2000 karakter.',
+            'reason.max'      => 'Catatan maksimal 2000 karakter.',
+        ]);
+
+        $rawStatus = $request->input('status');
+        $normalizedStatus = match ($rawStatus) {
+            'approve', 'diterima' => 'diterima',
+            'proses', 'diproses'  => 'diproses',
+            'non-approve', 'ditolak' => 'ditolak',
+            'direvisi' => 'direvisi',
+            default => 'diproses',
+        };
+
+        $catatan = $request->input('reason') ?? $request->input('catatan');
+
+        if (in_array($normalizedStatus, ['ditolak', 'direvisi']) && blank($catatan)) {
+            return redirect()->back()->with('error', 'Alasan penolakan atau revisi wajib diisi.');
+        }
+
+        $jurnal->status = $normalizedStatus;
+        if ($normalizedStatus === 'diterima' || $normalizedStatus === 'diproses') {
+            if ($catatan) {
+                $jurnal->catatan_admin = $catatan;
+            } else if ($normalizedStatus === 'diterima') {
+                $jurnal->catatan_admin = null;
+            }
+        } else {
+            $jurnal->catatan_admin = $catatan;
+        }
+
+        $jurnal->save();
+
+        $labels = [
+            'diterima' => 'disetujui',
+            'diproses' => 'diset ke status diproses',
+            'direvisi' => 'diminta revisi',
+            'ditolak'  => 'ditolak / diminta revisi',
+        ];
+
+        return redirect()->route('plppm.jurnal_dosen')
+            ->with('success', 'Status jurnal berhasil ' . ($labels[$normalizedStatus] ?? 'diperbarui') . '.');
+    }
+
+
+    /**
+     * Admin: download berkas PDF jurnal dosen.
+     */
+    public function downloadJurnal($id)
+    {
+        $jurnal = DosenJurnalUpload::findOrFail($id);
+        $path = $this->resolveJurnalFilePath($jurnal);
+
+        if (!$path || !file_exists($path)) {
+            return redirect()->back()->with('error', 'File jurnal tidak ditemukan.');
+        }
+
+        $downloadName = $jurnal->file_name ?: basename($path);
+        if (!str_ends_with(strtolower($downloadName), '.pdf')) {
+            $downloadName .= '.pdf';
+        }
+
+        return response()->download($path, $downloadName, [
+            'Content-Type'  => 'application/pdf',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma'        => 'no-cache',
+        ]);
+    }
+
+    /**
+     * Resolusi path file fisik jurnal dari berbagai lokasi storage (backward compatible).
+     */
+    protected function resolveJurnalFilePath(DosenJurnalUpload $jurnal): ?string
+    {
+        $rawPath = $jurnal->file_path;
+        if (empty($rawPath)) {
+            return null;
+        }
+
+        $baseName = basename($rawPath);
+
+        // 1. Storage disk private direct path
+        if (Storage::disk('private')->exists($rawPath)) {
+            return Storage::disk('private')->path($rawPath);
+        }
+
+        // 2. Storage disk private subfolder 'jurnal-dosen'
+        if (Storage::disk('private')->exists('jurnal-dosen/' . $baseName)) {
+            return Storage::disk('private')->path('jurnal-dosen/' . $baseName);
+        }
+
+        // 3. Storage disk private subfolder 'jurnal_dosen'
+        if (Storage::disk('private')->exists('jurnal_dosen/' . $baseName)) {
+            return Storage::disk('private')->path('jurnal_dosen/' . $baseName);
+        }
+
+        // 4. Storage disk local (storage/app)
+        if (Storage::disk('local')->exists($rawPath)) {
+            return Storage::disk('local')->path($rawPath);
+        }
+        if (Storage::disk('local')->exists('private/jurnal-dosen/' . $baseName)) {
+            return Storage::disk('local')->path('private/jurnal-dosen/' . $baseName);
+        }
+
+        // 5. Fallback public path
+        if (file_exists(public_path($rawPath))) {
+            return public_path($rawPath);
+        }
+        if (file_exists(public_path('uploads/jurnal_dosen/' . $baseName))) {
+            return public_path('uploads/jurnal_dosen/' . $baseName);
+        }
+
+        return null;
     }
 }

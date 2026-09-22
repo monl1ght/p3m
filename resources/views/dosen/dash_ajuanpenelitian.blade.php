@@ -1004,14 +1004,42 @@
                             <span class="upp3m-toolbar-label">
                                 Tampilkan
                             </span>
-                            <select class="upp3m-toolbar-select" id="researchPageLength" aria-label="Jumlah data per halaman">
-                                <option value="10">10</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                            </select>
+                            <x-p3m-dropdown
+                                id="researchPageLength"
+                                value="10"
+                                :compact="true"
+                                :options="[
+                                    ['value' => '10', 'label' => '10'],
+                                    ['value' => '25', 'label' => '25'],
+                                    ['value' => '50', 'label' => '50'],
+                                    ['value' => '100', 'label' => '100'],
+                                ]"
+                            />
                             <span>
                                 data
                             </span>
+
+                            @php
+                                $currentStatus = '';
+                                if (request('status')) {
+                                    $reqSt = strtolower(request('status'));
+                                    if ($reqSt === 'proses' || $reqSt === 'diproses') $currentStatus = 'Proses';
+                                    elseif ($reqSt === 'disetujui' || $reqSt === 'approve') $currentStatus = 'Disetujui';
+                                    elseif ($reqSt === 'ditolak' || $reqSt === 'reject') $currentStatus = 'Ditolak';
+                                }
+                            @endphp
+
+                            <x-p3m-dropdown
+                                id="filterStatus"
+                                value="{{ $currentStatus }}"
+                                class="ml-1"
+                                :options="[
+                                    ['value' => '', 'label' => 'Semua Status', 'icon' => 'fas fa-sliders-h p3m-dropdown-icon', 'divider' => true],
+                                    ['value' => 'Proses', 'label' => 'Proses', 'dot' => 'dot-warning'],
+                                    ['value' => 'Disetujui', 'label' => 'Disetujui', 'dot' => 'dot-success'],
+                                    ['value' => 'Ditolak', 'label' => 'Ditolak', 'dot' => 'dot-danger'],
+                                ]"
+                            />
                         </div>
 
                         <div class="upp3m-search-wrap">
@@ -1286,6 +1314,28 @@
                 $('#researchPageLength').off('change').on('change', function() {
                     table.page.len(Number(this.value)).draw();
                 });
+
+                // Filter Status (Column 4)
+                $('#filterStatus').off('change').on('change', function() {
+                    const val = $(this).val();
+                    table.column(4).search(val ? val : '').draw();
+
+                    const params = new URLSearchParams(window.location.search);
+                    if (val) {
+                        params.set('status', val.toLowerCase());
+                    } else {
+                        params.delete('status');
+                    }
+                    const query = params.toString() ? '?' + params.toString() : '';
+                    window.history.replaceState({}, '', window.location.pathname + query);
+                });
+
+                // Initial filter if set
+                const initStatus = $('#filterStatus').val();
+                if (initStatus) {
+                    table.column(4).search(initStatus);
+                }
+                table.draw();
             }
 
             // Global Delete Confirmation

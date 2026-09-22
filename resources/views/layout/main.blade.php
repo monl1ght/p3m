@@ -313,10 +313,10 @@
                         </li>
 
                         <li
-                            class="nav-item {{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*', 'jurnal.*') ? 'menu-open' : '' }}">
+                            class="nav-item {{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*') ? 'menu-open' : '' }}">
                             <a href="#" data-turbo="false" role="button" aria-controls="admin-nav-seputar"
-                                aria-expanded="{{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*', 'jurnal.*') ? 'true' : 'false' }}"
-                                class="nav-link {{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*', 'jurnal.*') ? 'active' : '' }}">
+                                aria-expanded="{{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*') ? 'true' : 'false' }}"
+                                class="nav-link {{ request()->routeIs('category.*', 'news.*', 'agenda.*', 'dokumen.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-layer-group"></i>
                                 <p>
                                     Seputar P3M
@@ -350,13 +350,6 @@
                                         class="nav-link {{ request()->routeIs('dokumen.*') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-folder"></i>
                                         <p>Dokumen P3M</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('jurnal.index') }}"
-                                        class="nav-link {{ request()->routeIs('jurnal.*') ? 'active' : '' }}">
-                                        <i class="nav-icon fas fa-journal-whills"></i>
-                                        <p>Jurnal P3M</p>
                                     </a>
                                 </li>
                             </ul>
@@ -399,6 +392,13 @@
                                         class="nav-link {{ request()->routeIs('plppm.kpenelitian') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-folder"></i>
                                         <p>Laporan Penelitian</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('plppm.jurnal_dosen') }}"
+                                        class="nav-link {{ request()->routeIs('plppm.jurnal_dosen*') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-book"></i>
+                                        <p>List Jurnal P3M</p>
                                     </a>
                                 </li>
                             </ul>
@@ -1029,6 +1029,9 @@
             });
         })();
     </script>
+
+    {{-- Global Custom Dropdown System --}}
+    <script src="{{ asset('js/p3m-dropdown.js') }}" data-turbo-eval="false" data-turbo-track="reload"></script>
 
     @yield('scripts')
 

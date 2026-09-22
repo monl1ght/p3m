@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DataTableController;
 use App\Http\Controllers\DokumenController;
 use App\Http\Controllers\DosenController;
+use App\Http\Controllers\DosenJurnalController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\MainController;
@@ -216,6 +217,13 @@ Route::group(['middleware' => 'auth:sanctum', 'role:admin'], function () {
 
         Route::patch('/kumpul/{tipe}/{id}/status', [ViewlprnController::class, 'updateStatuskump'])
             ->name('plppm.kumpulan.status');
+
+        // Jurnal Dosen — Verifikasi Admin
+        Route::get('/jurnal-dosen', [ViewlprnController::class, 'jurnalDosen'])->name('plppm.jurnal_dosen');
+        Route::patch('/jurnal-dosen/{id}/status', [ViewlprnController::class, 'updateStatusJurnal'])
+            ->name('plppm.jurnal_dosen.status');
+        Route::get('/jurnal-dosen/{id}/download', [ViewlprnController::class, 'downloadJurnal'])
+            ->name('plppm.jurnal_dosen.download');
         //detail data
 
     });
@@ -259,6 +267,10 @@ Route::post('/notif/read-table/{tipe}', function ($tipe) {
         'laporan_penelitian' => [
             'table' => 'kum_penelitian_models',
             'redirect' => route('plppm.kpenelitian')
+        ],
+        'jurnal_dosen' => [
+            'table' => 'dosen_jurnal_uploads',
+            'redirect' => route('plppm.jurnal_dosen')
         ],
     ];
     if (!isset($map[$tipe])) {
@@ -344,5 +356,14 @@ Route::group(['middleware' => 'auth:sanctum', 'role:dosen'], function () {
         Route::post('/updatekpenelitian/{id}', [DosenController::class, 'updatekumpulanpenelitian'])->name('dosen.updatekumpulanpenelitian');
         // Route::get('/kddpenelitian/{tipe}/{id}', [DosenController::class, 'kumpengneli'])->name('detail.detailk');
         Route::delete('/deletekpen/{id}', [DosenController::class, 'deletekpen'])->name('dosen.deletekpen');
+
+        // Upload Jurnal Dosen
+        Route::get('/jurnal-upload', [DosenJurnalController::class, 'index'])->name('dosen.jurnal_upload.index');
+        Route::get('/jurnal-upload/create/{kategori?}', [DosenJurnalController::class, 'create'])->name('dosen.jurnal_upload.create');
+        Route::post('/jurnal-upload/store', [DosenJurnalController::class, 'store'])->name('dosen.jurnal_upload.store');
+        Route::get('/jurnal-upload/{id}/edit', [DosenJurnalController::class, 'edit'])->name('dosen.jurnal_upload.edit');
+        Route::post('/jurnal-upload/{id}/update', [DosenJurnalController::class, 'update'])->name('dosen.jurnal_upload.update');
+        Route::delete('/jurnal-upload/{id}/delete', [DosenJurnalController::class, 'destroy'])->name('dosen.jurnal_upload.delete');
+        Route::get('/jurnal-upload/{id}/download', [DosenJurnalController::class, 'download'])->name('dosen.jurnal_upload.download');
     });
 });
