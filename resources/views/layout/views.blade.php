@@ -186,7 +186,7 @@
                     </a>
 
                     <form class="header-search" action="{{ route('tampilan.berita') }}" method="GET">
-                        <input type="search" name="q" placeholder="Saya mencari..." aria-label="Cari">
+                        <input type="search" name="q" placeholder="Saya mencari..." aria-label="Cari" value="{{ request('q') }}">
                         <button type="submit" aria-label="Cari"><i class="bi bi-search"></i></button>
                     </form>
                 </div>
@@ -220,7 +220,7 @@
                 <div class="mobile-search-expand" id="mobileSearchExpand">
                     <form class="mobile-search-form" action="{{ route('tampilan.berita') }}" method="GET">
                         <i class="bi bi-search search-icon"></i>
-                        <input type="search" name="q" placeholder="Cari info penelitian, jurnal, panduan..." aria-label="Cari info P3M">
+                        <input type="search" name="q" placeholder="Cari info penelitian, jurnal, panduan..." aria-label="Cari info P3M" value="{{ request('q') }}">
                         <button type="button" class="search-close-btn" id="mobileSearchClose" aria-label="Tutup pencarian">
                             <i class="bi bi-x"></i>
                         </button>

@@ -355,10 +355,22 @@
                             </ul>
                         </li>
 
-                        <li class="nav-item {{ request()->routeIs('plppm.*', 'detail.detail', 'detail.detailk') ? 'menu-open' : '' }}">
+                        @php
+                            $isPengajuanLaporanActive = request()->routeIs(
+                                'plppm.lpengabdian*',
+                                'plppm.ppengabdian*',
+                                'plppm.lpeneleitian*',
+                                'plppm.ppenelitian*',
+                                'plppm.kpengabdian*',
+                                'plppm.kpenelitian*',
+                                'plppm.kumpulan*',
+                                'detail.detail*'
+                            );
+                        @endphp
+                        <li class="nav-item {{ $isPengajuanLaporanActive ? 'menu-open' : '' }}">
                             <a href="#" data-turbo="false" role="button" aria-controls="admin-nav-pengajuan"
-                                aria-expanded="{{ request()->routeIs('plppm.*', 'detail.detail', 'detail.detailk') ? 'true' : 'false' }}"
-                                class="nav-link {{ request()->routeIs('plppm.*', 'detail.detail', 'detail.detailk') ? 'active' : '' }}">
+                                aria-expanded="{{ $isPengajuanLaporanActive ? 'true' : 'false' }}"
+                                class="nav-link {{ $isPengajuanLaporanActive ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-file-signature"></i>
                                 <p>
                                     Pengajuan & Laporan
@@ -368,40 +380,49 @@
                             <ul class="nav nav-treeview" id="admin-nav-pengajuan">
                                 <li class="nav-item">
                                     <a href="{{ route('plppm.lpengabdian') }}"
-                                        class="nav-link {{ request()->routeIs('plppm.lpengabdian') ? 'active' : '' }}">
+                                        class="nav-link {{ request()->routeIs('plppm.lpengabdian*') ? 'active' : '' }}">
                                         <i class="nav-icon far fa-file"></i>
                                         <p>Pengajuan Pengabdian</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ route('plppm.lpeneleitian') }}"
-                                        class="nav-link {{ request()->routeIs('plppm.lpeneleitian') ? 'active' : '' }}">
+                                        class="nav-link {{ request()->routeIs('plppm.lpeneleitian*') ? 'active' : '' }}">
                                         <i class="nav-icon far fa-file"></i>
                                         <p>Pengajuan Penelitian</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ route('plppm.kpengabdian') }}"
-                                        class="nav-link {{ request()->routeIs('plppm.kpengabdian') ? 'active' : '' }}">
+                                        class="nav-link {{ request()->routeIs('plppm.kpengabdian*') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-folder"></i>
                                         <p>Laporan Pengabdian</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ route('plppm.kpenelitian') }}"
-                                        class="nav-link {{ request()->routeIs('plppm.kpenelitian') ? 'active' : '' }}">
+                                        class="nav-link {{ request()->routeIs('plppm.kpenelitian*') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-folder"></i>
                                         <p>Laporan Penelitian</p>
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('plppm.jurnal_dosen') }}"
-                                        class="nav-link {{ request()->routeIs('plppm.jurnal_dosen*') ? 'active' : '' }}">
-                                        <i class="nav-icon fas fa-book"></i>
-                                        <p>List Jurnal P3M</p>
-                                    </a>
-                                </li>
                             </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('plppm.jurnal_dosen') }}"
+                                class="nav-link {{ request()->routeIs('plppm.jurnal_dosen*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-book"></i>
+                                <p>List Jurnal P3M</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('plppm.hki_dosen') }}"
+                                class="nav-link {{ request()->routeIs('plppm.hki_dosen*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-award"></i>
+                                <p>HKI Dosen</p>
+                            </a>
                         </li>
 
                         <li class="nav-item mt-2">
@@ -451,6 +472,32 @@
     <script src="{{ asset('lte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}" data-turbo-eval="false"></script>
     <script src="{{ asset('lte/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}" data-turbo-eval="false"></script>
     <script src="{{ asset('lte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}" data-turbo-eval="false"></script>
+
+    {{-- Global DataTables Row Numbering: ensures visible rows are always sequentially numbered starting from 1 --}}
+    <script data-turbo-eval="false">
+        $(document).on('draw.dt', function(e, settings) {
+            try {
+                var api = new $.fn.dataTable.Api(settings);
+                var info = api.page.info();
+                if (!info || info.recordsDisplay === 0) return;
+                var headerCol0 = $(api.column(0).header());
+                var headerText = headerCol0.text().trim().toLowerCase();
+                if (headerText === 'no' || headerText === '#' || headerText === 'no.' || headerCol0.hasClass('col-num')) {
+                    api.column(0, { search: 'applied', order: 'applied' }).nodes().each(function(cell, i) {
+                        var num = i + 1 + info.start;
+                        var rowNumEl = cell.querySelector('.row-num, .upp3m-row-num');
+                        if (rowNumEl) {
+                            rowNumEl.textContent = num;
+                        } else {
+                            cell.innerHTML = num;
+                        }
+                    });
+                }
+            } catch (err) {
+                // Ignore non-compatible tables
+            }
+        });
+    </script>
 
     <script data-turbo-eval="false">
         /**
@@ -576,6 +623,28 @@
                 }
             }
 
+            function ensureAdminActiveLinkVisible() {
+                const sidebar = document.getElementById('p3m-sidebar');
+                if (!sidebar) return;
+
+                const activeLink =
+                    sidebar.querySelector('.nav-treeview .nav-link.active') ||
+                    sidebar.querySelector('.nav-link.active:not([href="#"])');
+
+                if (!activeLink) return;
+
+                const container = getSidebarScrollElement();
+                if (!container) return;
+
+                const containerRect = container.getBoundingClientRect();
+                const linkRect = activeLink.getBoundingClientRect();
+
+                if (linkRect.top < containerRect.top || linkRect.bottom > containerRect.bottom) {
+                    activeLink.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+                    saveNavigationScroll();
+                }
+            }
+
             function restoreNavigationScroll() {
                 if (navigationState.restoring) {
                     return;
@@ -594,6 +663,7 @@
 
                     requestAnimationFrame(function() {
                         setScrollPosition(position);
+                        ensureAdminActiveLinkVisible();
                         navigationState.restoring = false;
                     });
                 });
@@ -940,15 +1010,32 @@
                 updateSidebarActiveState(window.location.href);
                 updateAdminTopbarPage();
                 initializePageComponents();
+                restoreNavigationScroll();
                 triggerPageEnterAnimation();
             });
+
+            window.addEventListener('load', function() {
+                restoreNavigationScroll();
+                setTimeout(restoreNavigationScroll, 60);
+                setTimeout(restoreNavigationScroll, 200);
+            });
+
+            window.addEventListener('beforeunload', saveNavigationScroll);
+            window.addEventListener('pagehide', saveNavigationScroll);
+
+            document.addEventListener('scroll', function(e) {
+                const target = e.target;
+                if (target && (target.classList?.contains('os-viewport') || target.classList?.contains('sidebar') || target.closest?.('#p3m-sidebar'))) {
+                    saveNavigationScroll();
+                }
+            }, { passive: true, capture: true });
 
             // Save the current sidebar/page position immediately when a real
             // sidebar navigation link is activated. Group toggle links (#) are
             // intentionally ignored so opening a group never changes scroll.
             $(document)
-                .off('click.p3mAdminNavigation', '#p3m-sidebar a.nav-link')
-                .on('click.p3mAdminNavigation', '#p3m-sidebar a.nav-link', function() {
+                .off('mousedown.p3mAdminNavigation click.p3mAdminNavigation', '#p3m-sidebar a.nav-link')
+                .on('mousedown.p3mAdminNavigation click.p3mAdminNavigation', '#p3m-sidebar a.nav-link', function() {
                     const href = this.getAttribute('href');
 
                     if (!href || href === '#' || href.startsWith('javascript:')) {

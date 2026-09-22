@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
@@ -28,12 +30,16 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'slug' => 'required',
+        $input = $request->all();
+        $input['slug'] = Str::slug($request->slug ?: $request->name);
+
+        $validator = Validator::make($input, [
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:m_categories,slug',
         ], [
             'name.required' => 'Nama kategori wajib diisi.',
             'slug.required' => 'Slug kategori wajib diisi.',
+            'slug.unique' => 'Slug kategori sudah digunakan.',
         ]);
 
         if ($validator->fails()) {
@@ -45,7 +51,7 @@ class CategoryController extends Controller
         }
 
         $data['name'] = $request->name;
-        $data['slug'] = \Illuminate\Support\Str::slug($request->slug ?: $request->name);
+        $data['slug'] = $input['slug'];
 
         M_categories::create($data);
 
@@ -63,12 +69,16 @@ class CategoryController extends Controller
     public function ubah(Request $request, $id)
     {
         $find = M_categories::findOrFail($id);
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'slug' => 'required',
+        $input = $request->all();
+        $input['slug'] = Str::slug($request->slug ?: $request->name);
+
+        $validator = Validator::make($input, [
+            'name' => 'required|string|max:255',
+            'slug' => ['required', 'string', 'max:255', Rule::unique('m_categories', 'slug')->ignore($find->id)],
         ], [
             'name.required' => 'Nama kategori wajib diisi.',
             'slug.required' => 'Slug kategori wajib diisi.',
+            'slug.unique' => 'Slug kategori sudah digunakan.',
         ]);
 
         if ($validator->fails()) {
@@ -80,7 +90,7 @@ class CategoryController extends Controller
         }
 
         $data['name'] = $request->name;
-        $data['slug'] = \Illuminate\Support\Str::slug($request->slug ?: $request->name);
+        $data['slug'] = $input['slug'];
 
         $find->update($data);
         return redirect()->route('category.index')->with('success', 'Kategori berhasil diperbarui!');

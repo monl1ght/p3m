@@ -86,13 +86,60 @@
 .card-head-sub {
     color: var(--muted); font-size: 13.5px; line-height: 1.6; margin: 0; max-width: 540px;
 }
-.stat-chip {
-    display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r-md); font-size: 13px; font-weight: 700; color: var(--ink);
-    box-shadow: 0 2px 6px rgba(0,0,0,.03);
+/* Stat Chips */
+.stat-chips {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-left: auto;
+    flex-shrink: 0;
 }
-.stat-chip i { color: var(--forest-mid); font-size: 13px; }
+.stat-chip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    transition: all .2s ease;
+}
+.stat-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 61, 45, 0.08);
+    border-color: rgba(0, 87, 59, 0.25);
+}
+.stat-chip-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+.stat-chip-emerald .stat-chip-icon { background: #eaf5ee; color: #00573b; }
+.stat-chip-blue .stat-chip-icon    { background: #eff6ff; color: #2563eb; }
+.stat-chip-content {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+.stat-chip-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.stat-chip-val {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--ink);
+}
 
 /* Table Toolbar */
 .table-toolbar {
@@ -113,18 +160,19 @@
 .select-filter:focus {
     border-color: var(--forest-mid); box-shadow: 0 0 0 3px rgba(0,87,59,.1);
 }
-.search-wrap { position: relative; width: 260px; }
+.search-wrap { position: relative; width: 320px; max-width: 100%; margin-left: auto; flex-shrink: 0; }
 .search-wrap i {
-    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
     color: var(--light); font-size: 13px; pointer-events: none;
 }
 .search-input {
-    width: 100%; height: 38px; padding: 0 14px 0 36px;
-    border: 1.5px solid var(--border-2); border-radius: var(--r-sm);
+    width: 100%; height: 40px; padding: 0 14px 0 38px;
+    border: 1.5px solid var(--border-2); border-radius: 10px;
     font-size: 13px; color: var(--ink); background: var(--surface); outline: none;
+    transition: all .18s ease;
 }
 .search-input:focus {
-    border-color: var(--forest-mid); box-shadow: 0 0 0 3px rgba(0,87,59,.1);
+    border-color: var(--forest-mid); box-shadow: 0 0 0 3.5px rgba(0,87,59,.09);
 }
 
 /* Table */
@@ -139,7 +187,7 @@ table.users-table thead th {
     color: #52675e; font-size: 11px; font-weight: 800; letter-spacing: .08em;
     text-transform: uppercase; white-space: nowrap; vertical-align: middle;
 }
-table.users-table thead th:first-child { padding-left: 32px !important; width: 50px; text-align: center; }
+table.users-table thead th:first-child { padding-left: 32px !important; padding-right: 14px !important; width: 68px; text-align: left !important; vertical-align: middle !important; }
 table.users-table thead th:last-child  { padding-right: 32px !important; width: 130px; text-align: center; }
 
 table.users-table tbody td {
@@ -147,12 +195,13 @@ table.users-table tbody td {
     border-bottom: 1px solid var(--border); color: var(--tx); font-size: 13px;
 }
 table.users-table tbody tr:hover td { background: var(--surface-alt); }
-table.users-table tbody td:first-child { padding-left: 32px !important; }
+table.users-table tbody td:first-child { padding-left: 32px !important; padding-right: 14px !important; text-align: left !important; vertical-align: middle !important; }
 table.users-table tbody td:last-child  { padding-right: 32px !important; text-align: center; }
 
 .row-num {
+    display: inline-block;
     color: var(--light); font-size: 12.5px; font-weight: 700;
-    font-variant-numeric: tabular-nums; text-align: center;
+    font-variant-numeric: tabular-nums; text-align: left;
 }
 
 /* Dosen Meta */
@@ -165,6 +214,10 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
     color: var(--forest-mid); display: inline-flex; align-items: center;
     justify-content: center; font-size: 13px; font-weight: 800;
     border: 1px solid rgba(0,93,59,.15);
+    overflow: hidden; position: relative;
+}
+.dosen-avatar img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
 }
 .dosen-name {
     font-weight: 700; color: var(--ink); font-size: 13px; line-height: 1.3;
@@ -325,12 +378,14 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
 @media (max-width: 767.98px) {
     .page-usulan .content-header { padding: 20px 16px 0; }
     .page-usulan section.content { padding: 14px 16px 28px; }
-    .users-card-head { padding: 22px 20px 18px; }
-    .table-toolbar { padding: 14px 20px; }
-    .search-wrap { width: 100%; }
-    table.users-table thead th:first-child, table.users-table tbody td:first-child { padding-left: 20px !important; }
-    table.users-table thead th:last-child,  table.users-table tbody td:last-child  { padding-right: 20px !important; }
-    .table-footer { padding: 14px 20px; }
+    .users-card-head { padding: 20px 16px; flex-direction: column; align-items: stretch; gap: 16px; }
+    .stat-chips { margin-left: 0; width: 100%; justify-content: flex-start; }
+    .table-toolbar { padding: 14px 16px; flex-direction: column; align-items: stretch; gap: 12px; }
+    .toolbar-left { width: 100%; justify-content: flex-start; }
+    .search-wrap { width: 100%; margin-left: 0; }
+    table.users-table thead th:first-child, table.users-table tbody td:first-child { padding-left: 16px !important; }
+    table.users-table thead th:last-child,  table.users-table tbody td:last-child  { padding-right: 16px !important; }
+    .table-footer { padding: 14px 16px; }
 }
 </style>
 @endsection
@@ -341,7 +396,6 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
         <div class="container-fluid">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('dash.dashboard') }}">Home</a></li>
-                <li class="breadcrumb-item">Pengajuan & Laporan</li>
                 <li class="breadcrumb-item active">{{ $pagetitle ?? 'List Jurnal P3M' }}</li>
             </ol>
         </div>
@@ -356,9 +410,16 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
                         <div class="card-eyebrow">Verifikasi Jurnal Dosen</div>
                         <h1 class="card-head-title" style="margin-bottom: 0;">List Jurnal P3M</h1>
                     </div>
-                    <div class="stat-chip">
-                        <i class="fas fa-book-reader"></i>
-                        <span>Total Jurnal: <strong>{{ $jurnals->count() }}</strong></span>
+                    <div class="stat-chips">
+                        <div class="stat-chip stat-chip-emerald">
+                            <div class="stat-chip-icon">
+                                <i class="fas fa-book-reader"></i>
+                            </div>
+                            <div class="stat-chip-content">
+                                <span class="stat-chip-label">Total Jurnal</span>
+                                <strong class="stat-chip-val">{{ $jurnals->count() }}</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -447,9 +508,17 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
                                         <span class="row-num">{{ $index + 1 }}</span>
                                     </td>
                                     <td>
+                                        @php
+                                            $userPhoto = !empty($jurnal->user->image) ? 'storage/photo-user/' . $jurnal->user->image : null;
+                                            $userPhotoExists = $userPhoto && file_exists(public_path($userPhoto));
+                                        @endphp
                                         <div class="dosen-cell">
                                             <div class="dosen-avatar">
-                                                {{ strtoupper(substr($jurnal->user->name ?? 'D', 0, 1)) }}
+                                                @if($userPhotoExists)
+                                                    <img src="{{ asset($userPhoto) }}" alt="{{ $jurnal->user->name ?? 'Dosen' }}">
+                                                @else
+                                                    {{ strtoupper(substr($jurnal->user->name ?? 'D', 0, 1)) }}
+                                                @endif
                                             </div>
                                             <div>
                                                 <div class="dosen-name">{{ $jurnal->user->name ?? 'Dosen Polibang' }}</div>
@@ -636,6 +705,17 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
                 var total = pageInfo.recordsDisplay;
 
                 $('#js-table-info').text('Menampilkan ' + start + ' - ' + end + ' dari ' + total + ' data');
+
+                // Dynamic sequential row re-indexing
+                api.column(0, { search: 'applied', order: 'applied' }).nodes().each(function(cell, i) {
+                    var num = i + 1 + pageInfo.start;
+                    var rowNumEl = cell.querySelector('.row-num');
+                    if (rowNumEl) {
+                        rowNumEl.textContent = num;
+                    } else {
+                        cell.innerHTML = num;
+                    }
+                });
 
                 var paginationHtml = '';
                 var totalPages = pageInfo.pages;

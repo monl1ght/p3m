@@ -8,6 +8,7 @@ use App\Models\kum_penelitianModel;
 use App\Models\kum_pengabdianModel;
 use App\Models\M_categories;
 use App\Models\p3mModel;
+use App\Models\SubmissionStatusHistory;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -1299,18 +1300,25 @@ class DosenController extends Controller
         }
         $this->ensureSubmissionIsEditable($data);
 
+        DB::transaction(function () use ($data) {
+            // Hapus riwayat status terkait
+            SubmissionStatusHistory::where('submission_type', 'proposal-pengabdian')
+                ->where('submission_id', $data->id)
+                ->delete();
+
+            // Hapus relasi anggotanya
+            $data->anggotap3m()->delete();
+
+            // Hapus data utama
+            $data->delete();
+        });
+
         $this->deleteSubmissionPdf($data->uppdf);
 
         // Hapus foto kalau ada
         if ($data->foto && Storage::disk('public')->exists('photo-upp3m/' . $data->foto)) {
             Storage::disk('public')->delete('photo-upp3m/' . $data->foto);
         }
-
-        // Hapus relasi anggotanya
-        $data->anggotap3m()->delete();
-
-        // Hapus data utama
-        $data->delete();
 
         return redirect()->route('dosen.upp3m')->with('success', 'Data dan file terkait berhasil dihapus!');
     }
@@ -1326,18 +1334,25 @@ class DosenController extends Controller
         }
         $this->ensureSubmissionIsEditable($data);
 
+        DB::transaction(function () use ($data) {
+            // Hapus riwayat status terkait
+            SubmissionStatusHistory::where('submission_type', 'proposal-penelitian')
+                ->where('submission_id', $data->id)
+                ->delete();
+
+            // Hapus relasi anggotanya
+            $data->anggotap3m()->delete();
+
+            // Hapus data utama
+            $data->delete();
+        });
+
         $this->deleteSubmissionPdf($data->uppdf);
 
         // Hapus foto kalau ada
         if ($data->foto && Storage::disk('public')->exists('photo-upp3m/' . $data->foto)) {
             Storage::disk('public')->delete('photo-upp3m/' . $data->foto);
         }
-
-        // Hapus relasi anggotanya
-        $data->anggotap3m()->delete();
-
-        // Hapus data utama
-        $data->delete();
 
         return redirect()->route('dosen.dash_ajuanpenelitian')->with('success', 'Data dan file terkait berhasil dihapus!');
     }
@@ -1352,18 +1367,25 @@ class DosenController extends Controller
         }
         $this->ensureSubmissionIsEditable($data);
 
+        DB::transaction(function () use ($data) {
+            // Hapus riwayat status terkait
+            SubmissionStatusHistory::where('submission_type', 'laporan-pengabdian')
+                ->where('submission_id', $data->id)
+                ->delete();
+
+            // Hapus relasi anggotanya
+            $data->anggotap3m()->delete();
+
+            // Hapus data utama
+            $data->delete();
+        });
+
         $this->deleteSubmissionPdf($data->uppdf);
 
         // Hapus foto kalau ada
         if ($data->foto && Storage::disk('public')->exists('photo-upp3m/' . $data->foto)) {
             Storage::disk('public')->delete('photo-upp3m/' . $data->foto);
         }
-
-        // Hapus relasi anggotanya
-        $data->anggotap3m()->delete();
-
-        // Hapus data utama
-        $data->delete();
 
         return redirect()->route('dosen.dash_kpengabdian')->with('success', 'Data dan file terkait berhasil dihapus!');
     }
@@ -1378,18 +1400,25 @@ class DosenController extends Controller
         }
         $this->ensureSubmissionIsEditable($data);
 
+        DB::transaction(function () use ($data) {
+            // Hapus riwayat status terkait
+            SubmissionStatusHistory::where('submission_type', 'laporan-penelitian')
+                ->where('submission_id', $data->id)
+                ->delete();
+
+            // Hapus relasi anggotanya
+            $data->anggotap3m()->delete();
+
+            // Hapus data utama
+            $data->delete();
+        });
+
         $this->deleteSubmissionPdf($data->uppdf);
 
         // Hapus foto kalau ada
         if ($data->foto && Storage::disk('public')->exists('photo-upp3m/' . $data->foto)) {
             Storage::disk('public')->delete('photo-upp3m/' . $data->foto);
         }
-
-        // Hapus relasi anggotanya
-        $data->anggotap3m()->delete();
-
-        // Hapus data utama
-        $data->delete();
 
         return redirect()->route('dosen.dash_kpenelitian')->with('success', 'Data dan file terkait berhasil dihapus!');
     }

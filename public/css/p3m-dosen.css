@@ -708,6 +708,7 @@ body.p3m-dosen-shell .dosen-child-link:hover {
     color: #fff !important;
 }
 
+body.p3m-dosen-shell .dosen-navigation > .nav-item > .dosen-nav-link.active:not([aria-controls]):not([href="#"]),
 body.p3m-dosen-shell .dosen-child-link.active {
     position: relative;
     background: #fff !important;
@@ -716,6 +717,7 @@ body.p3m-dosen-shell .dosen-child-link.active {
     box-shadow: 0 8px 20px rgba(0, 25, 17, .12) !important;
 }
 
+body.p3m-dosen-shell .dosen-navigation > .nav-item > .dosen-nav-link.active:not([aria-controls]):not([href="#"])::before,
 body.p3m-dosen-shell .dosen-child-link.active::before {
     content: "";
     position: absolute;
@@ -727,6 +729,7 @@ body.p3m-dosen-shell .dosen-child-link.active::before {
     background: var(--dosen-green-500);
 }
 
+body.p3m-dosen-shell .dosen-navigation > .nav-item > .dosen-nav-link.active:not([aria-controls]):not([href="#"]) .nav-icon,
 body.p3m-dosen-shell .dosen-child-link.active .nav-icon {
     color: var(--dosen-green-950) !important;
 }
@@ -1569,13 +1572,36 @@ body.p3m-dosen-shell .upp3m-action-wrap {
     align-items: center !important;
 }
 
-body.p3m-dosen-shell .upp3m-row-num {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 0 auto !important;
-    text-align: center !important;
+/* Table number column: strictly flush-left (rata kiri) aligned with card padding, vertically centered */
+body.p3m-dosen-shell table.upp3m-table thead th:first-child,
+body.p3m-dosen-shell table.upp3m-table thead th:first-child.text-center,
+body.p3m-dosen-shell table.upp3m-table thead th.col-num,
+body.p3m-dosen-shell table.upp3m-table tbody td:first-child,
+body.p3m-dosen-shell table.upp3m-table tbody td:first-child.text-center,
+body.p3m-dosen-shell table.upp3m-table tbody td.upp3m-row-num,
+body.p3m-dosen-shell .upp3m-card table thead th:first-child,
+body.p3m-dosen-shell .upp3m-card table thead th:first-child.text-center,
+body.p3m-dosen-shell .upp3m-card table tbody td:first-child,
+body.p3m-dosen-shell .upp3m-card table tbody td:first-child.text-center {
+    display: table-cell !important;
+    padding-left: var(--p3m-up-card-inline, 28px) !important;
+    padding-right: 14px !important;
+    text-align: left !important;
+    vertical-align: middle !important;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    width: 60px;
 }
+
+body.p3m-dosen-shell .upp3m-row-num {
+    display: table-cell !important;
+    vertical-align: middle !important;
+    text-align: left !important;
+    margin: 0 !important;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
 
 /* ==========================================================================
    GLOBAL CUSTOM DROPDOWN COMPONENT (.p3m-custom-dropdown)

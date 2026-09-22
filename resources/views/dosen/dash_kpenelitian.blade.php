@@ -386,7 +386,11 @@
         }
 
         table.upp3m-table thead th:first-child {
-            padding-left: var(--p3m-up-card-inline) !important;
+            padding-left: var(--p3m-up-card-inline, 28px) !important;
+            padding-right: 14px !important;
+            text-align: left !important;
+            vertical-align: middle !important;
+            width: 60px;
         }
 
         table.upp3m-table thead th:last-child {
@@ -426,7 +430,11 @@
         }
 
         table.upp3m-table tbody td:first-child {
-            padding-left: var(--p3m-up-card-inline);
+            padding-left: var(--p3m-up-card-inline, 28px) !important;
+            padding-right: 14px !important;
+            text-align: left !important;
+            vertical-align: middle !important;
+            width: 60px;
         }
 
         table.upp3m-table tbody td:last-child {
@@ -435,11 +443,13 @@
 
         /* Number Column */
         .upp3m-row-num {
+            display: table-cell !important;
+            vertical-align: middle !important;
+            text-align: left !important;
             color: var(--p3m-up-light);
             font-size: 12.5px;
             font-weight: 700;
             font-variant-numeric: tabular-nums;
-            text-align: center;
         }
 
         /* Proposal / Laporan Cell */
@@ -1024,7 +1034,7 @@
                         <table id="example2" class="table upp3m-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 5%;" class="text-center">
+                                    <th style="width: 60px;">
                                         No
                                     </th>
                                     <th style="width: 33%;">

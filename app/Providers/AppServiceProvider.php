@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\View;
@@ -157,7 +158,15 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
-        View::composer('*', function ($view) {
+        View::composer('layout.main', function ($view) {
+            if (!Auth::check() || Auth::user()->role !== 'admin') {
+                $view->with([
+                    'notifikasi' => collect(),
+                    'totalNotif' => 0
+                ]);
+                return;
+            }
+
             $notifikasi = collect();
 
             $sources = [
@@ -185,6 +194,11 @@ class AppServiceProvider extends ServiceProvider
                     'table' => 'dosen_jurnal_uploads',
                     'judul' => '%d Jurnal Dosen',
                     'link' => route('plppm.jurnal_dosen')
+                ],
+                'hki_dosen' => [
+                    'table' => 'hkis',
+                    'judul' => '%d HKI Dosen',
+                    'link' => route('plppm.hki_dosen')
                 ],
             ];
             foreach ($sources as $tipe => $cfg) {

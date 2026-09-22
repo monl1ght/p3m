@@ -249,18 +249,18 @@ class ViewlprnController extends Controller
             ->get();
 
         // searching data
-        if ($request->get('search')) {
+        if ($request->filled('search')) {
             $keyword = $request->get('search');
 
             if ($tipe === 'ajupengab') {
                 $data = p3mModel::with('anggotap3m')
                     ->where('id', $id)
-                    ->where('title', 'like', '%' . $keyword . '%')
+                    ->where('judul', 'like', '%' . $keyword . '%')
                     ->firstOrFail();
             } elseif ($tipe === 'ajupenel') {
                 $data = ajuan_penelitianModel::with('anggotap3m')
                     ->where('id', $id)
-                    ->where('title', 'like', '%' . $keyword . '%')
+                    ->where('judul', 'like', '%' . $keyword . '%')
                     ->firstOrFail();
             }
         }

@@ -165,7 +165,7 @@ table.users-table {
     font-size: 11px; font-weight: 800; text-transform: uppercase;
     letter-spacing: .08em; color: var(--muted); white-space: nowrap;
 }
-.users-table thead th:first-child { padding-left: 32px; text-align: center; }
+.users-table thead th:first-child { padding-left: 32px !important; padding-right: 14px !important; text-align: left !important; width: 68px; }
 .users-table thead th:last-child  { padding-right: 32px; }
 
 .users-table tbody td {
@@ -173,7 +173,7 @@ table.users-table {
     border-bottom: 1px solid var(--border); font-size: 14px; color: var(--tx);
     transition: background .15s ease;
 }
-.users-table tbody td:first-child { padding-left: 32px; text-align: center; }
+.users-table tbody td:first-child { padding-left: 32px !important; padding-right: 14px !important; text-align: left !important; }
 .users-table tbody td:last-child  { padding-right: 32px; }
 .users-table tbody tr:last-child td { border-bottom: none; }
 .users-table tbody tr:hover td { background: var(--surface-alt); }
@@ -688,6 +688,18 @@ $(function () {
             var from  = info.recordsDisplay === 0 ? 0 : info.start + 1;
             var to    = Math.min(info.end, info.recordsDisplay);
             $('#tableInfo').text('Menampilkan ' + from + '\u2013' + to + ' dari ' + info.recordsDisplay + ' data');
+
+            // Dynamic sequential row re-indexing
+            var api = this.api();
+            api.column(0, { search: 'applied', order: 'applied' }).nodes().each(function(cell, i) {
+                var num = i + 1 + info.start;
+                var rowNumEl = cell.querySelector('.row-num');
+                if (rowNumEl) {
+                    rowNumEl.textContent = num;
+                } else {
+                    cell.innerHTML = num;
+                }
+            });
 
             var $container = $(this.api().table().container());
             var $dtPg = $container.find('.dataTables_paginate');

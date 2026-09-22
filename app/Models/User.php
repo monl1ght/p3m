@@ -68,4 +68,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(ajuan_penelitianModel::class);
     }
+    public function hkis()
+    {
+        return $this->hasMany(Hki::class, 'user_id');
+    }
 }

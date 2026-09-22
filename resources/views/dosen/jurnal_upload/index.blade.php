@@ -410,7 +410,11 @@
         }
 
         .page-dosen-jurnal table.upp3m-table thead th:first-child {
-            padding-left: var(--p3m-up-card-inline) !important;
+            padding-left: var(--p3m-up-card-inline, 28px) !important;
+            padding-right: 14px !important;
+            text-align: left !important;
+            vertical-align: middle !important;
+            width: 60px;
         }
 
         .page-dosen-jurnal table.upp3m-table thead th:last-child {
@@ -449,7 +453,11 @@
         }
 
         .page-dosen-jurnal table.upp3m-table tbody td:first-child {
-            padding-left: var(--p3m-up-card-inline);
+            padding-left: var(--p3m-up-card-inline, 28px) !important;
+            padding-right: 14px !important;
+            text-align: left !important;
+            vertical-align: middle !important;
+            width: 60px;
         }
 
         .page-dosen-jurnal table.upp3m-table tbody td:last-child {
@@ -458,11 +466,13 @@
 
         /* Number Column */
         .page-dosen-jurnal .upp3m-row-num {
+            display: table-cell !important;
+            vertical-align: middle !important;
+            text-align: left !important;
             color: var(--p3m-up-light);
             font-size: 12.5px;
             font-weight: 700;
             font-variant-numeric: tabular-nums;
-            text-align: center;
         }
 
         /* Proposal / Jurnal Cell */
@@ -1046,7 +1056,7 @@
                         <table id="jurnalTable" class="table upp3m-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 5%;" class="text-center">
+                                    <th style="width: 60px;">
                                         No
                                     </th>
                                     <th style="width: 35%;">
@@ -1252,7 +1262,8 @@
                         }
                     },
                     drawCallback: function() {
-                        const info = this.api().page.info();
+                        const api = this.api();
+                        const info = api.page.info();
                         const from = info.recordsDisplay === 0 ? 0 : info.start + 1;
                         const to = Math.min(info.end, info.recordsDisplay);
 
@@ -1260,6 +1271,11 @@
                             'Menampilkan ' + from + '–' + to + ' dari ' + info.recordsDisplay + ' data'
                         );
                         $('#jurnalCountChip strong').text(info.recordsDisplay);
+
+                        // Dynamic row numbering (always 1, 2, 3... on visible rows)
+                        api.column(0, { search: 'applied', order: 'applied' }).nodes().each(function(cell, i) {
+                            cell.innerHTML = i + 1 + info.start;
+                        });
 
                         // Rebuild Custom Pagination
                         const $nativePagination = $(this.api().table().container()).find('.dataTables_paginate');

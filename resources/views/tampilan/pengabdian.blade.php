@@ -478,7 +478,7 @@ body {
                                 </td>
                                 <td style="text-align: center;">
                                     @if($pg->uppdf)
-                                        <a href="{{ route('tampilan.download_karya', ['type' => 'pengabdian', 'id' => $pg->id]) }}" class="btn-download-premium" title="Unduh File">
+                                        <a href="{{ route('submission.public.download', ['type' => 'laporan-pengabdian', 'id' => $pg->id]) }}" class="btn-download-premium" title="Unduh File">
                                             <i class="bi bi-download"></i>
                                             <span>Unduh</span>
                                         </a>
@@ -527,7 +527,7 @@ body {
 
                     <div class="mobile-card-action">
                         @if($pg->uppdf)
-                            <a href="{{ route('tampilan.download_karya', ['type' => 'pengabdian', 'id' => $pg->id]) }}" class="btn-mobile-download" aria-label="Unduh dokumen {{ $pg->judul }}">
+                            <a href="{{ route('submission.public.download', ['type' => 'laporan-pengabdian', 'id' => $pg->id]) }}" class="btn-mobile-download" aria-label="Unduh dokumen {{ $pg->judul }}">
                                 <i class="bi bi-download"></i>
                                 <span>Unduh Dokumen</span>
                             </a>

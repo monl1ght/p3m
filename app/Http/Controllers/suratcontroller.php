@@ -167,11 +167,20 @@ class suratcontroller extends Controller
         // Ketua
         $start_x = 25; // Define the starting X position
         $pdf->SetXY($start_x, $pdf->GetY(0));
-        $pdf->SetFont('Times', '', 12);
+        $ketuaProdi = match($penelitian->prodi) {
+            'R'  => 'RPL',
+            'A'  => 'Agribisnis',
+            'AK' => 'Akuntansi',
+            'AB' => 'Admin Bisnis',
+            'AP' => 'Admin Perkantoran',
+            default => ($penelitian->prodi ?: '-')
+        };
+        $ketuaNidn = $penelitian->nidn ?: '-';
+
         $pdf->Cell(10, 10, '1', 1, 0, 'C');
         $pdf->Cell(53, 10, $penelitian->ketua, 1);
-        $pdf->Cell(40, 10, '-', 1);
-        $pdf->Cell(55, 10, '-', 1);
+        $pdf->Cell(40, 10, $ketuaNidn, 1);
+        $pdf->Cell(55, 10, $ketuaProdi, 1);
         $pdf->Cell(20, 10, 'Ketua', 1, 1, 'C');
 
         // Anggota
@@ -234,7 +243,9 @@ class suratcontroller extends Controller
         $pdf->Cell(0, 6, "Sofia Ulfah, M.Kom.", 0, 1, 'R');
         $pdf->SetFont('Times', 'B', 12);
         $pdf->Cell(0, 6, "NIDN : 0619099004", 0, 1, 'R');
-        $pdf->Output('I', 'Surat_Tugas_Penelitian.pdf');
+        return response($pdf->Output('S', 'Surat_Tugas_Pengabdian.pdf'))
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="Surat_Tugas_Pengabdian.pdf"');
     }
 
     public function downsurtagpen(Request $request, $id)
@@ -267,11 +278,20 @@ class suratcontroller extends Controller
         // Ketua
         $start_x = 25; // Define the starting X position
         $pdf->SetXY($start_x, $pdf->GetY(0));
-        $pdf->SetFont('Times', '', 12);
+        $ketuaProdi = match($penelitian->prodi) {
+            'R'  => 'RPL',
+            'A'  => 'Agribisnis',
+            'AK' => 'Akuntansi',
+            'AB' => 'Admin Bisnis',
+            'AP' => 'Admin Perkantoran',
+            default => ($penelitian->prodi ?: '-')
+        };
+        $ketuaNidn = $penelitian->nidn ?: '-';
+
         $pdf->Cell(10, 10, '1', 1, 0, 'C');
         $pdf->Cell(53, 10, $penelitian->ketua, 1);
-        $pdf->Cell(40, 10, '-', 1);
-        $pdf->Cell(55, 10, '-', 1);
+        $pdf->Cell(40, 10, $ketuaNidn, 1);
+        $pdf->Cell(55, 10, $ketuaProdi, 1);
         $pdf->Cell(20, 10, 'Ketua', 1, 1, 'C');
 
         // Anggota
@@ -293,7 +313,7 @@ class suratcontroller extends Controller
         $pdf->SetFont('Times', '', 12);
         $start_x = 25; // Define the starting X position
         $pdf->SetXY($start_x, $pdf->GetY(0));
-        $pdf->MultiCell(0, 8, "Untuk melakukan Pengabdian dengan judul:", 0, 'L');
+        $pdf->MultiCell(0, 8, "Untuk melakukan Penelitian dengan judul:", 0, 'L');
 
         $currentY = $pdf->GetY();
 
@@ -334,7 +354,9 @@ class suratcontroller extends Controller
         $pdf->Cell(0, 6, "Sofia Ulfah, M.Kom.", 0, 1, 'R');
         $pdf->SetFont('Times', 'B', 12);
         $pdf->Cell(0, 6, "NIDN : 0619099004", 0, 1, 'R');
-        $pdf->Output('I', 'Surat_Tugas_Penelitian.pdf');
+        return response($pdf->Output('S', 'Surat_Tugas_Penelitian.pdf'))
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="Surat_Tugas_Penelitian.pdf"');
     }
 
     private function authorizeLetterDownload(Request $request, $submission): void

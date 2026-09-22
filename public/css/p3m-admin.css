@@ -1159,6 +1159,7 @@ body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link:hover .nav-icon {
     color: rgba(255, 255, 255, .78) !important;
 }
 
+body.p3m-admin-elegant .nav-sidebar > .nav-item > .nav-link.active:not([aria-controls]):not([href="#"]),
 body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link.active {
     position: relative;
 
@@ -1171,6 +1172,7 @@ body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link.active {
         0 8px 20px rgba(0, 25, 17, 0.12) !important;
 }
 
+body.p3m-admin-elegant .nav-sidebar > .nav-item > .nav-link.active:not([aria-controls]):not([href="#"])::before,
 body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link.active::before {
     content: "";
 
@@ -1187,6 +1189,7 @@ body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link.active::before {
     background: var(--p3m-green-500);
 }
 
+body.p3m-admin-elegant .nav-sidebar > .nav-item > .nav-link.active:not([aria-controls]):not([href="#"]) .nav-icon,
 body.p3m-admin-elegant .nav-sidebar .nav-treeview .nav-link.active .nav-icon {
     color: var(--p3m-green-950) !important;
 }
@@ -2147,5 +2150,35 @@ body.p3m-admin-elegant .main-sidebar .nav-treeview .nav-link {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
+
+/* Table number column: strictly flush-left (rata kiri) aligned with 32px card padding, vertically centered */
+body.p3m-admin-elegant table.users-table thead th:first-child,
+body.p3m-admin-elegant table.users-table thead th:first-child.text-center,
+body.p3m-admin-elegant table.users-table thead th.col-num,
+body.p3m-admin-elegant table.users-table tbody td:first-child,
+body.p3m-admin-elegant table.users-table tbody td:first-child.text-center,
+body.p3m-admin-elegant table.users-table tbody td.row-num,
+body.p3m-admin-elegant .users-card table thead th:first-child,
+body.p3m-admin-elegant .users-card table thead th:first-child.text-center,
+body.p3m-admin-elegant .users-card table tbody td:first-child,
+body.p3m-admin-elegant .users-card table tbody td:first-child.text-center {
+    display: table-cell !important;
+    padding-left: 32px !important;
+    padding-right: 14px !important;
+    text-align: left !important;
+    vertical-align: middle !important;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    width: 68px;
+}
+
+body.p3m-admin-elegant .row-num {
+    display: inline-block !important;
+    text-align: left !important;
+    vertical-align: middle !important;
+    margin: 0 !important;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
 }
 

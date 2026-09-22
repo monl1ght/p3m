@@ -146,4 +146,71 @@ class UserManagementTest extends TestCase
             'name' => 'New Unique Name',
         ]);
     }
+
+    #[Test]
+    public function dosen_tidak_dapat_mengakses_halaman_manajemen_user(): void
+    {
+        $dosen = User::factory()->dosen()->create();
+
+        // Browser request dialihkan ke dashboard dosen dengan pesan error
+        $response = $this->actingAs($dosen)->get(route('index'));
+        $response->assertRedirect(route('dosen.dash'));
+        $response->assertSessionHas('error', 'Anda tidak memiliki izin untuk mengakses halaman tersebut.');
+
+        $response = $this->actingAs($dosen)->get(route('create'));
+        $response->assertRedirect(route('dosen.dash'));
+
+        $response = $this->actingAs($dosen)->get(route('update', ['id' => $dosen->id]));
+        $response->assertRedirect(route('dosen.dash'));
+
+        $response = $this->actingAs($dosen)->get(route('detail', ['id' => $dosen->id]));
+        $response->assertRedirect(route('dosen.dash'));
+
+        // Request Ajax / JSON mengembalikan 403 Forbidden
+        $jsonResponse = $this->actingAs($dosen)->getJson(route('index'));
+        $jsonResponse->assertStatus(403);
+    }
+
+    #[Test]
+    public function dosen_tidak_dapat_membuat_user_baru(): void
+    {
+        $dosen = User::factory()->dosen()->create();
+
+        $payload = [
+            'name' => 'Attacker Created Admin',
+            'email' => 'attacker.admin@polibang.ac.id',
+            'password' => 'secret123',
+            'role' => 'admin',
+        ];
+
+        // Web POST request dialihkan oleh RoleMiddleware
+        $response = $this->actingAs($dosen)->post(route('store'), $payload);
+        $response->assertRedirect(route('dosen.dash'));
+
+        // JSON POST request langsung 403
+        $jsonResponse = $this->actingAs($dosen)->postJson(route('store'), $payload);
+        $jsonResponse->assertStatus(403);
+
+        // Pastikan tidak ada data yang masuk ke database
+        $this->assertDatabaseMissing('users', [
+            'email' => 'attacker.admin@polibang.ac.id',
+        ]);
+    }
+
+    #[Test]
+    public function dosen_tidak_dapat_menghapus_user(): void
+    {
+        $dosen = User::factory()->dosen()->create();
+        $targetUser = User::factory()->dosen()->create();
+
+        $response = $this->actingAs($dosen)->delete(route('delete', ['id' => $targetUser->id]));
+        $response->assertRedirect(route('dosen.dash'));
+
+        $jsonResponse = $this->actingAs($dosen)->deleteJson(route('delete', ['id' => $targetUser->id]));
+        $jsonResponse->assertStatus(403);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $targetUser->id,
+        ]);
+    }
 }

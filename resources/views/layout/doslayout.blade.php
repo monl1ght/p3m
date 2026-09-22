@@ -223,7 +223,7 @@
                     </div>
                 </div>
 
-                <nav class="dosen-navigation mt-2">
+                <nav class="dosen-navigation mt-2" data-turbo="true">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                         data-accordion="false">
 
@@ -355,6 +355,15 @@
                             </ul>
                         </li>
 
+                        <li class="nav-item">
+                            <a href="{{ route('dosen.hki.index') }}" data-turbo="true"
+                                class="nav-link dosen-nav-link {{ request()->routeIs('dosen.hki.*') ? 'active' : '' }}"
+                                @if (request()->routeIs('dosen.hki.*')) aria-current="page" @endif>
+                                <i class="nav-icon fas fa-award"></i>
+                                <p>Hak Kekayaan Intelektual</p>
+                            </a>
+                        </li>
+
                         <li class="nav-item dosen-logout-item">
                             <form action="{{ route('logout') }}" method="POST">
                                 @csrf
@@ -411,7 +420,32 @@
     </script>
     <script src="{{ asset('lte/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}" data-turbo-eval="false">
     </script>
-    <script src="{{ asset('lte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}" data-turbo-eval="false">
+    <script src="{{ asset('lte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}" data-turbo-eval="false"></script>
+
+    {{-- Global DataTables Row Numbering: ensures visible rows are always sequentially numbered starting from 1 --}}
+    <script data-turbo-eval="false">
+        $(document).on('draw.dt', function(e, settings) {
+            try {
+                var api = new $.fn.dataTable.Api(settings);
+                var info = api.page.info();
+                if (!info || info.recordsDisplay === 0) return;
+                var headerCol0 = $(api.column(0).header());
+                var headerText = headerCol0.text().trim().toLowerCase();
+                if (headerText === 'no' || headerText === '#' || headerText === 'no.' || headerCol0.hasClass('col-num')) {
+                    api.column(0, { search: 'applied', order: 'applied' }).nodes().each(function(cell, i) {
+                        var num = i + 1 + info.start;
+                        var rowNumEl = cell.querySelector('.row-num, .upp3m-row-num');
+                        if (rowNumEl) {
+                            rowNumEl.textContent = num;
+                        } else {
+                            cell.innerHTML = num;
+                        }
+                    });
+                }
+            } catch (err) {
+                // Ignore non-compatible tables
+            }
+        });
     </script>
 
     <script data-turbo-eval="false">
@@ -430,9 +464,10 @@
 
             const SIDEBAR_SELECTOR = '#p3m-sidebar';
             const NAV_LINK_SELECTOR = `${SIDEBAR_SELECTOR} a.nav-link[href]`;
+            const SIDEBAR_SCROLL_KEY = 'p3m.dosen.navigation.sidebar-scroll';
 
             let destinationUrl = null;
-            let sidebarScrollTop = 0;
+            let isRestoringScroll = false;
 
             /* ── Utilities ─────────────────────────────────────────────────── */
 
@@ -441,21 +476,157 @@
             }
 
             function getSidebarScrollContainer() {
-                return getSidebar()?.querySelector('.sidebar') || null;
+                const sidebar = getSidebar();
+                if (!sidebar) return null;
+
+                // Priority 1: OverlayScrollbars viewport (used by AdminLTE layout-fixed)
+                const osViewport = sidebar.querySelector('.os-viewport');
+                if (osViewport) return osViewport;
+
+                // Priority 2: AdminLTE .sidebar wrapper
+                const sidebarDiv = sidebar.querySelector('.sidebar');
+                if (sidebarDiv) return sidebarDiv;
+
+                return sidebar;
             }
 
-            function rememberSidebarScrollPosition() {
-                const scrollContainer = getSidebarScrollContainer();
-                if (scrollContainer) sidebarScrollTop = scrollContainer.scrollTop;
+            function getOverlayScrollbarsInstance() {
+                const sidebar = getSidebar();
+                if (!sidebar) return null;
+                const target = sidebar.querySelector('.sidebar') || sidebar;
+                if (typeof $ !== 'undefined' && typeof $(target).overlayScrollbars === 'function') {
+                    return $(target).overlayScrollbars();
+                }
+                return null;
             }
 
-            function restoreSidebarScrollPosition() {
-                const scrollContainer = getSidebarScrollContainer();
-                if (!scrollContainer) return;
+            function getSidebarScrollTop() {
+                const osInstance = getOverlayScrollbarsInstance();
+                if (osInstance && typeof osInstance.scroll === 'function') {
+                    const scrollInfo = osInstance.scroll();
+                    if (scrollInfo && scrollInfo.position && typeof scrollInfo.position.y === 'number') {
+                        return scrollInfo.position.y;
+                    }
+                }
+                const container = getSidebarScrollContainer();
+                return container ? (container.scrollTop || 0) : 0;
+            }
 
+            function setSidebarScrollTop(scrollTop) {
+                const targetY = Math.max(0, Number(scrollTop) || 0);
+
+                const container = getSidebarScrollContainer();
+                if (container) {
+                    container.scrollTop = targetY;
+                }
+
+                const osInstance = getOverlayScrollbarsInstance();
+                if (osInstance && typeof osInstance.scroll === 'function') {
+                    try {
+                        osInstance.scroll({ y: targetY });
+                    } catch (e) {}
+                }
+            }
+
+            function saveSidebarScrollPosition() {
+                if (isRestoringScroll) return;
+                try {
+                    const top = getSidebarScrollTop();
+                    sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(top));
+                } catch (e) {
+                    // Safe fallback if storage unavailable
+                }
+            }
+
+            function getSavedSidebarScrollPosition() {
+                try {
+                    const val = Number(sessionStorage.getItem(SIDEBAR_SCROLL_KEY));
+                    return Number.isFinite(val) && val >= 0 ? val : 0;
+                } catch (e) {
+                    return 0;
+                }
+            }
+
+            function ensureActiveLinkVisible() {
+                const sidebar = getSidebar();
+                if (!sidebar) return;
+
+                const activeLink =
+                    sidebar.querySelector('.nav-treeview .nav-link.active') ||
+                    sidebar.querySelector('.nav-link.active:not([href="#"])');
+
+                if (!activeLink) return;
+
+                const container = getSidebarScrollContainer();
+                if (!container) return;
+
+                const containerRect = container.getBoundingClientRect();
+                const linkRect = activeLink.getBoundingClientRect();
+
+                // Only adjust if the active link is partially or completely outside the visible viewport
+                if (linkRect.top < containerRect.top || linkRect.bottom > containerRect.bottom) {
+                    activeLink.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+                    // Re-save adjusted scroll
+                    const newTop = getSidebarScrollTop();
+                    try {
+                        sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(newTop));
+                    } catch (e) {}
+                }
+            }
+
+            function restoreSidebarScrollPosition(targetPosition) {
+                const saved = typeof targetPosition === 'number' ? targetPosition : getSavedSidebarScrollPosition();
+                isRestoringScroll = true;
+
+                function apply() {
+                    setSidebarScrollTop(saved);
+                }
+
+                // Phase 1: immediate application
+                apply();
+
+                // Phase 2: next frame after DOM mutations
                 requestAnimationFrame(() => {
-                    scrollContainer.scrollTop = sidebarScrollTop;
+                    apply();
+
+                    // Phase 3: frame after layout rendering
+                    requestAnimationFrame(() => {
+                        apply();
+                        ensureActiveLinkVisible();
+                        isRestoringScroll = false;
+                    });
                 });
+            }
+
+            function withTreeviewTransitionsDisabled(callback) {
+                const sidebar = getSidebar();
+                if (!sidebar) {
+                    callback();
+                    return;
+                }
+
+                const treeviews = Array.from(sidebar.querySelectorAll('.nav-treeview'));
+                const previousTransitions = treeviews.map(tv => ({
+                    element: tv,
+                    transition: tv.style.transition,
+                    animation: tv.style.animation
+                }));
+
+                treeviews.forEach(tv => {
+                    tv.style.transition = 'none';
+                    tv.style.animation = 'none';
+                });
+
+                try {
+                    callback();
+                } finally {
+                    requestAnimationFrame(() => {
+                        previousTransitions.forEach(entry => {
+                            entry.element.style.transition = entry.transition;
+                            entry.element.style.animation = entry.animation;
+                        });
+                    });
+                }
             }
 
             function normalizeUrl(url) {
@@ -505,41 +676,47 @@
                 if (!sidebar) return;
 
                 const activeLink = findActiveLink(url);
+                const previousScroll = getSidebarScrollTop();
 
-                /* Remove all active states first */
-                sidebar.querySelectorAll('.nav-link').forEach(link => {
-                    link.classList.remove('active');
-                    link.removeAttribute('aria-current');
+                withTreeviewTransitionsDisabled(() => {
+                    /* Remove all active states first */
+                    sidebar.querySelectorAll('.nav-link').forEach(link => {
+                        link.classList.remove('active');
+                        link.removeAttribute('aria-current');
+                    });
+
+                    if (!activeLink) {
+                        updateTreeviewAccessibility(sidebar);
+                        return;
+                    }
+
+                    activeLink.classList.add('active');
+                    activeLink.setAttribute('aria-current', 'page');
+
+                    /* Determine whether the active link lives inside a sub-menu */
+                    const treeview = activeLink.closest('.nav-treeview');
+
+                    if (treeview) {
+                        /* Active link is inside a sub-menu: ensure its parent group is open and marked active */
+                        const parentItem = treeview.closest('.nav-item');
+                        if (parentItem) {
+                            parentItem.classList.add('menu-open');
+                            treeview.style.display = 'block';
+
+                            const parentLink = parentItem.querySelector(':scope > .nav-link');
+                            if (parentLink) parentLink.classList.add('active');
+                        }
+                    }
+                    /*
+                     * Note: With data-accordion="false", multiple dropdown groups can be opened simultaneously.
+                     * We do NOT forcibly close sibling .menu-open groups so that groups opened by the user
+                     * (e.g. Profil) remain open as the user browses sub-menus in another group (e.g. Penelitian).
+                     */
+                    updateTreeviewAccessibility(sidebar);
                 });
 
-                if (!activeLink) {
-                    updateTreeviewAccessibility(sidebar);
-                    return;
-                }
-
-                activeLink.classList.add('active');
-                activeLink.setAttribute('aria-current', 'page');
-
-                /* Determine whether the active link lives inside a sub-menu */
-                const treeview = activeLink.closest('.nav-treeview');
-
-                if (treeview) {
-                    /* Active link is inside a sub-menu: ensure its parent group is open and marked active */
-                    const parentItem = treeview.closest('.nav-item');
-                    if (parentItem) {
-                        parentItem.classList.add('menu-open');
-                        treeview.style.display = 'block';
-
-                        const parentLink = parentItem.querySelector(':scope > .nav-link');
-                        if (parentLink) parentLink.classList.add('active');
-                    }
-                }
-                /*
-                 * Note: With data-accordion="false", multiple dropdown groups can be opened simultaneously.
-                 * We do NOT forcibly close sibling .menu-open groups so that groups opened by the user
-                 * (e.g. Profil) remain open as the user browses sub-menus in another group (e.g. Penelitian).
-                 */
-                updateTreeviewAccessibility(sidebar);
+                // Preserve scroll position during treeview updates
+                setSidebarScrollTop(previousScroll);
             }
 
             function updateTreeviewAccessibility(sidebar = getSidebar()) {
@@ -633,12 +810,42 @@
                 });
             }
 
-            /* ── Turbo event hooks ─────────────────────────────────────────── */
+            /* ── Browser & Turbo event hooks ───────────────────────────────── */
+
+            // Prevent browser scroll fighting Turbo Drive
+            if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+            }
+
+            // Continuously listen to scroll events on sidebar elements to record scroll position
+            document.addEventListener('scroll', function(e) {
+                const target = e.target;
+                if (target && (target.classList?.contains('os-viewport') || target.classList?.contains('sidebar') || target.closest?.(SIDEBAR_SELECTOR))) {
+                    saveSidebarScrollPosition();
+                }
+            }, { passive: true, capture: true });
+
+            // Capture exact scroll position immediately on navigation link click before transition begins
+            if (typeof $ !== 'undefined') {
+                $(document)
+                    .off('mousedown.p3mDosenNav click.p3mDosenNav', `${SIDEBAR_SELECTOR} a.nav-link`)
+                    .on('mousedown.p3mDosenNav click.p3mDosenNav', `${SIDEBAR_SELECTOR} a.nav-link`, function() {
+                        const href = this.getAttribute('href');
+                        if (!href || href === '#' || href.startsWith('javascript:')) return;
+
+                        saveSidebarScrollPosition();
+                        destinationUrl = normalizeUrl(this.href);
+                    });
+            }
+
+            // Always save scroll position on window unload / pagehide (for standard non-Turbo navigations)
+            window.addEventListener('beforeunload', saveSidebarScrollPosition);
+            window.addEventListener('pagehide', saveSidebarScrollPosition);
 
             /* Close topbar dropdown before any navigation and start exit transition */
             document.addEventListener('turbo:before-visit', function(e) {
                 destinationUrl = e.detail && e.detail.url ? e.detail.url : null;
-                rememberSidebarScrollPosition();
+                saveSidebarScrollPosition();
 
                 if (typeof $ !== 'undefined') {
                     $('.dosen-user-dropdown').removeClass('show').closest('.dropdown').removeClass('show');
@@ -671,7 +878,7 @@
             /* Strip the animation class before Turbo caches the page so the
                cached snapshot starts clean (no mid-animation state stored). */
             document.addEventListener('turbo:before-cache', function() {
-                rememberSidebarScrollPosition();
+                saveSidebarScrollPosition();
                 const cw = document.querySelector('.content-wrapper');
                 if (cw) cw.classList.remove('dosen-page-enter', 'dosen-page-exit');
             });
@@ -684,6 +891,13 @@
                 once: true
             });
 
+            /* Also restore when window completes load (AdminLTE initializes OverlayScrollbars on window load) */
+            window.addEventListener('load', function() {
+                restoreSidebarScrollPosition();
+                setTimeout(restoreSidebarScrollPosition, 60);
+                setTimeout(restoreSidebarScrollPosition, 200);
+            });
+
             /* Keep AdminLTE's visual treeview state and its ARIA contract in sync.
                Space activates role="button" controls just like a native button. */
             document.addEventListener('click', function(event) {
@@ -693,10 +907,11 @@
                 /* Treeview controls are buttons, not hash navigation. Keeping the
                    scroll position here also protects it from AdminLTE's slide animation. */
                 event.preventDefault();
-                rememberSidebarScrollPosition();
+                saveSidebarScrollPosition();
+                const saved = getSavedSidebarScrollPosition();
                 requestAnimationFrame(() => {
                     updateTreeviewAccessibility();
-                    restoreSidebarScrollPosition();
+                    restoreSidebarScrollPosition(saved);
                 });
             });
 

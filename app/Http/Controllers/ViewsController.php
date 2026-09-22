@@ -12,6 +12,8 @@ use App\Models\m_panduan;
 use App\Models\M_Pengelola;
 use App\Models\M_tentang;
 use App\Models\ajuan_penelitianModel;
+use App\Models\kum_penelitianModel;
+use App\Models\kum_pengabdianModel;
 use App\Models\p3mModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,8 +43,15 @@ class ViewsController extends Controller
     public function berita()
     {
         $pagetitle = 'Kegiatan P3M';
-        $berita = M_news::orderBy('created_at', 'desc')->paginate(6);
-        // $newket = M_news::paginate(6);
+        $query = M_news::orderBy('created_at', 'desc');
+        if (request()->filled('q')) {
+            $keyword = trim(request('q'));
+            $query->where(function ($q) use ($keyword) {
+                $q->where('title', 'like', '%' . $keyword . '%')
+                  ->orWhere('content', 'like', '%' . $keyword . '%');
+            });
+        }
+        $berita = $query->paginate(6)->withQueryString();
         $categories = M_categories::all();
         session()->put('previous_page', url()->previous());
         if (session()->has('previous_page')) {
@@ -184,51 +193,42 @@ class ViewsController extends Controller
         return view('tampilan.jurnal', compact('dok', 'pagetitle', 'user'));
     }
 
-    // Penelitian yang di-approve
+    // Laporan Penelitian yang di-approve
     public function penelitian(Request $request)
     {
         $pagetitle = 'Data Penelitian P3M';
         
-        $penelitian = ajuan_penelitianModel::where('status', 'approve')
+        $penelitian = kum_penelitianModel::where('status', 'approve')
                         ->orderBy('created_at', 'desc')
                         ->get();
                         
         return view('tampilan.penelitian', compact('pagetitle', 'penelitian'));
     }
 
-    // Pengabdian yang di-approve
+    // Laporan Pengabdian yang di-approve
     public function pengabdian(Request $request)
     {
         $pagetitle = 'Data Pengabdian P3M';
         
-        $pengabdian = p3mModel::where('status', 'approve')
+        $pengabdian = kum_pengabdianModel::where('status', 'approve')
                         ->orderBy('created_at', 'desc')
                         ->get();
 
         return view('tampilan.pengabdian', compact('pagetitle', 'pengabdian'));
     }
 
-    // Unduh PDF Karya P3M yang di-approve untuk publik
+    // Unduh PDF Karya P3M yang di-approve untuk publik via submission.public.download
     public function downloadKarya($type, $id)
     {
-        $submission = match ($type) {
-            'penelitian' => ajuan_penelitianModel::findOrFail($id),
-            'pengabdian' => p3mModel::findOrFail($id),
+        $docType = match ($type) {
+            'penelitian' => 'laporan-penelitian',
+            'pengabdian' => 'laporan-pengabdian',
             default => abort(404),
         };
 
-        // Pastikan hanya yang berstatus approve yang bisa diunduh oleh publik
-        abort_unless($submission->status === 'approve', 403, 'Dokumen ini belum disetujui untuk dipublikasikan.');
-
-        $filename = $submission->uppdf;
-        abort_unless(is_string($filename) && $filename !== '', 404, 'File dokumen tidak tersedia.');
-
-        $privatePath = 'submissions/' . $filename;
-        if (Storage::disk('private')->exists($privatePath)) {
-            $label = $type === 'penelitian' ? 'Penelitian' : 'Pengabdian';
-            return Storage::disk('private')->download($privatePath, $label . '-' . $submission->id . '.pdf');
-        }
-
-        abort(404, 'Dokumen tidak ditemukan di server.');
+        return redirect()->route('submission.public.download', [
+            'type' => $docType,
+            'id' => $id,
+        ]);
     }
 }

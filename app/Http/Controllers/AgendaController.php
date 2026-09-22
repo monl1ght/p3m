@@ -202,11 +202,17 @@ class AgendaController extends Controller
 
                     // Ambil nama file dari URL
                     $filename = basename($src);
-                    $path = public_path('photo-agenda/' . $filename);
+                    $path = 'photo-agenda/' . $filename;
 
-                    // Hapus gambar dari server jika ada
-                    if (file_exists($path)) {
-                        unlink($path);
+                    // Hapus gambar dari storage disk public jika ada
+                    if (Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->delete($path);
+                    }
+
+                    // Fallback untuk legacy file di public_path
+                    $legacyPath = public_path('photo-agenda/' . $filename);
+                    if (file_exists($legacyPath)) {
+                        @unlink($legacyPath);
                     }
                 }
             }

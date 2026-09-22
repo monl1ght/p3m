@@ -7,6 +7,8 @@ use App\Http\Controllers\DataTableController;
 use App\Http\Controllers\DokumenController;
 use App\Http\Controllers\DosenController;
 use App\Http\Controllers\DosenJurnalController;
+use App\Http\Controllers\DosenHkiController;
+use App\Http\Controllers\AdminHkiController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\MainController;
@@ -35,7 +37,7 @@ use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
 //     return view([ViewsController::class, 'tampilan'], 'tampilan.index');
-// }); 
+// });
 
 //views user halaman utama
 Route::get('/', [ViewsController::class, 'tampilan'])->name('tampilan');
@@ -54,6 +56,7 @@ Route::get('/penelitian-p3m', [ViewsController::class, 'penelitian'])->name('tam
 Route::get('/pengabdian-p3m', [ViewsController::class, 'pengabdian'])->name('tampilan.pengabdian');
 Route::get('/karya-p3m/{type}/{id}/download', [ViewsController::class, 'downloadKarya'])->name('tampilan.download_karya');
 
+
 //proses login
 Route::get('/login', [AuthController::class, 'index'])->name('login');
 Route::post('/proses-login', [AuthController::class, 'proses_login'])->middleware('throttle:login')->name('proses-login');
@@ -71,7 +74,7 @@ Route::post('/proses-register', [AuthController::class, 'proses_register'])
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 //jika ingin menggunakan route group di letakkan pada route group tapi jika per raoute letakkan pada route yang akan di gunakan role
-Route::group(['middleware' => 'auth:sanctum', 'role:admin'], function () {
+Route::group(['middleware' => ['auth:sanctum', 'role:admin']], function () {
     //ini menggunaakan laravel gate
     // Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard')->middleware('can:view_dashboard');
     // ini menggunakan role/ langsung memanggil permission
@@ -224,6 +227,14 @@ Route::group(['middleware' => 'auth:sanctum', 'role:admin'], function () {
             ->name('plppm.jurnal_dosen.status');
         Route::get('/jurnal-dosen/{id}/download', [ViewlprnController::class, 'downloadJurnal'])
             ->name('plppm.jurnal_dosen.download');
+
+        // HKI Dosen — Verifikasi Admin
+        Route::get('/hki-dosen', [AdminHkiController::class, 'index'])->name('plppm.hki_dosen');
+        Route::get('/hki-dosen/{id}', [AdminHkiController::class, 'show'])->name('plppm.hki_dosen.show');
+        Route::patch('/hki-dosen/{id}/status', [AdminHkiController::class, 'updateStatus'])
+            ->name('plppm.hki_dosen.status');
+        Route::get('/hki-dosen/{id}/download', [AdminHkiController::class, 'download'])
+            ->name('plppm.hki_dosen.download');
         //detail data
 
     });
@@ -271,6 +282,10 @@ Route::post('/notif/read-table/{tipe}', function ($tipe) {
         'jurnal_dosen' => [
             'table' => 'dosen_jurnal_uploads',
             'redirect' => route('plppm.jurnal_dosen')
+        ],
+        'hki_dosen' => [
+            'table' => 'hkis',
+            'redirect' => route('plppm.hki_dosen')
         ],
     ];
     if (!isset($map[$tipe])) {
@@ -365,5 +380,15 @@ Route::group(['middleware' => 'auth:sanctum', 'role:dosen'], function () {
         Route::post('/jurnal-upload/{id}/update', [DosenJurnalController::class, 'update'])->name('dosen.jurnal_upload.update');
         Route::delete('/jurnal-upload/{id}/delete', [DosenJurnalController::class, 'destroy'])->name('dosen.jurnal_upload.delete');
         Route::get('/jurnal-upload/{id}/download', [DosenJurnalController::class, 'download'])->name('dosen.jurnal_upload.download');
+
+        // Data HKI Dosen
+        Route::get('/hki', [DosenHkiController::class, 'index'])->name('dosen.hki.index');
+        Route::get('/hki/create', [DosenHkiController::class, 'create'])->name('dosen.hki.create');
+        Route::post('/hki/store', [DosenHkiController::class, 'store'])->name('dosen.hki.store');
+        Route::get('/hki/{id}', [DosenHkiController::class, 'show'])->name('dosen.hki.show');
+        Route::get('/hki/{id}/edit', [DosenHkiController::class, 'edit'])->name('dosen.hki.edit');
+        Route::post('/hki/{id}/update', [DosenHkiController::class, 'update'])->name('dosen.hki.update');
+        Route::delete('/hki/{id}/delete', [DosenHkiController::class, 'destroy'])->name('dosen.hki.delete');
+        Route::get('/hki/{id}/download', [DosenHkiController::class, 'download'])->name('dosen.hki.download');
     });
 });

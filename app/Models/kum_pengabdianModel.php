@@ -26,6 +26,7 @@ class kum_pengabdianModel extends Model
         'foto', // untuk foto
         'jeniskategori',
         'user_id',
+        'status',
         'tanggal_mulai',
         'tanggal_selesai', // untuk user
         'read_at',

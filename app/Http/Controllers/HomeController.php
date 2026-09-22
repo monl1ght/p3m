@@ -20,8 +20,20 @@ class HomeController extends Controller
 {
 
 
+    /**
+     * Defense-in-depth: Pastikan hanya pengguna dengan role admin yang dapat mengakses
+     * fungsionalitas manajemen pengguna.
+     */
+    private function checkAdmin(): void
+    {
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized action. Hanya admin yang memiliki hak akses manajemen pengguna.');
+        }
+    }
+
     public function index(Request $request)
     {
+        $this->checkAdmin();
         $data = new User;
         $pagetitle = 'User P3M Polibang Jepara';
         $user = Auth::user();
@@ -139,12 +151,14 @@ class HomeController extends Controller
 
     public function create()
     {
+        $this->checkAdmin();
         $user = Auth::user();
         return view('create', compact('user'));
     }
 
     public function store(Request $request)
     {
+        $this->checkAdmin();
         $validator = Validator::make($request->all(), [
             'image'        => 'nullable|mimes:png,jpg,jpeg,webp,gif|max:5120',
             'image_base64' => 'nullable|string',
@@ -208,6 +222,7 @@ class HomeController extends Controller
 
     public function update(Request $request, $id)
     {
+        $this->checkAdmin();
         $data = User::findOrFail($id);
         $user = Auth::user();
 
@@ -216,9 +231,7 @@ class HomeController extends Controller
 
     public function edit(Request $request, $id)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->checkAdmin();
 
         $find = User::findOrFail($id);
 
@@ -293,10 +306,7 @@ class HomeController extends Controller
 
     public function delete(Request $request, $id)
     {
-        $auth = Auth::user();
-        if ($auth->role !== 'admin') {
-            abort(403, 'Kamu tidak punya akses untuk menghapus data ini.');
-        }
+        $this->checkAdmin();
 
         // $user = Auth::user();
         $user = User::find($id);
@@ -309,6 +319,7 @@ class HomeController extends Controller
 
     public function detail(Request $request, $id)
     {
+        $this->checkAdmin();
         $user = Auth::user();
         $data = User::findOrFail($id);
 

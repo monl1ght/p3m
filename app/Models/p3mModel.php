@@ -41,8 +41,4 @@ class p3mModel extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function kategori()
-    {
-        return $this->belongsTo(M_categories::class, 'kategori_id', 'id');
-    }
 }

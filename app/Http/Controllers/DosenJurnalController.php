@@ -21,9 +21,17 @@ class DosenJurnalController extends Controller
         $kategori = $request->input('kategori', '');
         $status = $request->input('status', '');
 
-        $uploads = DosenJurnalUpload::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = DosenJurnalUpload::where('user_id', $user->id);
+
+        if (!empty($kategori)) {
+            $query->where('kategori', strtolower($kategori));
+        }
+
+        if (!empty($status)) {
+            $query->where('status', strtolower($status));
+        }
+
+        $uploads = $query->orderBy('created_at', 'desc')->get();
 
         return view('dosen.jurnal_upload.index', compact('user', 'uploads', 'kategori', 'status'));
     }

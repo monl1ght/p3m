@@ -14,8 +14,4 @@ class M_categories extends Model
     {
         return $this->hasMany(M_news::class, 'category_id');
     }
-    public function p3m()
-    {
-        return $this->hasMany(p3mModel::class, 'kategori_id');
-    }
 }
