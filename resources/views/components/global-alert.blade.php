@@ -440,7 +440,7 @@ div:where(.swal2-container) .p3m-theme-danger .swal2-timer-progress-bar {
 
             window.Swal.fire({
                 title: 'Hapus ' + type,
-                html: 'Data <strong>' + label + '</strong> akan dihapus permanen.<br>Tindakan ini tidak dapat dibatalkan.',
+                html: 'Data "' + label + '" akan dihapus permanen dan tidak dapat dibatalkan.',
                 icon: 'warning',
                 iconHtml: DISCS.delete,
                 showCancelButton: true,

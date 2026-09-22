@@ -593,11 +593,7 @@
 
                     {{-- CARD HEADER --}}
                     <div class="hki-card-head">
-                        <div class="hki-kicker">Formulir Pengajuan</div>
                         <h1 class="hki-card-title">Tambah Hak Kekayaan Intelektual (HKI)</h1>
-                        <p class="hki-card-subtitle">
-                            Lengkapi identitas karya, tanggal perolehan/permohonan, daftar pencipta/inventor, dan unggah berkas sertifikat resmi.
-                        </p>
                     </div>
 
                     {{-- ERROR CALLOUT IF VALIDATION FAILS --}}
@@ -621,19 +617,11 @@
 
                         <div class="hki-form-body">
 
-                            {{-- Notice box --}}
-                            <div class="hki-notice-box">
-                                <i class="fas fa-shield-alt hki-notice-icon"></i>
-                                <div class="hki-notice-text">
-                                    <strong>Informasi Keamanan Berkas:</strong> Berkas sertifikat HKI disimpan secara aman dalam penyimpanan privat P3M Politeknik Balekambang dan hanya dapat diakses oleh Anda serta tim verifikator P3M. Format berkas wajib <strong>PDF</strong> dengan ukuran maksimal <strong>5 MB</strong>.
-                                </div>
-                            </div>
-
                             {{-- SECTION 1: INFORMASI UTAMA HKI --}}
                             <div class="form-section-header">
                                 <h3 class="form-section-title">
                                     <i class="fas fa-file-signature"></i>
-                                    <span>1. Informasi Karya & Pendaftaran HKI</span>
+                                    <span>Informasi Karya & HKI</span>
                                 </h3>
                             </div>
 
@@ -644,12 +632,8 @@
                                 </label>
                                 <input type="text" name="judul" id="judul"
                                     class="form-control-custom @error('judul') is-invalid @enderror"
-                                    placeholder="Contoh: Sistem Informasi Monitoring Smart Farming Berbasis Internet of Things"
+                                    placeholder="Contoh: Sistem Informasi Monitoring Smart Farming Berbasis IoT"
                                     value="{{ old('judul') }}" maxlength="255" required autofocus>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                                    <span class="form-help-text">Tuliskan judul lengkap sesuai dengan dokumen sertifikat atau permohonan resmi HKI.</span>
-                                    <span id="judulCharCount" style="font-size: 11.5px; color: var(--p3m-form-muted);">0 / 255</span>
-                                </div>
                                 @error('judul')
                                     <div class="invalid-feedback-custom">
                                         <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -668,7 +652,6 @@
                                         <input type="date" name="tanggal" id="tanggal"
                                             class="form-control-custom @error('tanggal') is-invalid @enderror"
                                             value="{{ old('tanggal', date('Y-m-d')) }}" required>
-                                        <div class="form-help-text">Tanggal resmi pencatatan atau pengajuan HKI.</div>
                                         @error('tanggal')
                                             <div class="invalid-feedback-custom">
                                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -706,7 +689,6 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <div class="form-help-text">Kategori perlindungan kekayaan intelektual.</div>
                                         @error('jenis_hki')
                                             <div class="invalid-feedback-custom">
                                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -719,13 +701,12 @@
                                 <div class="col-md-4">
                                     <div class="form-group-custom">
                                         <label for="nomor_pencatatan" class="form-label-custom">
-                                            Nomor Pencatatan / Permohonan
+                                            Nomor Pencatatan (Opsional)
                                         </label>
                                         <input type="text" name="nomor_pencatatan" id="nomor_pencatatan"
                                             class="form-control-custom @error('nomor_pencatatan') is-invalid @enderror"
                                             placeholder="Contoh: EC00202612345"
                                             value="{{ old('nomor_pencatatan') }}" maxlength="100">
-                                        <div class="form-help-text">Nomor pencatatan Kemenkumham (opsional).</div>
                                         @error('nomor_pencatatan')
                                             <div class="invalid-feedback-custom">
                                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -737,15 +718,10 @@
 
                             {{-- SECTION 2: DAFTAR PENCIPTA / ANGGOTA --}}
                             <div class="form-section-header mt-4">
-                                <div>
-                                    <h3 class="form-section-title">
-                                        <i class="fas fa-users"></i>
-                                        <span>2. Pencipta / Inventor / Anggota Terlibat</span>
-                                    </h3>
-                                    <div style="font-size: 12.5px; color: var(--p3m-form-muted); margin-top: 4px;">
-                                        Minimal 1 orang pencipta utama. Anda dapat menambahkan dosen lain, mahasiswa, atau mitra eksternal.
-                                    </div>
-                                </div>
+                                <h3 class="form-section-title">
+                                    <i class="fas fa-users"></i>
+                                    <span>Daftar Pencipta / Inventor</span>
+                                </h3>
                                 <div>
                                     <button type="button" id="btnAddAnggota" class="btn-add-anggota">
                                         <i class="fas fa-user-plus"></i>
@@ -784,11 +760,11 @@
                                             <div class="col-md-5">
                                                 <div class="form-group-custom" style="margin-bottom: 0;">
                                                     <label class="form-label-custom" style="font-size: 12px;">
-                                                        Nama Lengkap Pencipta <span class="required">*</span>
+                                                        Nama Lengkap <span class="required">*</span>
                                                     </label>
                                                     <input type="text" name="anggota[{{ $idx }}][nama]"
                                                         class="form-control-custom js-input-nama @error("anggota.{$idx}.nama") is-invalid @enderror"
-                                                        placeholder="Nama lengkap beserta gelar jika ada"
+                                                        placeholder="Nama lengkap & gelar"
                                                         value="{{ $anggota['nama'] ?? '' }}" required maxlength="150">
                                                     @error("anggota.{$idx}.nama")
                                                         <div class="invalid-feedback-custom">
@@ -801,11 +777,11 @@
                                             <div class="col-md-3">
                                                 <div class="form-group-custom" style="margin-bottom: 0;">
                                                     <label class="form-label-custom" style="font-size: 12px;">
-                                                        NIM / NIDN
+                                                        NIDN / NIM
                                                     </label>
                                                     <input type="text" name="anggota[{{ $idx }}][nim_nidn]"
                                                         class="form-control-custom js-input-nim"
-                                                        placeholder="NIDN Dosen atau NIM Mahasiswa"
+                                                        placeholder="NIDN atau NIM"
                                                         value="{{ $anggota['nim_nidn'] ?? '' }}" maxlength="50">
                                                 </div>
                                             </div>
@@ -813,7 +789,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group-custom" style="margin-bottom: 0;">
                                                     <label class="form-label-custom" style="font-size: 12px;">
-                                                        Peran / Kontribusi
+                                                        Peran
                                                     </label>
                                                     <select name="anggota[{{ $idx }}][peran]" class="form-control-custom js-input-peran">
                                                         @php
@@ -833,15 +809,10 @@
 
                             {{-- SECTION 3: UNGGAH BERKAS SERTIFIKAT --}}
                             <div class="form-section-header mt-4">
-                                <div>
-                                    <h3 class="form-section-title">
-                                        <i class="fas fa-file-pdf"></i>
-                                        <span>3. Berkas Sertifikat / Dokumen HKI</span>
-                                    </h3>
-                                    <div style="font-size: 12.5px; color: var(--p3m-form-muted); margin-top: 4px;">
-                                        Unggah pindaian (scan) sertifikat HKI resmi yang diterbitkan Kemenkumham atau bukti pencatatan resmi.
-                                    </div>
-                                </div>
+                                <h3 class="form-section-title">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>Berkas Sertifikat HKI</span>
+                                </h3>
                             </div>
 
                             <div class="form-group-custom">
@@ -858,10 +829,10 @@
                                         <i class="fas fa-cloud-upload-alt"></i>
                                     </div>
                                     <div class="upload-dropzone-text">
-                                        Klik untuk memilih file atau seret & jatuhkan berkas PDF ke sini
+                                        Pilih berkas sertifikat PDF atau seret ke sini
                                     </div>
                                     <div class="upload-dropzone-sub">
-                                        Format berkas yang didukung: <strong>PDF</strong> (Maksimal <strong>5 MB</strong>)
+                                        Format PDF (Maksimal 5 MB)
                                     </div>
                                 </label>
 
@@ -1054,11 +1025,11 @@
                         <div class="col-md-5">
                             <div class="form-group-custom" style="margin-bottom: 0;">
                                 <label class="form-label-custom" style="font-size: 12px;">
-                                    Nama Lengkap Pencipta <span class="required">*</span>
+                                    Nama Lengkap <span class="required">*</span>
                                 </label>
                                 <input type="text" name="anggota[${newIdx}][nama]"
                                     class="form-control-custom js-input-nama"
-                                    placeholder="Nama lengkap beserta gelar jika ada"
+                                    placeholder="Nama lengkap & gelar"
                                     required maxlength="150">
                             </div>
                         </div>
@@ -1066,11 +1037,11 @@
                         <div class="col-md-3">
                             <div class="form-group-custom" style="margin-bottom: 0;">
                                 <label class="form-label-custom" style="font-size: 12px;">
-                                    NIM / NIDN
+                                    NIDN / NIM
                                 </label>
                                 <input type="text" name="anggota[${newIdx}][nim_nidn]"
                                     class="form-control-custom js-input-nim"
-                                    placeholder="NIDN Dosen atau NIM Mahasiswa"
+                                    placeholder="NIDN atau NIM"
                                     maxlength="50">
                             </div>
                         </div>
@@ -1078,7 +1049,7 @@
                         <div class="col-md-4">
                             <div class="form-group-custom" style="margin-bottom: 0;">
                                 <label class="form-label-custom" style="font-size: 12px;">
-                                    Peran / Kontribusi
+                                    Peran
                                 </label>
                                 <select name="anggota[${newIdx}][peran]" class="form-control-custom js-input-peran">
                                     <option value="Anggota Pencipta" selected>Anggota Pencipta (Dosen)</option>

@@ -79,13 +79,13 @@ class MediumP2AuditTest extends TestCase
     }
 
     /**
-     * MEDIUM-02: Dosen tidak dapat mengedit atau menghapus HKI yang berstatus 'diterima'
+     * Dosen pemilik dapat mengedit dan menghapus HKI miliknya
      */
-    public function test_dosen_cannot_edit_or_delete_accepted_hki(): void
+    public function test_dosen_can_edit_and_delete_own_hki(): void
     {
         Storage::fake('private');
 
-        $acceptedHki = Hki::create([
+        $ownHki = Hki::create([
             'user_id'          => $this->dosen->id,
             'judul'            => 'Hak Cipta Modul Pembelajaran Web',
             'tanggal'          => '2026-05-10',
@@ -96,39 +96,38 @@ class MediumP2AuditTest extends TestCase
             'status'           => 'diterima',
         ]);
 
-        // Coba akses form edit
+        // Akses form edit
         $responseEdit = $this->actingAs($this->dosen)
-            ->get(route('dosen.hki.edit', $acceptedHki->id));
-        $responseEdit->assertRedirect(route('dosen.hki.show', $acceptedHki->id));
-        $responseEdit->assertSessionHas('error');
+            ->get(route('dosen.hki.edit', $ownHki->id));
+        $responseEdit->assertStatus(200);
 
-        // Coba kirim update (rute POST di web.php)
+        // Kirim update
         $responseUpdate = $this->actingAs($this->dosen)
-            ->post(route('dosen.hki.update', $acceptedHki->id), [
-                'judul'   => 'Judul Baru Yang Hendak Diubah',
+            ->post(route('dosen.hki.update', $ownHki->id), [
+                'judul'   => 'Judul Baru Yang Berhasil Diubah',
                 'tanggal' => '2026-06-01',
                 'anggota' => [
                     ['nama' => 'Dosen Penulis', 'peran' => 'Ketua'],
                 ],
             ]);
-        $responseUpdate->assertRedirect(route('dosen.hki.show', $acceptedHki->id));
-        $responseUpdate->assertSessionHas('error');
+        $responseUpdate->assertRedirect(route('dosen.hki.index'));
+        $responseUpdate->assertSessionHas('success');
 
-        // Pastikan judul tidak berubah di DB
+        // Pastikan judul berhasil berubah di DB
         $this->assertDatabaseHas('hkis', [
-            'id'    => $acceptedHki->id,
-            'judul' => 'Hak Cipta Modul Pembelajaran Web',
+            'id'    => $ownHki->id,
+            'judul' => 'Judul Baru Yang Berhasil Diubah',
         ]);
 
-        // Coba kirim delete
+        // Hapus HKI
         $responseDelete = $this->actingAs($this->dosen)
-            ->delete(route('dosen.hki.delete', $acceptedHki->id));
+            ->delete(route('dosen.hki.delete', $ownHki->id));
         $responseDelete->assertRedirect(route('dosen.hki.index'));
-        $responseDelete->assertSessionHas('error');
+        $responseDelete->assertSessionHas('success');
 
-        // Pastikan record tetap ada
-        $this->assertDatabaseHas('hkis', [
-            'id' => $acceptedHki->id,
+        // Pastikan record terhapus
+        $this->assertDatabaseMissing('hkis', [
+            'id' => $ownHki->id,
         ]);
     }
 

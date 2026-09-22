@@ -138,11 +138,6 @@ class DosenHkiController extends Controller
         $user = Auth::user();
         $hki = Hki::where('user_id', $user->id)->with('anggotas')->findOrFail($id);
 
-        if ($hki->status === 'diterima') {
-            return redirect()->route('dosen.hki.show', $hki->id)
-                ->with('error', 'HKI yang telah diverifikasi dan diterima tidak dapat diubah.');
-        }
-
         return view('dosen.hki.edit', compact('user', 'hki'));
     }
 
@@ -153,11 +148,6 @@ class DosenHkiController extends Controller
     {
         $user = Auth::user();
         $hki = Hki::where('user_id', $user->id)->findOrFail($id);
-
-        if ($hki->status === 'diterima') {
-            return redirect()->route('dosen.hki.show', $hki->id)
-                ->with('error', 'HKI yang telah diverifikasi dan diterima tidak dapat diubah.');
-        }
 
         $validator = Validator::make($request->all(), [
             'judul'             => 'required|string|max:255',
@@ -252,11 +242,6 @@ class DosenHkiController extends Controller
     {
         $user = Auth::user();
         $hki = Hki::where('user_id', $user->id)->findOrFail($id);
-
-        if ($hki->status === 'diterima') {
-            return redirect()->route('dosen.hki.index')
-                ->with('error', 'HKI yang telah diverifikasi dan diterima tidak dapat dihapus.');
-        }
 
         $filePath = $hki->file_path;
 

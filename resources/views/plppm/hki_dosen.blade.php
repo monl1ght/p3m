@@ -723,7 +723,7 @@ table.users-table tbody td:last-child {
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($hkis as $index => $hki)
+                            @foreach ($hkis as $index => $hki)
                                 <tr>
                                     <td style="vertical-align: middle;">
                                         <span class="row-num">{{ $index + 1 }}</span>
@@ -819,22 +819,20 @@ table.users-table tbody td:last-child {
                                         </a>
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
-                                        <i class="fas fa-inbox fa-3x mb-3 text-secondary d-block"></i>
-                                        Belum ada data HKI yang diunggah oleh dosen.
-                                    </td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
 
                 {{-- Footer Pagination --}}
                 <div class="table-footer">
-                    <span class="table-info-text" id="js-table-info">Menampilkan data</span>
-                    <ul class="dt-pagination" id="js-dt-pagination"></ul>
+                    <span class="table-info-text" id="js-table-info">Menampilkan {{ $hkis->isEmpty() ? '0–0 dari 0 data' : 'data' }}</span>
+                    <ul class="dt-pagination" id="js-dt-pagination">
+                        @if($hkis->isEmpty())
+                            <li class="page-item disabled"><span class="page-link"><i class="fas fa-chevron-left"></i></span></li>
+                            <li class="page-item disabled"><span class="page-link"><i class="fas fa-chevron-right"></i></span></li>
+                        @endif
+                    </ul>
                 </div>
             </div>
         </div>
@@ -859,24 +857,39 @@ table.users-table tbody td:last-child {
             pageLength: 10,
             dom: 't',
             language: {
-                emptyTable: "Tidak ada data yang tersedia pada tabel ini",
-                zeroRecords: "Tidak ditemukan data yang sesuai dengan pencarian"
+                emptyTable: `
+                    <div class="upp3m-empty-state">
+                        <span class="upp3m-empty-icon"><i class="fas fa-inbox"></i></span>
+                        <span class="upp3m-empty-title">Belum ada data HKI yang diunggah</span>
+                        <span class="upp3m-empty-text">Data berkas permohonan HKI dari dosen akan tampil rapi pada tabel ini.</span>
+                    </div>
+                `,
+                zeroRecords: `
+                    <div class="upp3m-empty-state">
+                        <span class="upp3m-empty-icon"><i class="fas fa-search"></i></span>
+                        <span class="upp3m-empty-title">Tidak ada hasil pencarian</span>
+                        <span class="upp3m-empty-text">Coba ubah kata kunci pencarian agar data HKI yang dicari dapat ditemukan.</span>
+                    </div>
+                `
             },
             drawCallback: function(settings) {
                 var api = this.api();
                 var pageInfo = api.page.info();
 
-                if (pageInfo.recordsTotal === 0) {
-                    $('#js-table-info').text('Menampilkan 0 dari 0 data');
-                    $('#js-dt-pagination').empty();
+                if (pageInfo.recordsTotal === 0 || pageInfo.recordsDisplay === 0) {
+                    $('#js-table-info').text('Menampilkan 0–0 dari 0 data');
+                    $('#js-dt-pagination').html(
+                        '<li class="page-item disabled"><span class="page-link"><i class="fas fa-chevron-left"></i></span></li>' +
+                        '<li class="page-item disabled"><span class="page-link"><i class="fas fa-chevron-right"></i></span></li>'
+                    );
                     return;
                 }
 
                 var start = pageInfo.start + 1;
-                var end = pageInfo.end;
+                var end = Math.min(pageInfo.end, pageInfo.recordsDisplay);
                 var total = pageInfo.recordsDisplay;
 
-                $('#js-table-info').text('Menampilkan ' + start + ' - ' + end + ' dari ' + total + ' data');
+                $('#js-table-info').text('Menampilkan ' + start + '–' + end + ' dari ' + total + ' data');
 
                 // Dynamic sequential row re-indexing
                 api.column(0, { search: 'applied', order: 'applied' }).nodes().each(function(cell, i) {

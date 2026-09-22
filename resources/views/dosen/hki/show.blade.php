@@ -689,11 +689,9 @@ section.content {
                     <i class="fas fa-arrow-left"></i> Kembali ke Daftar HKI
                 </a>
                 <div class="p3m-top-actions">
-                    @if($hki->status !== 'diterima')
                     <a href="{{ route('dosen.hki.edit', $hki->id) }}" class="btn-p3m-edit" title="Edit Data HKI">
                         <i class="fas fa-pen"></i> Edit HKI
                     </a>
-                    @endif
                     <button type="button" class="btn-p3m-print" onclick="window.print()" title="Cetak Dokumen HKI">
                         <i class="fas fa-print"></i> Cetak HKI
                     </button>

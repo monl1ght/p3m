@@ -1387,11 +1387,12 @@
                 const label = $btn.data('label') || 'jurnal ini';
                 if (!url) return;
 
+                const desc = 'Jurnal "' + label + '" akan dihapus permanen dan tidak dapat dibatalkan.';
+
                 if (typeof window.p3mConfirm === 'function') {
                     window.p3mConfirm({
                         title: 'Hapus Jurnal Ilmiah?',
-                        html: 'Jurnal <strong>' + label +
-                            '</strong> akan dihapus secara permanen.<br><span style="font-size:13px;color:#9ca3af;">Tindakan ini tidak dapat dibatalkan.</span>',
+                        html: desc,
                         icon: 'warning',
                         confirmText: '<i class="fas fa-trash-alt" style="font-size:12px;"></i>&nbsp; Ya, Hapus',
                         confirmClass: 'p3m-swal-btn-danger',
@@ -1406,7 +1407,7 @@
                 } else if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         title: 'Hapus Jurnal Ilmiah?',
-                        html: 'Jurnal <strong>' + label + '</strong> akan dihapus secara permanen.',
+                        html: desc,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#d33',

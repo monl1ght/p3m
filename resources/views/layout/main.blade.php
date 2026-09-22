@@ -473,12 +473,85 @@
     <script src="{{ asset('lte/plugins/datatables-responsive/js/dataTables.responsive.min.js') }}" data-turbo-eval="false"></script>
     <script src="{{ asset('lte/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}" data-turbo-eval="false"></script>
 
-    {{-- Global DataTables Row Numbering: ensures visible rows are always sequentially numbered starting from 1 --}}
+    {{-- Global DataTables Row Numbering & Aesthetic Empty State --}}
     <script data-turbo-eval="false">
+        if (typeof $.fn.dataTable !== 'undefined') {
+            $.extend(true, $.fn.dataTable.defaults, {
+                language: {
+                    emptyTable: `
+                        <div class="upp3m-empty-state">
+                            <span class="upp3m-empty-icon"><i class="fas fa-inbox"></i></span>
+                            <span class="upp3m-empty-title">Belum ada data yang tersedia</span>
+                            <span class="upp3m-empty-text">Data yang tersimpan akan tampil secara rapi pada tabel ini.</span>
+                        </div>
+                    `,
+                    zeroRecords: `
+                        <div class="upp3m-empty-state">
+                            <span class="upp3m-empty-icon"><i class="fas fa-search"></i></span>
+                            <span class="upp3m-empty-title">Tidak ada hasil pencarian</span>
+                            <span class="upp3m-empty-text">Coba ubah kata kunci pencarian agar data yang dicari lebih mudah ditemukan.</span>
+                        </div>
+                    `
+                }
+            });
+        }
+
         $(document).on('draw.dt', function(e, settings) {
             try {
                 var api = new $.fn.dataTable.Api(settings);
                 var info = api.page.info();
+
+                // Global Empty State Formatter: transform plain empty table cells into premium aesthetic cards
+                var $emptyCell = $(settings.nTable).find('tbody td.dataTables_empty');
+                if ($emptyCell.length && !$emptyCell.find('.upp3m-empty-state').length) {
+                    var rawText = $emptyCell.text().trim();
+                    var isSearch = Boolean((settings.oPreviousSearch && settings.oPreviousSearch.sSearch) ||
+                        rawText.toLowerCase().includes('pencarian') ||
+                        rawText.toLowerCase().includes('cocok'));
+
+                    var icon = isSearch ? 'fa-search' : 'fa-inbox';
+                    var title = '';
+                    var subtext = '';
+
+                    if (isSearch) {
+                        title = 'Tidak ada hasil pencarian';
+                        subtext = 'Coba ubah kata kunci pencarian agar data yang dicari lebih mudah ditemukan.';
+                    } else {
+                        var isGeneric = !rawText ||
+                            rawText.includes('No data available') ||
+                            rawText.includes('Tidak ada data yang tersedia') ||
+                            rawText.includes('Belum ada data yang tersedia');
+
+                        if (!isGeneric) {
+                            title = rawText;
+                        } else {
+                            var contextTitle = $('.breadcrumb-item.active, .users-card-head h2, .users-card-head h3, .users-card-head h4').first().text().trim();
+                            title = contextTitle ? 'Belum ada data ' + contextTitle.toLowerCase() : 'Belum ada data yang diunggah';
+                        }
+                        subtext = 'Data yang masuk atau diunggah akan tampil secara rapi pada tabel ini.';
+                    }
+
+                    $emptyCell.html(
+                        '<div class="upp3m-empty-state">' +
+                            '<span class="upp3m-empty-icon"><i class="fas ' + icon + '"></i></span>' +
+                            '<span class="upp3m-empty-title">' + title + '</span>' +
+                            '<span class="upp3m-empty-text">' + subtext + '</span>' +
+                        '</div>'
+                    );
+                }
+
+                // Global Footer Safety Formatter for 0 records
+                if (info && (info.recordsTotal === 0 || info.recordsDisplay === 0)) {
+                    var $tableContainer = $(settings.nTable).closest('.users-card, .p3m-card, .card, section.content');
+                    var $footerInfo = $tableContainer.find('#tableInfo, #js-table-info, .table-info-text');
+                    if ($footerInfo.length) {
+                        var currentText = $footerInfo.text().trim();
+                        if (!currentText || currentText === 'Menampilkan data' || currentText === 'Menampilkan 0 dari 0 data' || currentText === 'Menampilkan 0-0 dari 0 data') {
+                            $footerInfo.text('Menampilkan 0–0 dari 0 data');
+                        }
+                    }
+                }
+
                 if (!info || info.recordsDisplay === 0) return;
                 var headerCol0 = $(api.column(0).header());
                 var headerText = headerCol0.text().trim().toLowerCase();

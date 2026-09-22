@@ -354,12 +354,14 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
     background: #fbfcfb; border-top: 1px solid var(--border);
 }
 .table-info-text { font-size: 13px; color: var(--muted); font-weight: 500; }
-.dt-pagination { display: flex; align-items: center; gap: 4px; }
+.dt-pagination { display: flex; align-items: center; gap: 4px; list-style: none !important; margin: 0 !important; padding: 0 !important; }
+.dt-pagination li { list-style: none !important; margin: 0 !important; padding: 0 !important; }
+.dt-pagination li::before, .dt-pagination li::marker { display: none !important; content: "" !important; }
 .dt-pagination .page-item .page-link {
-    min-width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
+    min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
     border: 1px solid var(--border); border-radius: var(--r-sm);
-    background: var(--surface); color: var(--tx); font-size: 13px; font-weight: 700;
-    padding: 0 8px; transition: all .18s; cursor: pointer;
+    background: var(--surface); color: var(--tx); font-size: 12px; font-weight: 700;
+    padding: 0 8px; transition: all .18s; cursor: pointer; text-decoration: none;
 }
 .dt-pagination .page-item.active .page-link {
     background: var(--forest); border-color: var(--forest); color: #fff;
@@ -368,7 +370,7 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
 .dt-pagination .page-item:not(.active) .page-link:hover {
     background: var(--surface-hov); border-color: var(--border-2);
 }
-.dt-pagination .page-item.disabled .page-link { opacity: .45; cursor: not-allowed; }
+.dt-pagination .page-item.disabled .page-link { opacity: .45; cursor: not-allowed; pointer-events: none; }
 
 .dataTables_wrapper .dataTables_length,
 .dataTables_wrapper .dataTables_filter,
@@ -611,22 +613,20 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
                                         </div>
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="fas fa-inbox fa-3x mb-3 text-secondary d-block"></i>
-                                        Belum ada data jurnal yang diunggah oleh dosen.
-                                    </td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
 
                 {{-- Footer Pagination --}}
                 <div class="table-footer">
-                    <span class="table-info-text" id="js-table-info">Menampilkan data</span>
-                    <ul class="dt-pagination" id="js-dt-pagination"></ul>
+                    <span class="table-info-text" id="js-table-info">Menampilkan {{ $jurnals->isEmpty() ? '0–0 dari 0 data' : 'data' }}</span>
+                    <ul class="dt-pagination" id="js-dt-pagination">
+                        @if($jurnals->isEmpty())
+                            <li class="page-item disabled"><a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a></li>
+                            <li class="page-item disabled"><a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a></li>
+                        @endif
+                    </ul>
                 </div>
             </div>
         </div>
@@ -687,24 +687,39 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
             pageLength: 10,
             dom: 't',
             language: {
-                emptyTable: "Tidak ada data yang tersedia pada tabel ini",
-                zeroRecords: "Tidak ditemukan data yang sesuai dengan pencarian"
+                emptyTable: `
+                    <div class="upp3m-empty-state">
+                        <span class="upp3m-empty-icon"><i class="fas fa-inbox"></i></span>
+                        <span class="upp3m-empty-title">Belum ada jurnal yang diunggah</span>
+                        <span class="upp3m-empty-text">Data berkas jurnal dari dosen akan tampil rapi pada tabel ini.</span>
+                    </div>
+                `,
+                zeroRecords: `
+                    <div class="upp3m-empty-state">
+                        <span class="upp3m-empty-icon"><i class="fas fa-search"></i></span>
+                        <span class="upp3m-empty-title">Tidak ada hasil pencarian</span>
+                        <span class="upp3m-empty-text">Coba ubah kata kunci pencarian agar data jurnal yang dicari lebih mudah ditemukan.</span>
+                    </div>
+                `
             },
             drawCallback: function(settings) {
                 var api = this.api();
                 var pageInfo = api.page.info();
 
-                if (pageInfo.recordsTotal === 0) {
-                    $('#js-table-info').text('Menampilkan 0 dari 0 data');
-                    $('#js-dt-pagination').empty();
+                if (pageInfo.recordsTotal === 0 || pageInfo.recordsDisplay === 0) {
+                    $('#js-table-info').text('Menampilkan 0–0 dari 0 data');
+                    $('#js-dt-pagination').html(
+                        '<li class="page-item disabled"><span class="page-link"><i class="fas fa-chevron-left"></i></span></li>' +
+                        '<li class="page-item disabled"><span class="page-link"><i class="fas fa-chevron-right"></i></span></li>'
+                    );
                     return;
                 }
 
                 var start = pageInfo.start + 1;
-                var end = pageInfo.end;
+                var end = Math.min(pageInfo.end, pageInfo.recordsDisplay);
                 var total = pageInfo.recordsDisplay;
 
-                $('#js-table-info').text('Menampilkan ' + start + ' - ' + end + ' dari ' + total + ' data');
+                $('#js-table-info').text('Menampilkan ' + start + '–' + end + ' dari ' + total + ' data');
 
                 // Dynamic sequential row re-indexing
                 api.column(0, { search: 'applied', order: 'applied' }).nodes().each(function(cell, i) {

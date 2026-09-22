@@ -1136,26 +1136,21 @@
                                                     <i class="fas fa-eye"></i>
                                                 </a>
 
-                                                {{-- Edit & Hapus (Hanya jika belum diterima) --}}
-                                                @if($item->status !== 'diterima')
-                                                    <a href="{{ route('dosen.hki.edit', $item->id) }}"
-                                                        class="upp3m-action-btn upp3m-action-edit" title="Edit HKI"
-                                                        aria-label="Edit HKI">
-                                                        <i class="fas fa-pen"></i>
-                                                    </a>
+                                                {{-- Edit HKI --}}
+                                                <a href="{{ route('dosen.hki.edit', $item->id) }}"
+                                                    class="upp3m-action-btn upp3m-action-edit" title="Edit HKI"
+                                                    aria-label="Edit HKI">
+                                                    <i class="fas fa-pen"></i>
+                                                </a>
 
-                                                    <button type="button"
-                                                        class="upp3m-action-btn upp3m-action-delete js-delete-hki"
-                                                        data-url="{{ route('dosen.hki.delete', $item->id) }}"
-                                                        data-title="{{ $item->judul }}" title="Hapus HKI"
-                                                        aria-label="Hapus HKI">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </button>
-                                                @else
-                                                    <span class="upp3m-action-btn text-muted" title="HKI telah diterima dan dikunci" style="cursor: not-allowed; opacity: 0.45; border-color: transparent;">
-                                                        <i class="fas fa-lock"></i>
-                                                    </span>
-                                                @endif
+                                                {{-- Hapus HKI --}}
+                                                <button type="button"
+                                                    class="upp3m-action-btn upp3m-action-delete js-delete-hki"
+                                                    data-url="{{ route('dosen.hki.delete', $item->id) }}"
+                                                    data-title="{{ $item->judul }}" title="Hapus HKI"
+                                                    aria-label="Hapus HKI">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -1313,11 +1308,14 @@
                 const title = $(this).data('title');
                 if (!url) return;
 
+                const desc = title 
+                    ? 'Data HKI "' + title + '" akan dihapus permanen dan tidak dapat dibatalkan.' 
+                    : 'Data HKI ini akan dihapus permanen dan tidak dapat dibatalkan.';
+
                 if (typeof window.p3mConfirm === 'function') {
                     window.p3mConfirm({
                         title: 'Hapus Data HKI?',
-                        html: 'Data HKI <strong>' + title +
-                            '</strong> akan dihapus secara permanen.<br><span style="font-size:13px;color:#9ca3af;">Tindakan ini tidak dapat dibatalkan dan file sertifikat terkait akan dihapus permanen.</span>',
+                        html: desc,
                         icon: 'warning',
                         confirmText: '<i class="fas fa-trash-alt" style="font-size:12px;"></i>&nbsp; Ya, Hapus',
                         confirmClass: 'p3m-swal-btn-danger',
@@ -1332,12 +1330,12 @@
                 } else if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         title: 'Hapus Data HKI?',
-                        html: `Apakah Anda yakin ingin menghapus data HKI:<br><br><strong style="color: #003d2d;">"${title}"</strong>?<br><br><small class="text-muted">Tindakan ini tidak dapat dibatalkan dan file sertifikat terkait akan dihapus permanen.</small>`,
+                        html: desc,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#dc2626',
                         cancelButtonColor: '#64748b',
-                        confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> Ya, Hapus Sekarang',
+                        confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> Ya, Hapus',
                         cancelButtonText: 'Batal',
                         reverseButtons: true
                     }).then((result) => {
