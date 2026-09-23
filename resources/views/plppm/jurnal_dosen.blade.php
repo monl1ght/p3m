@@ -60,7 +60,15 @@
 .users-card {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--r-2xl); box-shadow: 0 16px 40px rgba(15,23,42,.06), 0 2px 6px rgba(0,0,0,.03);
-    overflow: hidden;
+    overflow: visible;
+}
+.users-card-head {
+    border-top-left-radius: var(--r-2xl);
+    border-top-right-radius: var(--r-2xl);
+}
+.table-footer {
+    border-bottom-left-radius: var(--r-2xl);
+    border-bottom-right-radius: var(--r-2xl);
 }
 
 .users-card-head {
@@ -176,7 +184,17 @@
 }
 
 /* Table */
-.users-table-wrap { width: 100%; overflow-x: auto; }
+.users-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    position: relative;
+    z-index: 10;
+}
+@media (min-width: 992px) {
+    .users-table-wrap {
+        overflow: visible;
+    }
+}
 table.users-table {
     width: 100% !important; margin: 0 !important;
     border-collapse: separate !important; border-spacing: 0 !important;
@@ -235,8 +253,14 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
     word-break: break-word;
 }
 .judul-date {
-    font-size: 11px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px;
-    white-space: nowrap;
+    font-size: 11px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap; flex-wrap: wrap;
+}
+.resubmit-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 700; color: #2563eb;
+    background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px;
+    padding: 1px 6px; white-space: nowrap;
 }
 
 /* Badges */
@@ -271,9 +295,13 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
 .action-dropdown .btn-trigger:hover, .action-dropdown.show .btn-trigger {
     border-color: var(--border-2); background: var(--surface-hov);
 }
+.action-dropdown {
+    position: relative;
+}
 .action-dropdown .dropdown-menu {
     border: 1px solid var(--border); border-radius: var(--r-md);
-    box-shadow: 0 14px 36px rgba(15,23,42,.1); padding: 6px; margin-top: 4px; min-width: 175px;
+    box-shadow: 0 14px 36px rgba(15,23,42,.15); padding: 6px; margin-top: 4px; min-width: 185px;
+    z-index: 1050 !important;
 }
 .action-dropdown .dropdown-item {
     padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--tx);
@@ -352,6 +380,8 @@ table.users-table tbody td:last-child  { padding-right: 32px !important; text-al
     display: flex; align-items: center; justify-content: space-between;
     flex-wrap: wrap; gap: 14px; padding: 16px 32px;
     background: #fbfcfb; border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
 }
 .table-info-text { font-size: 13px; color: var(--muted); font-weight: 500; }
 .dt-pagination { display: flex; align-items: center; gap: 4px; list-style: none !important; margin: 0 !important; padding: 0 !important; }
@@ -577,6 +607,11 @@ td.dataTables_empty {
                                             <div class="judul-date">
                                                 <i class="far fa-calendar-alt"></i>
                                                 <span>{{ $jurnal->created_at ? $jurnal->created_at->isoFormat('D MMMM Y, HH:mm') . ' WIB' : '-' }}</span>
+                                                @if (in_array($jurnal->status, ['diproses', 'proses']) && $jurnal->latestStatusHistory && in_array($jurnal->latestStatusHistory->previous_status, ['ditolak', 'direvisi', 'non-approve', 'tolak']))
+                                                    <span class="resubmit-badge" title="Jurnal telah diperbaiki dosen dan diajukan ulang">
+                                                        <i class="fas fa-redo-alt" style="font-size: 8.5px;"></i> Diajukan Ulang
+                                                    </span>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>
@@ -864,6 +899,18 @@ td.dataTables_empty {
             if (page !== undefined && page >= 0 && page < table.page.info().pages) {
                 table.page(page).draw('page');
             }
+        }
+    });
+
+    // Auto flip dropdown if close to bottom
+    $(document).on('show.bs.dropdown', '.action-dropdown', function () {
+        var $dropdown = $(this);
+        var offset = $dropdown.offset();
+        var spaceBelow = $(window).height() - (offset.top - $(window).scrollTop()) - $dropdown.outerHeight();
+        if (spaceBelow < 170) {
+            $dropdown.addClass('dropup');
+        } else {
+            $dropdown.removeClass('dropup');
         }
     });
 

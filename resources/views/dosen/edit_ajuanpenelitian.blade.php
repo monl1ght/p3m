@@ -968,6 +968,101 @@
                 0 9px 20px rgba(0, 61, 45, .23);
         }
 
+        .research-edit-submit-resubmit {
+            background: linear-gradient(135deg, #00573b 0%, #003d2d 100%);
+            border-color: #003d2d;
+            box-shadow: 0 6px 18px rgba(0, 87, 59, .28);
+        }
+
+        .research-edit-submit-resubmit:hover {
+            background: linear-gradient(135deg, #00452f 0%, #002e22 100%);
+            box-shadow: 0 8px 22px rgba(0, 87, 59, .35);
+        }
+
+        /* Revision Alert Box */
+        .research-edit-revision-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 18px 22px;
+            margin-bottom: 24px;
+            border-radius: var(--research-edit-radius-md);
+            background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%);
+            border: 1.5px solid #fecdd3;
+            box-shadow: 0 4px 16px rgba(225, 29, 72, .07);
+        }
+
+        .research-edit-revision-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #be123c;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(190, 18, 60, .25);
+        }
+
+        .research-edit-revision-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .research-edit-revision-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .research-edit-revision-title strong {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: #881337;
+            font-family: "Plus Jakarta Sans", sans-serif;
+        }
+
+        .research-edit-revision-date {
+            font-size: 12px;
+            font-weight: 600;
+            color: #9f1239;
+        }
+
+        .research-edit-revision-content {
+            padding: 12px 16px;
+            background: #ffffff;
+            border: 1px dashed #fda4af;
+            border-radius: 8px;
+            color: #1f2937;
+            font-size: 13.5px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .research-edit-revision-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .research-edit-revision-meta strong {
+            color: #334155;
+        }
+
+        .research-edit-revision-tip {
+            color: #00573b;
+            font-weight: 600;
+        }
+
         /* -------------------------------------------------------------------------
                RESPONSIVE
                ------------------------------------------------------------------------- */
@@ -1179,6 +1274,30 @@
 
 
                         <div class="research-edit-card-body">
+
+                            {{-- Revision Alert Banner --}}
+                            @if (in_array($penelitian->status, ['non-approve', 'tolak'], true) && !empty($latestRejection?->reason))
+                                <div class="research-edit-revision-alert">
+                                    <div class="research-edit-revision-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="research-edit-revision-body">
+                                        <div class="research-edit-revision-title">
+                                            <strong><i class="fas fa-comment-dots mr-1"></i> Catatan Revisi dari Reviewer / Admin P3M</strong>
+                                            @if ($latestRejection->decided_at)
+                                                <span class="research-edit-revision-date">
+                                                    <i class="far fa-clock"></i> {{ \Carbon\Carbon::parse($latestRejection->decided_at)->translatedFormat('d F Y, H:i') }} WIB
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div class="research-edit-revision-content">"{{ $latestRejection->reason }}"</div>
+                                        <div class="research-edit-revision-meta">
+                                            <span><i class="fas fa-user-shield text-danger mr-1"></i> Direview oleh: <strong>{{ $latestRejection->decisionMaker?->name ?? 'Admin P3M' }}</strong></span>
+                                            <span class="research-edit-revision-tip"><i class="fas fa-info-circle mr-1"></i> Silakan periksa dan perbaiki poin-poin di atas pada isian form atau file lampiran, lalu klik <strong>"Simpan & Ajukan Ulang Proposal"</strong> di bagian bawah untuk mengajukan kembali ke P3M.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
 
                             {{-- =====================================================
                              MAIN INFORMATION
@@ -1842,15 +1961,21 @@
 
                             <div class="research-edit-actions">
 
-                                <a href="{{ route('dosen.dash') }}" class="research-edit-back">
+                                <a href="{{ route('dosen.dash_ajuanpenelitian') }}" class="research-edit-back">
                                     Batal
                                 </a>
 
-
-                                <button type="submit" class="research-edit-submit">
-                                    <i class="fas fa-save"></i>
-                                    Simpan Perubahan
-                                </button>
+                                @if (in_array($penelitian->status, ['non-approve', 'tolak'], true))
+                                    <button type="submit" class="research-edit-submit research-edit-submit-resubmit">
+                                        <i class="fas fa-paper-plane"></i>
+                                        Simpan & Ajukan Ulang Proposal
+                                    </button>
+                                @else
+                                    <button type="submit" class="research-edit-submit">
+                                        <i class="fas fa-save"></i>
+                                        Simpan Perubahan
+                                    </button>
+                                @endif
 
                             </div>
 

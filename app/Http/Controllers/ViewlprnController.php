@@ -27,11 +27,11 @@ class ViewlprnController extends Controller
         // $data = User::find($id
         if ($user->role == 'admin') {
             // Kalau admin, ambil semua data
-            $query = p3mModel::with('anggotap3m');
+            $query = p3mModel::with(['anggotap3m', 'latestStatusHistory']);
         } else {
             // Kalau bukan admin, ambil yang sesuai user_id
             $query = p3mModel::where('user_id', $user->id)
-                ->with('anggotap3m');
+                ->with(['anggotap3m', 'latestStatusHistory']);
         }
         if ($request->filled('search')) {
             $query->where('judul', 'like', '%' . $request->search . '%');
@@ -57,11 +57,11 @@ class ViewlprnController extends Controller
         // $data = User::find($id);
         if ($user->role == 'admin') {
             // Kalau admin, ambil semua data
-            $query = ajuan_penelitianModel::with('anggotap3m');
+            $query = ajuan_penelitianModel::with(['anggotap3m', 'latestStatusHistory']);
         } else {
             // Kalau bukan admin, ambil yang sesuai user_id
             $query = ajuan_penelitianModel::where('user_id', $user->id)
-                ->with('anggotap3m');
+                ->with(['anggotap3m', 'latestStatusHistory']);
         }
         if ($request->filled('search')) {
             $query->where('judul', 'like', '%' . $request->search . '%');
@@ -78,11 +78,11 @@ class ViewlprnController extends Controller
         $pagetitle = 'Laporan Pengabdian Masyarakat';
         if ($user->role == 'admin') {
             // Kalau admin, ambil semua data
-            $query = kum_pengabdianModel::with('anggotap3m');
+            $query = kum_pengabdianModel::with(['anggotap3m', 'latestStatusHistory']);
         } else {
             // Kalau bukan admin, ambil yang sesuai user_id
             $query = kum_pengabdianModel::where('user_id', $user->id)
-                ->with('anggotap3m');
+                ->with(['anggotap3m', 'latestStatusHistory']);
         }
         if ($request->filled('search')) {
             $query->where('judul', 'like', '%' . $request->search . '%');
@@ -100,11 +100,11 @@ class ViewlprnController extends Controller
         // $data = User::find($id);
         if ($user->role == 'admin') {
             // Kalau admin, ambil semua data
-            $query = kum_penelitianModel::with('anggotap3m');
+            $query = kum_penelitianModel::with(['anggotap3m', 'latestStatusHistory']);
         } else {
             // Kalau bukan admin, ambil yang sesuai user_id
             $query = kum_penelitianModel::where('user_id', $user->id)
-                ->with('anggotap3m');
+                ->with(['anggotap3m', 'latestStatusHistory']);
         }
         if ($request->filled('search')) {
             $query->where('judul', 'like', '%' . $request->search . '%');
@@ -333,7 +333,7 @@ class ViewlprnController extends Controller
         // Tandai berkas jurnal yang belum dibaca admin
         DosenJurnalUpload::whereNull('read_at')->update(['read_at' => now()]);
 
-        $query = DosenJurnalUpload::with('user')->orderBy('created_at', 'desc');
+        $query = DosenJurnalUpload::with(['user', 'latestStatusHistory'])->orderBy('created_at', 'desc');
 
         if ($request->filled('kategori') && in_array($request->kategori, ['penelitian', 'pengabdian'])) {
             $query->where('kategori', $request->kategori);
@@ -359,11 +359,13 @@ class ViewlprnController extends Controller
             'status'  => 'required|in:diterima,direvisi,ditolak,diproses,approve,proses,non-approve',
             'catatan' => 'nullable|string|max:2000',
             'reason'  => 'nullable|string|max:2000',
+            'alasan'  => 'nullable|string|max:2000',
         ], [
             'status.required' => 'Status verifikasi wajib dipilih.',
             'status.in'       => 'Status verifikasi tidak valid.',
             'catatan.max'     => 'Catatan maksimal 2000 karakter.',
             'reason.max'      => 'Catatan maksimal 2000 karakter.',
+            'alasan.max'      => 'Catatan maksimal 2000 karakter.',
         ]);
 
         $rawStatus = $request->input('status');
@@ -375,12 +377,13 @@ class ViewlprnController extends Controller
             default => 'diproses',
         };
 
-        $catatan = $request->input('reason') ?? $request->input('catatan');
+        $catatan = $request->input('reason') ?? $request->input('catatan') ?? $request->input('alasan');
 
         if (in_array($normalizedStatus, ['ditolak', 'direvisi']) && blank($catatan)) {
             return redirect()->back()->with('error', 'Alasan penolakan atau revisi wajib diisi.');
         }
 
+        $previousStatus = $jurnal->getOriginal('status') ?? 'diproses';
         $jurnal->status = $normalizedStatus;
         if ($normalizedStatus === 'diterima' || $normalizedStatus === 'diproses') {
             if ($catatan) {
@@ -393,6 +396,16 @@ class ViewlprnController extends Controller
         }
 
         $jurnal->save();
+
+        SubmissionStatusHistory::create([
+            'submission_type' => 'jurnal-upload',
+            'submission_id'   => $jurnal->id,
+            'previous_status' => $previousStatus,
+            'status'          => $normalizedStatus,
+            'reason'          => in_array($normalizedStatus, ['ditolak', 'direvisi']) ? $catatan : null,
+            'decided_by'      => $request->user()->id,
+            'decided_at'      => now(),
+        ]);
 
         $labels = [
             'diterima' => 'disetujui',

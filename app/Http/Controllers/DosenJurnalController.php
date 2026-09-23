@@ -21,7 +21,8 @@ class DosenJurnalController extends Controller
         $kategori = $request->input('kategori', '');
         $status = $request->input('status', '');
 
-        $query = DosenJurnalUpload::where('user_id', $user->id);
+        $query = DosenJurnalUpload::where('user_id', $user->id)
+            ->with('latestStatusHistory.decisionMaker');
 
         if (!empty($kategori)) {
             $query->where('kategori', strtolower($kategori));
@@ -103,14 +104,20 @@ class DosenJurnalController extends Controller
     public function edit($id)
     {
         $user = Auth::user();
-        $jurnal = DosenJurnalUpload::where('user_id', $user->id)->findOrFail($id);
+        $jurnal = DosenJurnalUpload::where('user_id', $user->id)
+            ->with('latestStatusHistory.decisionMaker')
+            ->findOrFail($id);
 
         if ($jurnal->status === 'diterima') {
             return redirect()->route('dosen.jurnal_upload.index')
                 ->with('error', 'Jurnal yang sudah disetujui tidak dapat diedit.');
         }
 
-        return view('dosen.jurnal_upload.edit', compact('user', 'jurnal'));
+        $latestRejection = in_array($jurnal->status, ['ditolak', 'direvisi', 'non-approve', 'tolak'], true)
+            ? $jurnal->latestStatusHistory
+            : null;
+
+        return view('dosen.jurnal_upload.edit', compact('user', 'jurnal', 'latestRejection'));
     }
 
     /**
@@ -165,15 +172,35 @@ class DosenJurnalController extends Controller
             $jurnal->file_name = $originalName;
         }
 
-        // Reset status ke diproses setelah edit dan buat notifikasi unread
+        $previousStatus = $jurnal->status;
+        $wasRejected = in_array($previousStatus, ['direvisi', 'ditolak', 'non-approve'], true);
+
+        // Reset status ke diproses setelah edit, perbarui created_at agar naik ke antrean teratas admin
         $jurnal->status = 'diproses';
+        $jurnal->created_at = now();
         $jurnal->catatan_admin = null;
         $jurnal->read_at = null;
         $jurnal->save();
 
+        if ($wasRejected) {
+            \App\Models\SubmissionStatusHistory::create([
+                'submission_type' => 'jurnal-upload',
+                'submission_id'   => $jurnal->id,
+                'previous_status' => $previousStatus,
+                'status'          => 'diproses',
+                'reason'          => 'Diajukan ulang oleh Dosen setelah perbaikan naskah artikel jurnal.',
+                'decided_by'      => Auth::id(),
+                'decided_at'      => now(),
+            ]);
+        }
+
+        $successMsg = $wasRejected
+            ? 'Artikel jurnal berhasil diperbaiki dan diajukan ulang ke P3M (status kini: Diproses)!'
+            : 'Jurnal berhasil diperbarui dan dikirim ulang untuk verifikasi.';
+
         return redirect()
             ->route('dosen.jurnal_upload.index', ['kategori' => $jurnal->kategori])
-            ->with('success', 'Jurnal berhasil diperbarui dan dikirim ulang untuk verifikasi.');
+            ->with('success', $successMsg);
     }
 
     /**

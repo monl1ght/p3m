@@ -60,7 +60,15 @@
 .users-card {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--r-2xl); box-shadow: 0 16px 40px rgba(15,23,42,.06), 0 2px 6px rgba(0,0,0,.03);
-    overflow: hidden;
+    overflow: visible;
+}
+.users-card-head {
+    border-top-left-radius: var(--r-2xl);
+    border-top-right-radius: var(--r-2xl);
+}
+.table-footer {
+    border-bottom-left-radius: var(--r-2xl);
+    border-bottom-right-radius: var(--r-2xl);
 }
 
 /* Card Header */
@@ -136,6 +144,13 @@
 .users-table-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 10;
+}
+@media (min-width: 992px) {
+    .users-table-wrap {
+        overflow: visible;
+    }
 }
 table.users-table {
     width: 100% !important;
@@ -205,6 +220,13 @@ table.users-table {
 .date-text {
     font-size: 13px; font-weight: 600; color: var(--tx); white-space: nowrap;
 }
+.resubmit-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10.5px; font-weight: 700; color: #2563eb;
+    background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px;
+    padding: 2px 6px; margin-top: 4px; white-space: nowrap;
+}
+
 
 /* Refined Minimal Status Badges */
 .status-pill {
@@ -253,9 +275,13 @@ table.users-table {
 .action-dropdown .btn-trigger:hover, .action-dropdown.show .btn-trigger {
     border-color: var(--border-2); background: var(--surface-hov);
 }
+.action-dropdown {
+    position: relative;
+}
 .action-dropdown .dropdown-menu {
     border: 1px solid var(--border); border-radius: var(--r-md);
-    box-shadow: 0 14px 36px rgba(15,23,42,.1); padding: 6px; margin-top: 4px; min-width: 175px;
+    box-shadow: 0 14px 36px rgba(15,23,42,.15); padding: 6px; margin-top: 4px; min-width: 175px;
+    z-index: 1050 !important;
 }
 .action-dropdown .dropdown-item {
     padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; color: var(--tx);
@@ -278,6 +304,8 @@ table.users-table {
     display: flex; align-items: center; justify-content: space-between;
     flex-wrap: wrap; gap: 14px; padding: 16px 32px;
     background: #fbfcfb; border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
 }
 .table-info-text { font-size: 13px; color: var(--muted); font-weight: 500; }
 .dt-pagination { display: flex; align-items: center; gap: 4px; }
@@ -499,6 +527,11 @@ table.users-table {
                                 <span class="date-text">
                                     {{ $d->created_at ? $d->created_at->translatedFormat('d M Y') : '-' }}
                                 </span>
+                                @if ($d->status === 'proses' && $d->latestStatusHistory && in_array($d->latestStatusHistory->previous_status, ['non-approve', 'tolak']))
+                                    <span class="resubmit-badge" title="Proposal telah diperbaiki dosen dan diajukan ulang">
+                                        <i class="fas fa-redo-alt" style="font-size: 9px;"></i> Diajukan Ulang
+                                    </span>
+                                @endif
                             </td>
                             <td>
                                 @php
@@ -722,6 +755,18 @@ table.users-table {
     document.addEventListener('turbo:before-cache', function() {
         if ($.fn.DataTable.isDataTable('#usulanTable')) {
             $('#usulanTable').DataTable().destroy();
+        }
+    });
+
+    // Auto flip dropdown if close to bottom
+    $(document).on('show.bs.dropdown', '.action-dropdown', function () {
+        var $dropdown = $(this);
+        var offset = $dropdown.offset();
+        var spaceBelow = $(window).height() - (offset.top - $(window).scrollTop()) - $dropdown.outerHeight();
+        if (spaceBelow < 170) {
+            $dropdown.addClass('dropup');
+        } else {
+            $dropdown.removeClass('dropup');
         }
     });
 

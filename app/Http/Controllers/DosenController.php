@@ -104,7 +104,7 @@ class DosenController extends Controller
         $pagetitle = 'Proposal Pengabdian Masyarakat';
         $user = Auth::user();
         $penelitians = p3mModel::where('user_id', $user->id)
-            ->with('anggotap3m')
+            ->with(['anggotap3m', 'latestStatusHistory.decisionMaker'])
             ->when($request->search, function ($query) use ($request) {
                 $query->where(function ($q) use ($request) {
                     $q->where('judul', 'like', '%' . $request->search . '%')
@@ -137,9 +137,8 @@ class DosenController extends Controller
         $user = Auth::user();
         $data = $user;
         $penelitians = ajuan_penelitianModel::where('user_id', $user->id)
-            // ->orWhereNull('user_id')
+            ->with(['anggotap3m', 'latestStatusHistory.decisionMaker'])
             ->orderBy('created_at', 'desc')
-            ->with('anggotap3m')
             ->get();
         // dd($penelitians);
         return view('dosen.dash_ajuanpenelitian', compact('user', 'data', 'penelitians', 'pagetitle'));
@@ -151,11 +150,9 @@ class DosenController extends Controller
         $user = Auth::user();
         $data = $user;
         $penelitians = kum_penelitianModel::where('user_id', $user->id)
-            // ->orWhereNull('user_id')
+            ->with(['anggotap3m', 'latestStatusHistory.decisionMaker'])
             ->orderBy('created_at', 'desc')
-            ->with('anggotap3m')
             ->get();
-        // dd($penelitians);
         return view('dosen.dash_kpenelitian', compact('user', 'data', 'penelitians', 'pagetitle'));
     }
     //TAMBAH  AJUAN PENELITIAN
@@ -361,12 +358,13 @@ class DosenController extends Controller
         $pagetitle = 'Proposal Pengabdian Masyarakat';
         // $categories = M_categories::all();
         $penelitian = p3mModel::where('user_id', Auth::id())
-            ->with('anggotap3m')
+            ->with(['anggotap3m', 'latestStatusHistory.decisionMaker'])
             ->findOrFail($id);
         $this->ensureSubmissionIsEditable($penelitian);
         $anggota = anggotap3mModel::where('ajupengab_model_id', $id)->get();
+        $latestRejection = $penelitian->latestStatusHistory;
 
-        return view('dosen.edit_ajupengab', compact('user', 'pagetitle', 'penelitian', 'anggota'));
+        return view('dosen.edit_ajupengab', compact('user', 'pagetitle', 'penelitian', 'anggota', 'latestRejection'));
     }
     public function updatep3m(Request $request, $id)
     {
@@ -416,6 +414,9 @@ class DosenController extends Controller
         $penelitian = p3mModel::where('user_id', Auth::id())->findOrFail($id);
         $this->ensureSubmissionIsEditable($penelitian);
 
+        $previousStatus = $penelitian->status;
+        $wasRejected = in_array($previousStatus, ['non-approve', 'tolak'], true);
+
         $data = [
             //untuk data
             'judul' => $request->judul,
@@ -436,6 +437,10 @@ class DosenController extends Controller
             'prodi' => $request->prodi,
         ];
 
+        if ($wasRejected) {
+            $data['status'] = 'proses';
+            $data['created_at'] = now();
+        }
 
         $oldPdfFilename = $penelitian->uppdf;
         $newPdfFilename = null;
@@ -452,6 +457,21 @@ class DosenController extends Controller
                 'ajupengab_model_id',
                 $request->anggota
             );
+
+            if ($wasRejected) {
+                $penelitian->created_at = now();
+                $penelitian->save();
+
+                SubmissionStatusHistory::create([
+                    'submission_type' => 'proposal-pengabdian',
+                    'submission_id'   => $penelitian->id,
+                    'previous_status' => $previousStatus,
+                    'status'          => 'proses',
+                    'reason'          => 'Diajukan ulang oleh Dosen setelah perbaikan proposal.',
+                    'decided_by'      => Auth::id(),
+                    'decided_at'      => now(),
+                ]);
+            }
         } catch (\Throwable $exception) {
             $this->discardNewSubmissionFiles($newPdfFilename);
             report($exception);
@@ -461,7 +481,11 @@ class DosenController extends Controller
 
         $this->deleteReplacedSubmissionFiles($oldPdfFilename, $newPdfFilename);
 
-        return redirect()->route('dosen.upp3m')->with('success', 'Data berhasil diperbarui!');
+        $successMsg = $wasRejected
+            ? 'Proposal berhasil diperbaiki dan diajukan ulang ke P3M (status kini: Diproses)!'
+            : 'Data berhasil diperbarui!';
+
+        return redirect()->route('dosen.upp3m')->with('success', $successMsg);
     }
     //TAMBAH  KUMPULAN PENGABDIAN
     public function kpengabdianp3m()
@@ -469,8 +493,8 @@ class DosenController extends Controller
         $user = Auth::user();
         $pagetitle = 'Laporan Pengabdian Masyarakat';
         $penelitians = kum_pengabdianModel::where('user_id', $user->id)
+            ->with(['anggotap3m', 'latestStatusHistory.decisionMaker'])
             ->orderBy('created_at', 'desc')
-            ->with('anggotap3m')
             ->get();
         return view('dosen.dash_kpengabdian', compact('user', 'pagetitle', 'penelitians'));
     }
@@ -604,11 +628,18 @@ class DosenController extends Controller
     {
         $user = Auth::user();
         $pagetitle = 'Laporan Pengabdian Masyarakat';
-        $penelitian = kum_pengabdianModel::where('user_id', Auth::id())->findOrFail($id);
+        $penelitian = kum_pengabdianModel::where('user_id', Auth::id())
+            ->with(['latestStatusHistory.decisionMaker'])
+            ->findOrFail($id);
         $this->ensureSubmissionIsEditable($penelitian);
         $anggota = anggotap3mModel::where('kpengab_model_id', $id)->get();
 
-        return view('dosen.edit_kpengabdian', compact('user', 'pagetitle', 'penelitian', 'anggota'));
+        $latestRejection = $penelitian->latestStatusHistory;
+        if (!in_array($penelitian->status, ['non-approve', 'tolak'], true)) {
+            $latestRejection = null;
+        }
+
+        return view('dosen.edit_kpengabdian', compact('user', 'pagetitle', 'penelitian', 'anggota', 'latestRejection'));
     }
     public function updatekumpulanp3m(Request $request, $id)
     {
@@ -658,6 +689,9 @@ class DosenController extends Controller
         $penelitian = kum_pengabdianModel::where('user_id', Auth::id())->findOrFail($id);
         $this->ensureSubmissionIsEditable($penelitian);
 
+        $previousStatus = $penelitian->status;
+        $wasRejected = in_array($previousStatus, ['non-approve', 'tolak'], true);
+
         $data = [
             //untuk data
             'judul' => $request->judul,
@@ -676,9 +710,12 @@ class DosenController extends Controller
             'alamat' => $request->alamat,
             'jeniskelamin' => $request->jeniskelamin,
             'prodi' => $request->prodi,
-            //untuk up gambar
-
         ];
+
+        if ($wasRejected) {
+            $data['status'] = 'proses';
+            $data['created_at'] = now();
+        }
 
         $oldPdfFilename = $penelitian->uppdf;
         $oldPhotoFilename = $penelitian->foto;
@@ -702,6 +739,21 @@ class DosenController extends Controller
                 'kpengab_model_id',
                 $request->anggota
             );
+
+            if ($wasRejected) {
+                $penelitian->created_at = now();
+                $penelitian->save();
+
+                SubmissionStatusHistory::create([
+                    'submission_type' => 'laporan-pengabdian',
+                    'submission_id'   => $penelitian->id,
+                    'previous_status' => $previousStatus,
+                    'status'          => 'proses',
+                    'reason'          => 'Diajukan ulang oleh Dosen setelah perbaikan laporan pengabdian.',
+                    'decided_by'      => Auth::id(),
+                    'decided_at'      => now(),
+                ]);
+            }
         } catch (\Throwable $exception) {
             $this->discardNewSubmissionFiles($newPdfFilename, $newPhotoFilename);
             report($exception);
@@ -716,7 +768,11 @@ class DosenController extends Controller
             $newPhotoFilename
         );
 
-        return redirect()->route('dosen.dash_kpengabdian')->with('success', 'Data berhasil disimpan!');
+        $successMsg = $wasRejected
+            ? 'Laporan berhasil diperbaiki dan diajukan ulang ke P3M (status kini: Diproses)!'
+            : 'Data berhasil disimpan!';
+
+        return redirect()->route('dosen.dash_kpengabdian')->with('success', $successMsg);
     }
 
     //TAMBAH AJUAN PENELITIAN
@@ -832,11 +888,14 @@ class DosenController extends Controller
         $user = Auth::user();
         $pagetitle = 'Pengajuan Penelitian';
         // $categories = M_categories::all();
-        $penelitian = ajuan_penelitianModel::where('user_id', Auth::id())->findOrFail($id);
+        $penelitian = ajuan_penelitianModel::where('user_id', Auth::id())
+            ->with(['anggotap3m', 'latestStatusHistory.decisionMaker'])
+            ->findOrFail($id);
         $this->ensureSubmissionIsEditable($penelitian);
         $anggota = anggotap3mModel::where('ajupenel_model_id', $id)->get();
+        $latestRejection = $penelitian->latestStatusHistory;
 
-        return view('dosen.edit_ajuanpenelitian', compact('user', 'pagetitle', 'penelitian', 'anggota'));
+        return view('dosen.edit_ajuanpenelitian', compact('user', 'pagetitle', 'penelitian', 'anggota', 'latestRejection'));
     }
     public function updatepenelitian(Request $request, $id)
     {
@@ -886,6 +945,9 @@ class DosenController extends Controller
         $penelitian = ajuan_penelitianModel::where('user_id', Auth::id())->findOrFail($id);
         $this->ensureSubmissionIsEditable($penelitian);
 
+        $previousStatus = $penelitian->status;
+        $wasRejected = in_array($previousStatus, ['non-approve', 'tolak'], true);
+
         $data = [
             //untuk data
             'judul' => $request->judul,
@@ -906,6 +968,10 @@ class DosenController extends Controller
             'prodi' => $request->prodi,
         ];
 
+        if ($wasRejected) {
+            $data['status'] = 'proses';
+            $data['created_at'] = now();
+        }
 
         $oldPdfFilename = $penelitian->uppdf;
         $newPdfFilename = null;
@@ -922,6 +988,21 @@ class DosenController extends Controller
                 'ajupenel_model_id',
                 $request->anggota
             );
+
+            if ($wasRejected) {
+                $penelitian->created_at = now();
+                $penelitian->save();
+
+                SubmissionStatusHistory::create([
+                    'submission_type' => 'proposal-penelitian',
+                    'submission_id'   => $penelitian->id,
+                    'previous_status' => $previousStatus,
+                    'status'          => 'proses',
+                    'reason'          => 'Diajukan ulang oleh Dosen setelah perbaikan proposal.',
+                    'decided_by'      => Auth::id(),
+                    'decided_at'      => now(),
+                ]);
+            }
         } catch (\Throwable $exception) {
             $this->discardNewSubmissionFiles($newPdfFilename);
             report($exception);
@@ -930,7 +1011,12 @@ class DosenController extends Controller
         }
 
         $this->deleteReplacedSubmissionFiles($oldPdfFilename, $newPdfFilename);
-        return redirect()->route('dosen.dash_ajuanpenelitian')->with('success', 'Data berhasil diperbarui!');
+
+        $successMsg = $wasRejected
+            ? 'Proposal berhasil diperbaiki dan diajukan ulang ke P3M (status kini: Diproses)!'
+            : 'Data berhasil diperbarui!';
+
+        return redirect()->route('dosen.dash_ajuanpenelitian')->with('success', $successMsg);
     }
 
     //TAMBAH KUMPULAN PENELITIAN
@@ -1067,11 +1153,18 @@ class DosenController extends Controller
     {
         $user = Auth::user();
         $pagetitle = 'Laporan Penelitian';
-        $penelitian = kum_penelitianModel::where('user_id', Auth::id())->findOrFail($id);
+        $penelitian = kum_penelitianModel::where('user_id', Auth::id())
+            ->with(['latestStatusHistory.decisionMaker'])
+            ->findOrFail($id);
         $this->ensureSubmissionIsEditable($penelitian);
         $anggota = anggotap3mModel::where('kpenel_model_id', $id)->get();
 
-        return view('dosen.edit_kpenliti', compact('user', 'pagetitle', 'penelitian', 'anggota'));
+        $latestRejection = $penelitian->latestStatusHistory;
+        if (!in_array($penelitian->status, ['non-approve', 'tolak'], true)) {
+            $latestRejection = null;
+        }
+
+        return view('dosen.edit_kpenliti', compact('user', 'pagetitle', 'penelitian', 'anggota', 'latestRejection'));
     }
     public function updatekumpulanpenelitian(Request $request, $id)
     {
@@ -1131,6 +1224,9 @@ class DosenController extends Controller
         $penelitian = kum_penelitianModel::where('user_id', Auth::id())->findOrFail($id);
         $this->ensureSubmissionIsEditable($penelitian);
 
+        $previousStatus = $penelitian->status;
+        $wasRejected = in_array($previousStatus, ['non-approve', 'tolak'], true);
+
         $data = [
             //untuk data
             'judul' => $request->judul,
@@ -1149,9 +1245,12 @@ class DosenController extends Controller
             'alamat' => $request->alamat,
             'jeniskelamin' => $request->jeniskelamin,
             'prodi' => $request->prodi,
-            //untuk up gambar
-
         ];
+
+        if ($wasRejected) {
+            $data['status'] = 'proses';
+            $data['created_at'] = now();
+        }
 
         $oldPdfFilename = $penelitian->uppdf;
         $oldPhotoFilename = $penelitian->foto;
@@ -1170,6 +1269,21 @@ class DosenController extends Controller
             }
 
             $this->updateSubmissionWithMembers($penelitian, $data, 'kpenel_model_id', $request->anggota);
+
+            if ($wasRejected) {
+                $penelitian->created_at = now();
+                $penelitian->save();
+
+                SubmissionStatusHistory::create([
+                    'submission_type' => 'laporan-penelitian',
+                    'submission_id'   => $penelitian->id,
+                    'previous_status' => $previousStatus,
+                    'status'          => 'proses',
+                    'reason'          => 'Diajukan ulang oleh Dosen setelah perbaikan laporan penelitian.',
+                    'decided_by'      => Auth::id(),
+                    'decided_at'      => now(),
+                ]);
+            }
         } catch (\Throwable $exception) {
             $this->discardNewSubmissionFiles($newPdfFilename, $newPhotoFilename);
             report($exception);
@@ -1186,7 +1300,11 @@ class DosenController extends Controller
             $newPhotoFilename
         );
 
-        return redirect()->route('dosen.dash_kpenelitian')->with('success', 'Data berhasil disimpan!');
+        $successMsg = $wasRejected
+            ? 'Laporan berhasil diperbaiki dan diajukan ulang ke P3M (status kini: Diproses)!'
+            : 'Data berhasil disimpan!';
+
+        return redirect()->route('dosen.dash_kpenelitian')->with('success', $successMsg);
     }
 
     /* detail */

@@ -2,6 +2,7 @@
 
 @php
     $kategori = $kategori ?? ($jurnal->kategori ?? 'penelitian');
+    $latestRejection = $latestRejection ?? null;
 @endphp
 
 @section('title', 'Edit Jurnal - P3M Politeknik Balekambang Jepara')
@@ -520,6 +521,33 @@
                         @csrf
 
                         <div class="jurnal-form-body">
+                            {{-- Revision Alert Banner --}}
+                            @php
+                                $rejectionReason = $jurnal->catatan_admin ?: ($latestRejection?->reason ?? null);
+                            @endphp
+                            @if (in_array($jurnal->status, ['ditolak', 'direvisi', 'non-approve', 'tolak'], true) && !empty($rejectionReason))
+                                <div class="jurnal-revision-alert" style="display: flex; align-items: flex-start; gap: 16px; padding: 18px 22px; margin-bottom: 26px; border-radius: 14px; background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%); border: 1.5px solid #fecdd3; box-shadow: 0 4px 16px rgba(225, 29, 72, .07);">
+                                    <div class="jurnal-revision-icon" style="width: 44px; height: 44px; border-radius: 12px; background: #be123c; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(190, 18, 60, .25);">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="jurnal-revision-body" style="flex: 1; min-width: 0;">
+                                        <div class="jurnal-revision-title" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px;">
+                                            <strong style="font-size: 14.5px; font-weight: 800; color: #881337; font-family: 'Plus Jakarta Sans', sans-serif;"><i class="fas fa-comment-dots mr-1"></i> Catatan Revisi dari Reviewer / Admin P3M</strong>
+                                            @if ($latestRejection?->decided_at)
+                                                <span class="jurnal-revision-date" style="font-size: 12px; font-weight: 600; color: #9f1239;">
+                                                    <i class="far fa-clock"></i> {{ \Carbon\Carbon::parse($latestRejection->decided_at)->translatedFormat('d F Y, H:i') }} WIB
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div class="jurnal-revision-content" style="padding: 12px 16px; background: #ffffff; border: 1px dashed #fda4af; border-radius: 8px; color: #1f2937; font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; font-weight: 500; margin-bottom: 10px;">"{{ $rejectionReason }}"</div>
+                                        <div class="jurnal-revision-meta" style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #64748b;">
+                                            <span><i class="fas fa-user-shield text-danger mr-1"></i> Direview oleh: <strong>{{ $latestRejection?->decisionMaker?->name ?? 'Admin P3M' }}</strong></span>
+                                            <span style="color: #475569;"><i class="fas fa-info-circle mr-1"></i> Silakan periksa dan perbaiki dokumen naskah jurnal atau judul di atas, lalu klik <strong>"Simpan & Ajukan Ulang Jurnal"</strong> untuk mengajukan kembali ke P3M.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
                             {{-- Alert Error Validasi --}}
                             @if ($errors->any())
                                 <div class="alert alert-danger mb-4" style="border-radius: 12px; font-size: 13px;">
@@ -623,7 +651,8 @@
                         <div class="jurnal-form-footer">
                             <a href="{{ route('dosen.jurnal_upload.index', ['kategori' => $jurnal->kategori]) }}" class="btn-cancel">Batal</a>
                             <button type="submit" class="btn-submit" id="btnSubmitForm">
-                                <i class="fas fa-save"></i> Simpan Perubahan
+                                <i class="fas {{ in_array($jurnal->status, ['ditolak', 'direvisi', 'non-approve', 'tolak'], true) ? 'fa-paper-plane' : 'fa-save' }}"></i>
+                                {{ in_array($jurnal->status, ['ditolak', 'direvisi', 'non-approve', 'tolak'], true) ? 'Simpan & Ajukan Ulang Jurnal' : 'Simpan Perubahan' }}
                             </button>
                         </div>
                     </form>

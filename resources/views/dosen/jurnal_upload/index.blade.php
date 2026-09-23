@@ -667,6 +667,42 @@
             color: var(--p3m-up-ink-2);
         }
 
+        .page-dosen-jurnal .upp3m-rejection-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 28px;
+            padding: 4px 12px;
+            border: 1px solid #fecdd3;
+            border-radius: 99px;
+            background: #fff1f2;
+            color: #be123c !important;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            width: max-content;
+            max-width: 100%;
+            flex-shrink: 0;
+            transition: all .18s ease;
+            outline: none;
+            text-decoration: none !important;
+            margin-top: 4px;
+        }
+
+        .page-dosen-jurnal .upp3m-rejection-btn:hover {
+            background: #ffe4e6;
+            border-color: #fda4af;
+            color: #9f1239 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(190, 18, 60, .14);
+        }
+
+        .page-dosen-jurnal .upp3m-rejection-btn i {
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
         /* Action Buttons */
         .page-dosen-jurnal .upp3m-action-wrap {
             display: inline-flex;
@@ -1145,17 +1181,31 @@
                                                         <i class="fas fa-clock"></i>
                                                         <span>Diproses</span>
                                                     </span>
+                                                    @if ($item->latestStatusHistory && in_array($item->latestStatusHistory->previous_status, ['ditolak', 'direvisi', 'non-approve', 'tolak']))
+                                                        <span class="upp3m-resubmit-badge" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; margin-top: 4px;" title="Jurnal telah diperbaiki dan diajukan ulang">
+                                                            <i class="fas fa-redo-alt" style="font-size: 8.5px;"></i> Diajukan Ulang
+                                                        </span>
+                                                    @endif
                                                 @else
                                                     <span class="upp3m-status-badge upp3m-status-rejected">
                                                         <i class="fas fa-times-circle"></i>
                                                         <span>Ditolak</span>
                                                     </span>
-                                                @endif
 
-                                                @if ($item->catatan_admin)
-                                                    <div class="upp3m-admin-note">
-                                                        <strong>Catatan:</strong> {{ $item->catatan_admin }}
-                                                    </div>
+                                                    @php
+                                                        $adminNote = $item->catatan_admin ?: ($item->latestStatusHistory?->reason ?? null);
+                                                    @endphp
+                                                    <button type="button"
+                                                        class="upp3m-rejection-btn js-show-rejection-note"
+                                                        data-judul="{{ $item->judul }}"
+                                                        data-reason="{{ $adminNote ?: 'Silakan periksa dan perbaiki dokumen naskah jurnal atau data judul yang diunggah.' }}"
+                                                        data-reviewer="{{ $item->latestStatusHistory?->decisionMaker?->name ?? 'Admin P3M' }}"
+                                                        data-date="{{ $item->latestStatusHistory?->decided_at ? \Carbon\Carbon::parse($item->latestStatusHistory->decided_at)->translatedFormat('d M Y, H:i') : ($item->updated_at ? \Carbon\Carbon::parse($item->updated_at)->translatedFormat('d M Y, H:i') : '') }}"
+                                                        data-edit-url="{{ route('dosen.jurnal_upload.edit', $item->id) }}"
+                                                        title="Lihat Catatan Revisi">
+                                                        <i class="fas fa-comment-dots"></i>
+                                                        <span>Catatan Revisi</span>
+                                                    </button>
                                                 @endif
                                             </div>
                                         </td>
@@ -1171,7 +1221,8 @@
 
                                                 @if ($item->status !== 'diterima')
                                                     <a href="{{ route('dosen.jurnal_upload.edit', $item->id) }}"
-                                                        class="upp3m-action-btn upp3m-action-edit" title="Edit Jurnal"
+                                                        class="upp3m-action-btn upp3m-action-edit"
+                                                        title="{{ in_array($item->status, ['ditolak', 'direvisi', 'non-approve', 'tolak']) ? 'Revisi & Edit Jurnal' : 'Edit Jurnal' }}"
                                                         aria-label="Edit jurnal">
                                                         <i class="fas fa-pen"></i>
                                                     </a>
@@ -1205,6 +1256,65 @@
             </div>
         </section>
 
+    </div>
+
+    {{-- Modal Catatan Revisi / Penolakan --}}
+    <div class="modal fade" id="modalCatatanRevisi" tabindex="-1" role="dialog" aria-labelledby="modalCatatanRevisiLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 540px;">
+            <div class="modal-content" style="border: none; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); border-bottom: 1px solid #fecdd3; padding: 18px 24px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; border-radius: 10px; background: #be123c; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                            <i class="fas fa-comment-dots"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title" id="modalCatatanRevisiLabel" style="font-size: 16px; font-weight: 800; color: #881337; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;">
+                                Catatan Revisi / Penolakan
+                            </h5>
+                            <p style="font-size: 12px; color: #9f1239; margin: 2px 0 0 0;">
+                                Instruksi perbaikan naskah jurnal dari Reviewer / Admin P3M
+                            </p>
+                        </div>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #9f1239; opacity: 0.8; font-size: 24px; font-weight: 300;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding: 24px; background: #ffffff;">
+                    <div style="margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f1f5f9;">
+                        <label style="font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: #64748b; margin-bottom: 4px; display: block;">
+                            Judul Jurnal
+                        </label>
+                        <div id="modalRevisiJudul" style="font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1.45;"></div>
+                    </div>
+
+                    <div style="margin-bottom: 18px;">
+                        <label style="font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: #e11d48; margin-bottom: 6px; display: block;">
+                            <i class="fas fa-pen-alt mr-1"></i> Catatan Perbaikan / Alasan:
+                        </label>
+                        <div id="modalRevisiContent" style="background: #fff5f5; border: 1.5px dashed #fda4af; border-radius: 10px; padding: 14px 16px; font-size: 13.5px; color: #1f2937; line-height: 1.6; white-space: pre-wrap; font-weight: 500;">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #64748b; background: #f8fafc; padding: 10px 14px; border-radius: 8px;">
+                        <div>
+                            <i class="fas fa-user-shield text-danger mr-1"></i> Ditinjau oleh: <strong id="modalRevisiReviewer" style="color: #334155;">Admin P3M</strong>
+                        </div>
+                        <div>
+                            <i class="far fa-clock mr-1"></i> <span id="modalRevisiDate">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #f1f5f9; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 8px; font-size: 13px; font-weight: 600; padding: 8px 16px;">
+                        Tutup
+                    </button>
+                    <a id="modalRevisiEditLink" href="#" class="btn" style="background: #00573b; color: #ffffff; border-radius: 8px; font-size: 13px; font-weight: 700; padding: 8px 20px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,87,59,0.25);">
+                        <i class="fas fa-pencil-alt"></i> Buka Form Revisi & Ajukan Ulang
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- Global Hidden Delete Form --}}
@@ -1431,6 +1541,27 @@
                             form.submit();
                         }
                     }
+                }
+            });
+
+            // Catatan Revisi Modal Trigger
+            $(document).off('click', '.js-show-rejection-note').on('click', '.js-show-rejection-note', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const judul = $btn.data('judul');
+                const reason = $btn.data('reason');
+                const reviewer = $btn.data('reviewer');
+                const date = $btn.data('date');
+                const editUrl = $btn.data('edit-url');
+
+                $('#modalRevisiJudul').text(judul || '-');
+                $('#modalRevisiContent').text(reason || 'Tidak ada catatan khusus yang dilampirkan.');
+                $('#modalRevisiReviewer').text(reviewer || 'Admin P3M');
+                $('#modalRevisiDate').text(date ? date + ' WIB' : '-');
+                $('#modalRevisiEditLink').attr('href', editUrl || '#');
+
+                if (window.jQuery && typeof $('#modalCatatanRevisi').modal === 'function') {
+                    $('#modalCatatanRevisi').modal('show');
                 }
             });
 

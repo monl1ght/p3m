@@ -19,6 +19,7 @@ class DosenJurnalUpload extends Model
         'file_name',
         'status',
         'catatan_admin',
+        'created_at',
     ];
 
     protected $attributes = [
@@ -31,5 +32,19 @@ class DosenJurnalUpload extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function statusHistories()
+    {
+        return $this->hasMany(SubmissionStatusHistory::class, 'submission_id')
+            ->where('submission_type', 'jurnal-upload')
+            ->orderBy('decided_at', 'desc');
+    }
+
+    public function latestStatusHistory()
+    {
+        return $this->hasOne(SubmissionStatusHistory::class, 'submission_id')
+            ->where('submission_type', 'jurnal-upload')
+            ->latestOfMany('decided_at');
     }
 }

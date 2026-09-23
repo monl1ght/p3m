@@ -30,7 +30,7 @@ class ajuan_penelitianModel extends Model
         'tanggal_mulai',
         'tanggal_selesai', // untuk user
         'read_at',
-
+        'created_at',
     ];
     public function anggotap3m()
     {
@@ -40,5 +40,19 @@ class ajuan_penelitianModel extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function statusHistories()
+    {
+        return $this->hasMany(SubmissionStatusHistory::class, 'submission_id')
+            ->where('submission_type', 'proposal-penelitian')
+            ->orderBy('decided_at', 'desc');
+    }
+
+    public function latestStatusHistory()
+    {
+        return $this->hasOne(SubmissionStatusHistory::class, 'submission_id')
+            ->where('submission_type', 'proposal-penelitian')
+            ->latestOfMany('decided_at');
     }
 }

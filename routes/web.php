@@ -369,6 +369,7 @@ Route::group(['middleware' => 'auth:sanctum', 'role:dosen'], function () {
         Route::post('/storekpenelitian', [DosenController::class, 'storekumpulanpenelitian'])->name('dosen.storekumpulanpenelitian');
         Route::get('/editkpenelitian/{id}', [DosenController::class, 'editkumpulanpenelitian'])->name('dosen.edit_kpenliti');
         Route::post('/updatekpenelitian/{id}', [DosenController::class, 'updatekumpulanpenelitian'])->name('dosen.updatekumpulanpenelitian');
+        Route::post('/up_kpenliti/{id}', [DosenController::class, 'updatekumpulanpenelitian']);
         // Route::get('/kddpenelitian/{tipe}/{id}', [DosenController::class, 'kumpengneli'])->name('detail.detailk');
         Route::delete('/deletekpen/{id}', [DosenController::class, 'deletekpen'])->name('dosen.deletekpen');
 

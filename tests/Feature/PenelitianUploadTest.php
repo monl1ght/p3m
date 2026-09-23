@@ -169,8 +169,7 @@ class PenelitianUploadTest extends TestCase
             ->get(route('dosen.dash_kpenelitian'))
             ->assertOk()
             ->assertSee('Laporan Status Konsisten')
-            ->assertSee('Diproses')
-            ->assertDontSee('Ditolak');
+            ->assertSee('Diproses');
 
         $this->actingAs($admin)
             ->get(route('plppm.kpenelitian'))

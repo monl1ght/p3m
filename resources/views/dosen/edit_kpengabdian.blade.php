@@ -1,5 +1,9 @@
 @extends('layout.doslayout')
 
+@php
+    $latestRejection = $latestRejection ?? null;
+@endphp
+
 @section('body_class', 'page-dosen-edit-kpengabdian')
 
 @section('css')
@@ -1233,6 +1237,30 @@
 
                         <div class="peng-edit-card-body">
 
+                            {{-- Revision Alert Banner --}}
+                            @if (in_array($penelitian->status, ['non-approve', 'tolak'], true) && !empty($latestRejection?->reason))
+                                <div class="peng-edit-revision-alert" style="display: flex; align-items: flex-start; gap: 16px; padding: 18px 22px; margin-bottom: 24px; border-radius: 14px; background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%); border: 1.5px solid #fecdd3; box-shadow: 0 4px 16px rgba(225, 29, 72, .07);">
+                                    <div class="peng-edit-revision-icon" style="width: 44px; height: 44px; border-radius: 12px; background: #be123c; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(190, 18, 60, .25);">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="peng-edit-revision-body" style="flex: 1; min-width: 0;">
+                                        <div class="peng-edit-revision-title" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px;">
+                                            <strong style="font-size: 14.5px; font-weight: 800; color: #881337; font-family: 'Plus Jakarta Sans', sans-serif;"><i class="fas fa-comment-dots mr-1"></i> Catatan Revisi dari Reviewer / Admin P3M</strong>
+                                            @if ($latestRejection->decided_at)
+                                                <span class="peng-edit-revision-date" style="font-size: 12px; font-weight: 600; color: #9f1239;">
+                                                    <i class="far fa-clock"></i> {{ \Carbon\Carbon::parse($latestRejection->decided_at)->translatedFormat('d F Y, H:i') }} WIB
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div class="peng-edit-revision-content" style="padding: 12px 16px; background: #ffffff; border: 1px dashed #fda4af; border-radius: 8px; color: #1f2937; font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; font-weight: 500; margin-bottom: 10px;">"{{ $latestRejection->reason }}"</div>
+                                        <div class="peng-edit-revision-meta" style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #64748b;">
+                                            <span><i class="fas fa-user-shield text-danger mr-1"></i> Direview oleh: <strong>{{ $latestRejection->decisionMaker?->name ?? 'Admin P3M' }}</strong></span>
+                                            <span style="color: #475569;"><i class="fas fa-info-circle mr-1"></i> Silakan periksa dan perbaiki poin-poin di atas pada isian form atau file lampiran, lalu klik <strong>"Simpan & Ajukan Ulang Laporan"</strong> di bagian bawah untuk mengajukan kembali ke P3M.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
                             {{-- =====================================================
                              INFORMATION
                         ====================================================== --}}
@@ -1955,8 +1983,8 @@
 
 
                                 <button type="submit" class="peng-edit-submit">
-                                    <i class="fas fa-save"></i>
-                                    Simpan Perubahan
+                                    <i class="fas {{ in_array($penelitian->status, ['non-approve', 'tolak'], true) ? 'fa-paper-plane' : 'fa-save' }}"></i>
+                                    {{ in_array($penelitian->status, ['non-approve', 'tolak'], true) ? 'Simpan & Ajukan Ulang Laporan' : 'Simpan Perubahan' }}
                                 </button>
 
                             </div>
