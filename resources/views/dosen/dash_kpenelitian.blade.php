@@ -1075,7 +1075,7 @@
                                                     </span>
                                                     <div class="upp3m-proposal-meta">
                                                         <span class="upp3m-proposal-id">
-                                                            #{{ str_pad($d->id, 3, '0', STR_PAD_LEFT) }}
+                                                            #{{ str_pad($loop->iteration, 3, '0', STR_PAD_LEFT) }}
                                                         </span>
                                                         @if(!empty($d->created_at))
                                                             <span class="upp3m-proposal-date">

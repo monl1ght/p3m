@@ -303,11 +303,11 @@ Route::post('/notif/read-table/{tipe}', function ($tipe) {
 })->middleware(['auth:sanctum', 'role:admin'])->name('notif.open');
 
 //수랏 투가스
-Route::get('/p3m/surat-tugas/download/{id}', [suratcontroller::class, 'downloadSuratTugas'])
+Route::get('/p3m/surat-tugas/download/{id}/{filename?}', [suratcontroller::class, 'downloadSuratTugas'])
     ->middleware('auth')
     ->name('p3m.surat-tugas.download');
 
-Route::get('/p3m/surat-tugaspen/download/{id}', [suratcontroller::class, 'downsurtagpen'])
+Route::get('/p3m/surat-tugaspen/download/{id}/{filename?}', [suratcontroller::class, 'downsurtagpen'])
     ->middleware('auth')
     ->name('p3m.surat-tugaspen.download');
 

@@ -629,6 +629,7 @@
             flex-direction: column;
             align-items: flex-start;
             gap: 6px;
+            white-space: nowrap;
         }
 
         .upp3m-status-badge {
@@ -642,6 +643,7 @@
             font-weight: 700;
             white-space: nowrap;
             letter-spacing: .01em;
+            flex-shrink: 0;
         }
 
         .upp3m-status-badge i {
@@ -669,17 +671,26 @@
         .upp3m-download {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             min-height: 28px;
-            padding: 0 10px;
+            padding: 4px 12px;
             border: 1px solid #e8d68a;
             border-radius: 99px;
             background: var(--p3m-up-gold-soft);
             color: #7a6214 !important;
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 700;
             text-decoration: none !important;
+            white-space: nowrap;
+            width: max-content;
+            max-width: 100%;
+            flex-shrink: 0;
             transition: all .18s ease;
+        }
+
+        .upp3m-download span {
+            white-space: nowrap;
+            display: inline-block;
         }
 
         .upp3m-download:hover {
@@ -689,7 +700,8 @@
         }
 
         .upp3m-download i {
-            font-size: 10px;
+            font-size: 10.5px;
+            flex-shrink: 0;
         }
 
         /* Action Buttons */
@@ -1064,19 +1076,19 @@
                         <table id="example2" class="table upp3m-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 60px;">
+                                    <th style="width: 50px;">
                                          No
                                      </th>
-                                    <th style="width: 33%;">
+                                    <th style="width: 32%;">
                                         Judul Proposal
                                     </th>
-                                    <th style="width: 25%;">
+                                    <th style="width: 24%;">
                                         Bidang &amp; Kategori
                                     </th>
                                     <th style="width: 17%;">
                                         Ketua Peneliti
                                     </th>
-                                    <th style="width: 11%;">
+                                    <th style="width: 13%; min-width: 125px;">
                                         Status
                                     </th>
                                     <th style="width: 9%;" class="text-center">
@@ -1105,7 +1117,7 @@
                                                     </span>
                                                     <div class="upp3m-proposal-meta">
                                                         <span class="upp3m-proposal-id">
-                                                            #{{ str_pad($d->id, 3, '0', STR_PAD_LEFT) }}
+                                                            #{{ str_pad($loop->iteration, 3, '0', STR_PAD_LEFT) }}
                                                         </span>
                                                         @if(!empty($d->created_at))
                                                             <span class="upp3m-proposal-date">
@@ -1163,8 +1175,13 @@
                                                     </span>
 
                                                     @if(!empty($d->id))
-                                                        <a href="{{ route('p3m.surat-tugaspen.download', $d->id) }}"
-                                                            class="upp3m-download" title="Unduh Surat Tugas Resmi">
+                                                        <a href="{{ route('p3m.surat-tugaspen.download', ['id' => $d->id, 'filename' => 'Surat_Tugas_Penelitian.pdf']) }}"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            class="upp3m-download js-download-surat"
+                                                            data-download-url="{{ route('p3m.surat-tugaspen.download', ['id' => $d->id, 'filename' => 'Surat_Tugas_Penelitian.pdf']) }}?disposition=attachment"
+                                                            data-filename="Surat_Tugas_Penelitian.pdf"
+                                                            title="Unduh Surat Tugas Resmi">
                                                             <i class="fas fa-file-download"></i>
                                                             <span>Unduh Surat</span>
                                                         </a>
@@ -1418,6 +1435,29 @@
             });
 
             scheduleInit();
+
+            // Auto download and open in new tab for Surat Tugas
+            document.addEventListener('click', function(e) {
+                const downloadBtn = e.target.closest('.js-download-surat');
+                if (!downloadBtn) return;
+
+                const downloadUrl = downloadBtn.getAttribute('data-download-url') || (downloadBtn.href + (downloadBtn.href.includes('?') ? '&' : '?') + 'disposition=attachment');
+                const filename = downloadBtn.getAttribute('data-filename') || 'Surat_Tugas.pdf';
+
+                setTimeout(function() {
+                    const tempLink = document.createElement('a');
+                    tempLink.href = downloadUrl;
+                    tempLink.setAttribute('download', filename);
+                    tempLink.style.display = 'none';
+                    document.body.appendChild(tempLink);
+                    tempLink.click();
+                    setTimeout(function() {
+                        if (tempLink.parentNode) {
+                            tempLink.parentNode.removeChild(tempLink);
+                        }
+                    }, 1500);
+                }, 150);
+            });
         })();
     </script>
 @endsection

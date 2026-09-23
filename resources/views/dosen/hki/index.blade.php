@@ -1058,7 +1058,7 @@
                                                     </a>
                                                     <div class="upp3m-proposal-meta">
                                                         <span class="upp3m-proposal-id">
-                                                            #HKI-{{ str_pad($item->id, 3, '0', STR_PAD_LEFT) }}
+                                                            #HKI-{{ str_pad($loop->iteration, 3, '0', STR_PAD_LEFT) }}
                                                         </span>
                                                         @if ($ketua)
                                                             <span class="upp3m-author-tag"
