@@ -1602,7 +1602,7 @@
                                         <div class="peng-edit-field">
 
                                             <label class="peng-edit-label">
-                                                Jabatan Fungsional
+                                                Jabatan
                                             </label>
 
                                             <select class="peng-edit-select" name="jabatan">

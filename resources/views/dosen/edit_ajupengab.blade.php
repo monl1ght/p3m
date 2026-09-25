@@ -1582,7 +1582,7 @@
                                         <div class="editp3m-field">
 
                                             <label class="editp3m-label">
-                                                Jabatan Fungsional
+                                                Jabatan
                                             </label>
 
                                             <select class="editp3m-select" name="jabatan">

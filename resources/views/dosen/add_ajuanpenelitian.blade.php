@@ -1175,7 +1175,7 @@
                                         <div class="research-add-field">
 
                                             <label class="research-add-label">
-                                                Jabatan Fungsional
+                                                Jabatan
                                             </label>
 
                                             <select class="research-add-select" name="jabatan">

@@ -1137,7 +1137,7 @@
                                         <div class="addp3m-field">
 
                                             <label class="addp3m-label">
-                                                Jabatan Fungsional
+                                                Jabatan
                                             </label>
 
                                             <select class="addp3m-select" name="jabatan">

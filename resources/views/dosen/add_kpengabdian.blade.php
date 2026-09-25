@@ -1432,7 +1432,7 @@
                                         <div class="report-add-field">
 
                                             <label class="report-add-label">
-                                                Jabatan Fungsional
+                                                Jabatan
                                             </label>
 
                                             <select class="report-add-select" name="jabatan">

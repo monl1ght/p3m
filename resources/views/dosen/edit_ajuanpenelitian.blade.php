@@ -1586,7 +1586,7 @@
                                         <div class="research-edit-field">
 
                                             <label class="research-edit-label">
-                                                Jabatan Fungsional
+                                                Jabatan
                                             </label>
 
                                             <select class="research-edit-select" name="jabatan">

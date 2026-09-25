@@ -1533,7 +1533,7 @@
                                         <div class="research-report-field">
 
                                             <label class="research-report-label">
-                                                Jabatan Fungsional
+                                                Jabatan
                                             </label>
 
                                             <select class="research-report-select" name="jabatan">
