@@ -216,9 +216,14 @@
 }
 
 /* Table */
-.users-table-wrap { width: 100%; overflow-x: auto; }
+.users-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
 table.users-table {
     width: 100% !important;
+    min-width: 780px;
     margin: 0 !important;
     border-collapse: separate !important;
     border-spacing: 0 !important;
@@ -237,13 +242,16 @@ table.users-table thead th {
     vertical-align: middle;
 }
 table.users-table thead th:first-child {
-    padding-left: 32px !important;
-    padding-right: 14px !important;
+    padding-left: 28px !important;
+    padding-right: 12px !important;
     width: 55px;
-    text-align: left !important;
+    text-align: center !important;
 }
 table.users-table thead th:last-child {
-    padding-right: 32px !important;
+    padding-right: 28px !important;
+    padding-left: 12px !important;
+    width: 110px;
+    text-align: center !important;
 }
 table.users-table tbody td {
     padding: 16px 18px !important;
@@ -256,11 +264,15 @@ table.users-table tbody td {
     transition: background-color .15s ease;
 }
 table.users-table tbody td:first-child {
-    padding-left: 32px !important;
-    padding-right: 14px !important;
+    padding-left: 28px !important;
+    padding-right: 12px !important;
+    text-align: center !important;
 }
 table.users-table tbody td:last-child {
-    padding-right: 32px !important;
+    padding-right: 28px !important;
+    padding-left: 12px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
 }
 table.users-table tbody tr:hover td {
     background: #f8fbf9 !important;
@@ -410,7 +422,81 @@ table.users-table tbody tr:last-child td {
     color: var(--ink);
 }
 
-/* File Download PDF (Exact like HKI Dosen screenshot) */
+/* Table Action Group & Buttons */
+.action-btn-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+.btn-icon-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none !important;
+    transition: all .18s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    cursor: pointer;
+    border: none;
+    flex-shrink: 0;
+    padding: 0;
+    position: relative;
+}
+.btn-icon-action:focus {
+    outline: none;
+}
+
+/* Action View Button (Blue Theme) */
+.btn-view {
+    background: #f0f9ff;
+    color: #0284c7;
+    border: 1.5px solid #bae6fd;
+}
+.btn-view i {
+    font-size: 14px;
+    color: #0284c7;
+    transition: color .18s ease;
+}
+.btn-view:hover {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(2, 132, 199, .22);
+}
+.btn-view:hover i {
+    color: #ffffff;
+}
+
+/* Action PDF Download Button (Consistent 36x36 size, red PDF theme) */
+.btn-pdf {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1.5px solid #fecaca;
+}
+.btn-pdf i {
+    font-size: 14px;
+    color: #dc2626;
+    transition: color .18s ease;
+}
+.btn-pdf:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(220, 38, 38, .22);
+}
+.btn-pdf:hover i {
+    color: #ffffff;
+}
+
+/* File Download PDF Pill (Used in Modal) */
 .btn-file-pdf {
     display: inline-flex;
     align-items: center;
@@ -439,35 +525,27 @@ table.users-table tbody tr:last-child td {
     color: #dc2626;
 }
 
-/* Action Eye Button */
-.btn-icon-action {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none !important;
-    transition: all .18s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-    cursor: pointer;
-    border: none;
+/* Custom Tooltip Styling */
+.tooltip {
+    pointer-events: none;
 }
-.btn-view {
-    background: #f0f9ff;
-    color: #0284c7;
-    border: 1.5px solid #bae6fd;
+.tooltip .tooltip-inner {
+    background-color: #0f172a;
+    color: #ffffff;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 7px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+    letter-spacing: .01em;
 }
-.btn-view:hover {
-    background: #e0f2fe;
-    border-color: #7dd3fc;
-    color: #0369a1;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(2, 132, 199, .15);
+.tooltip.bs-tooltip-top .arrow::before,
+.tooltip.bs-tooltip-auto[x-placement^="top"] .arrow::before {
+    border-top-color: #0f172a;
 }
-.btn-view i {
-    font-size: 14px;
-    color: #0284c7;
+.tooltip.bs-tooltip-bottom .arrow::before,
+.tooltip.bs-tooltip-auto[x-placement^="bottom"] .arrow::before {
+    border-bottom-color: #0f172a;
 }
 
 /* Detail Modal Styles */
@@ -734,19 +812,18 @@ td.dataTables_empty {
                     <table id="adminSuratKeluarTable" class="users-table">
                         <thead>
                             <tr>
-                                <th style="width: 55px;">NO</th>
+                                <th style="width: 55px; text-align: center;">NO</th>
                                 <th>NAMA PENGUSUL</th>
-                                <th style="width: 150px;">JENIS SURAT</th>
+                                <th style="width: 140px;">JENIS SURAT</th>
                                 <th style="width: 230px;">NOMOR SURAT</th>
-                                <th style="width: 140px;">TANGGAL</th>
-                                <th style="width: 140px; text-align: center;">UNDUH SURAT</th>
-                                <th style="width: 90px; text-align: center;">AKSI</th>
+                                <th style="width: 135px;">TANGGAL</th>
+                                <th style="width: 110px; text-align: center;">AKSI</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($allSurat as $index => $item)
                                 <tr>
-                                    <td style="vertical-align: middle;">
+                                    <td class="text-center" style="vertical-align: middle;">
                                         <span class="row-num">{{ $index + 1 }}</span>
                                     </td>
                                     <td>
@@ -796,22 +873,23 @@ td.dataTables_empty {
                                             </span>
                                         </div>
                                     </td>
-                                    <td class="text-center">
-                                        <a href="{{ $item->download_url }}"
-                                           class="btn-file-pdf"
-                                           title="Unduh Berkas PDF Surat Tugas Resmi">
-                                            <i class="fas fa-file-pdf"></i>
-                                            <span>Unduh PDF</span>
-                                        </a>
-                                    </td>
-                                    <td class="text-center">
-                                        <button type="button"
-                                                class="btn-icon-action btn-view"
-                                                data-toggle="modal"
-                                                data-target="#modal-detail-{{ $item->type }}-{{ $item->source_id }}"
-                                                title="Lihat Detail & Judul Usulan">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
+                                    <td class="text-center" style="white-space: nowrap;">
+                                        <div class="action-btn-group">
+                                            <button type="button"
+                                                    class="btn-icon-action btn-view"
+                                                    data-toggle="modal"
+                                                    data-target="#modal-detail-{{ $item->type }}-{{ $item->source_id }}"
+                                                    data-placement="top"
+                                                    title="Lihat Detail">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="{{ $item->download_url }}"
+                                               class="btn-icon-action btn-pdf"
+                                               data-placement="top"
+                                               title="Unduh PDF">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -945,7 +1023,7 @@ td.dataTables_empty {
         }
 
         var table = $('#adminSuratKeluarTable').DataTable({
-            responsive: true,
+            responsive: false,
             autoWidth: false,
             paging: true,
             searching: true,
@@ -972,6 +1050,16 @@ td.dataTables_empty {
             drawCallback: function(settings) {
                 var api = this.api();
                 var pageInfo = api.page.info();
+
+                // Re-initialize tooltips for action buttons
+                if (typeof $.fn.tooltip !== 'undefined') {
+                    $('.tooltip').remove();
+                    $('#adminSuratKeluarTable .btn-icon-action').tooltip({
+                        container: 'body',
+                        boundary: 'window',
+                        trigger: 'hover'
+                    });
+                }
 
                 if (pageInfo.recordsTotal === 0 || pageInfo.recordsDisplay === 0) {
                     $('#js-table-info').text('Menampilkan 0–0 dari 0 data');
@@ -1053,6 +1141,13 @@ td.dataTables_empty {
         }
     });
 
+    // Dismiss tooltips when opening modal
+    $(document).off('click', '#adminSuratKeluarTable .btn-view').on('click', '#adminSuratKeluarTable .btn-view', function() {
+        if (typeof $.fn.tooltip !== 'undefined') {
+            $(this).tooltip('hide');
+        }
+    });
+
     var initTimer = null;
     function scheduleInit() {
         clearTimeout(initTimer);
@@ -1061,6 +1156,9 @@ td.dataTables_empty {
 
     document.addEventListener('turbo:load', scheduleInit);
     document.addEventListener('turbo:before-cache', function() {
+        if (typeof $.fn.tooltip !== 'undefined') {
+            $('.tooltip').remove();
+        }
         if ($.fn.DataTable.isDataTable('#adminSuratKeluarTable')) {
             $('#adminSuratKeluarTable').DataTable().destroy();
         }
