@@ -20,6 +20,7 @@ class PengelolaController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('nama_pengelola', 'like', '%' . $search . '%')
+                    ->orWhere('jenis_identitas', 'like', '%' . $search . '%')
                     ->orWhere('NIDN', 'like', '%' . $search . '%')
                     ->orWhere('jabatan_pengelola', 'like', '%' . $search . '%')
                     ->orWhere('email_pengelola', 'like', '%' . $search . '%');
@@ -49,7 +50,12 @@ class PengelolaController extends Controller
             'nama_pengelola'     => 'required|unique:m__pengelolas,nama_pengelola',
             'jabatan_pengelola'  => 'required',
             'email_pengelola'    => 'required|email',
-            'NIDN'               => 'required',
+            'jenis_identitas'    => 'required|in:NIDN,NUPTK',
+            'NIDN'               => 'required|string|max:50',
+        ], [
+            'jenis_identitas.required' => 'Jenis identitas wajib dipilih.',
+            'jenis_identitas.in'       => 'Jenis identitas harus NIDN atau NUPTK.',
+            'NIDN.required'            => 'Nomor NIDN/NUPTK wajib diisi.',
         ]);
 
         if ($validator->fails()) {
@@ -73,6 +79,7 @@ class PengelolaController extends Controller
         }
 
         $data['nama_pengelola']     = $request->nama_pengelola;
+        $data['jenis_identitas']    = $request->jenis_identitas ?? 'NIDN';
         $data['jabatan_pengelola']  = $request->jabatan_pengelola;
         $data['email_pengelola']    = $request->email_pengelola;
         $data['image']              = $filename;
@@ -104,7 +111,12 @@ class PengelolaController extends Controller
             'nama_pengelola'     => 'required',
             'jabatan_pengelola'  => 'required',
             'email_pengelola'    => 'required|email',
-            'NIDN'               => 'required',
+            'jenis_identitas'    => 'required|in:NIDN,NUPTK',
+            'NIDN'               => 'required|string|max:50',
+        ], [
+            'jenis_identitas.required' => 'Jenis identitas wajib dipilih.',
+            'jenis_identitas.in'       => 'Jenis identitas harus NIDN atau NUPTK.',
+            'NIDN.required'            => 'Nomor NIDN/NUPTK wajib diisi.',
         ]);
 
         if ($validator->fails()) {
@@ -116,6 +128,7 @@ class PengelolaController extends Controller
         }
 
         $data['nama_pengelola']     = $request->nama_pengelola;
+        $data['jenis_identitas']    = $request->jenis_identitas ?? 'NIDN';
         $data['jabatan_pengelola']  = $request->jabatan_pengelola;
         $data['email_pengelola']    = $request->email_pengelola;
         $data['NIDN']               = $request->NIDN;

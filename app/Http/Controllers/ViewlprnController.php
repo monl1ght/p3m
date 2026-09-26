@@ -166,10 +166,28 @@ class ViewlprnController extends Controller
      */
     private function changeSubmissionStatus(Request $request, string $modelClass, string $submissionType, int $id): void
     {
-        $validated = $request->validate([
+        $isProposal = in_array($submissionType, ['proposal-pengabdian', 'proposal-penelitian'], true);
+
+        $rules = [
             'status' => 'required|in:approve,proses,non-approve',
             'reason' => 'nullable|string|max:2000',
-        ]);
+            'nomor_surat' => ($isProposal && $request->input('status') === 'approve')
+                ? 'required|string|max:150'
+                : 'nullable|string|max:150',
+        ];
+
+        $messages = [
+            'nomor_surat.required' => 'Nomor surat wajib diisi saat menyetujui pengajuan.',
+            'nomor_surat.max' => 'Nomor surat maksimal 150 karakter.',
+        ];
+
+        $validated = $request->validate($rules, $messages);
+
+        if ($isProposal && $validated['status'] === 'approve' && blank($validated['nomor_surat'] ?? null)) {
+            throw ValidationException::withMessages([
+                'nomor_surat' => 'Nomor surat wajib diisi saat menyetujui pengajuan.',
+            ]);
+        }
 
         if ($validated['status'] === 'non-approve' && blank($validated['reason'] ?? null)) {
             throw ValidationException::withMessages([
@@ -177,12 +195,19 @@ class ViewlprnController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($request, $modelClass, $submissionType, $id, $validated) {
+        DB::transaction(function () use ($request, $modelClass, $submissionType, $id, $validated, $isProposal) {
             $submission = $modelClass::query()->lockForUpdate()->findOrFail($id);
             $currentStatus = $submission->status ?? 'proses';
-            
-            // If the requested status is the same as current, just return
+
+            // If the requested status is the same as current
             if ($currentStatus === $validated['status']) {
+                if ($isProposal && $currentStatus === 'approve' && !empty($validated['nomor_surat'])) {
+                    $newNomor = trim((string)$validated['nomor_surat']);
+                    if ($submission->nomor_surat !== $newNomor) {
+                        $submission->nomor_surat = $newNomor;
+                        $submission->save();
+                    }
+                }
                 return;
             }
 
@@ -199,6 +224,9 @@ class ViewlprnController extends Controller
             }
 
             $submission->status = $validated['status'];
+            if ($isProposal && $validated['status'] === 'approve') {
+                $submission->nomor_surat = trim((string)$validated['nomor_surat']);
+            }
             $submission->save();
 
             SubmissionStatusHistory::create([

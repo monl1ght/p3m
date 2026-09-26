@@ -27,6 +27,7 @@ class ajuan_penelitianModel extends Model
         // 'foto', // untuk foto
         'user_id',
         'status',
+        'nomor_surat',
         'tanggal_mulai',
         'tanggal_selesai', // untuk user
         'read_at',

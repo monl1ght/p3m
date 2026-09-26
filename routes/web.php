@@ -9,6 +9,7 @@ use App\Http\Controllers\DosenController;
 use App\Http\Controllers\DosenJurnalController;
 use App\Http\Controllers\DosenHkiController;
 use App\Http\Controllers\AdminHkiController;
+use App\Http\Controllers\AdminSuratKeluarController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\MainController;
@@ -235,6 +236,10 @@ Route::group(['middleware' => ['auth:sanctum', 'role:admin']], function () {
             ->name('plppm.hki_dosen.status');
         Route::get('/hki-dosen/{id}/download', [AdminHkiController::class, 'download'])
             ->name('plppm.hki_dosen.download');
+
+        // Riwayat Surat Keluar — Arsip & Pangkalan Data Surat Tugas Resmi
+        Route::get('/surat-keluar', [AdminSuratKeluarController::class, 'index'])
+            ->name('plppm.surat_keluar');
         //detail data
 
     });

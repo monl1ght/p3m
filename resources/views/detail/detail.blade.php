@@ -775,6 +775,11 @@ section.content {
                         <span class="p3m-status-pill {{ $statusClass }}">
                             <i class="fas {{ $statusIcon }}"></i> {{ $statusLabel }}
                         </span>
+                        @if(!empty($penelitians->nomor_surat))
+                            <span class="p3m-status-pill" style="background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; margin-left: 8px;">
+                                <i class="fas fa-certificate"></i> No. Surat: {{ $penelitians->nomor_surat }}
+                            </span>
+                        @endif
                     </div>
 
                     {{-- Research Title --}}

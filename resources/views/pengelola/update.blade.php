@@ -62,10 +62,20 @@
                                         @enderror
                                     </div>
                                     <div class="form-group">
-                                        <label for="exampleInputEmail1">NIDN</label>
-                                        <input type="text" name="NIDN" class="form-control" id="exampleInputEmail1" placeholder="Enter Name" value="{{ $pengelola->NIDN }}">
+                                        <label for="jenis_identitas">Jenis Identitas</label>
+                                        <select name="jenis_identitas" id="jenis_identitas" class="form-control">
+                                            <option value="NIDN" {{ old('jenis_identitas', $pengelola->jenis_identitas ?? 'NIDN') === 'NIDN' ? 'selected' : '' }}>NIDN</option>
+                                            <option value="NUPTK" {{ old('jenis_identitas', $pengelola->jenis_identitas ?? 'NIDN') === 'NUPTK' ? 'selected' : '' }}>NUPTK</option>
+                                        </select>
+                                        @error('jenis_identitas')
+                                        <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="exampleInputEmail1">Nomor NIDN/NUPTK</label>
+                                        <input type="text" name="NIDN" class="form-control" id="exampleInputEmail1" placeholder="Masukkan nomor NIDN/NUPTK" value="{{ old('NIDN', $pengelola->NIDN) }}">
                                         @error('NIDN')
-                                        <small>{{ $message }}</small>
+                                        <small class="text-danger">{{ $message }}</small>
                                         @enderror
                                     </div>
                                     <div class="form-group">

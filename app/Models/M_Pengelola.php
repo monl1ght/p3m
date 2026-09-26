@@ -9,5 +9,20 @@ class M_Pengelola extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['image', 'nama_pengelola', 'NIDN', 'jabatan_pengelola', 'email_pengelola'];
+    protected $fillable = [
+        'image',
+        'nama_pengelola',
+        'jenis_identitas',
+        'NIDN',
+        'jabatan_pengelola',
+        'email_pengelola',
+    ];
+
+    /**
+     * Ensure jenis identitas defaults to NIDN if null/empty.
+     */
+    public function getJenisIdentitasAttribute($value)
+    {
+        return !empty($value) ? strtoupper($value) : 'NIDN';
+    }
 }

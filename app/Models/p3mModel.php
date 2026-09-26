@@ -27,6 +27,7 @@ class p3mModel extends Model
         // 'foto', // untuk foto
         'user_id', // untuk user
         'status',
+        'nomor_surat',
         'tanggal_mulai',
         'tanggal_selesai',
         'read_at',

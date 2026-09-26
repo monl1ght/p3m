@@ -1205,16 +1205,22 @@
                                                         <span>Disetujui</span>
                                                     </span>
 
-                                                    <a href="{{ route('p3m.surat-tugas.download', ['id' => $d->id, 'filename' => 'Surat_Tugas_Pengabdian.pdf']) }}"
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        class="upp3m-download js-download-surat"
-                                                        data-download-url="{{ route('p3m.surat-tugas.download', ['id' => $d->id, 'filename' => 'Surat_Tugas_Pengabdian.pdf']) }}?disposition=attachment"
-                                                        data-filename="Surat_Tugas_Pengabdian.pdf"
-                                                        title="Unduh Surat Tugas Resmi">
-                                                        <i class="fas fa-file-download"></i>
-                                                        <span>Unduh Surat</span>
-                                                    </a>
+                                                    @if (!empty($d->nomor_surat))
+                                                        <a href="{{ route('p3m.surat-tugas.download', ['id' => $d->id, 'filename' => 'Surat_Tugas_Pengabdian.pdf']) }}"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            class="upp3m-download js-download-surat"
+                                                            data-download-url="{{ route('p3m.surat-tugas.download', ['id' => $d->id, 'filename' => 'Surat_Tugas_Pengabdian.pdf']) }}?disposition=attachment"
+                                                            data-filename="Surat_Tugas_Pengabdian.pdf"
+                                                            title="Unduh Surat Tugas Resmi (No: {{ $d->nomor_surat }})">
+                                                            <i class="fas fa-file-download"></i>
+                                                            <span>Unduh Surat</span>
+                                                        </a>
+                                                    @else
+                                                        <span class="upp3m-status-badge upp3m-status-process" style="font-size: 11px; padding: 4px 8px; margin-top: 4px;" title="Nomor surat sedang diproses oleh admin">
+                                                            <i class="fas fa-hourglass-half"></i> Nomor Surat Diproses
+                                                        </span>
+                                                    @endif
                                                 @elseif($d->status === 'proses')
                                                     <span class="upp3m-status-badge upp3m-status-process">
                                                         <i class="fas fa-clock"></i>

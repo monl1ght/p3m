@@ -57,6 +57,7 @@ class SuratTugasGenerationTest extends TestCase
             'uppdf'           => 'proposal_pengabdian.pdf',
             'jeniskategori'   => 'Pengabdian Dosen',
             'status'          => 'approve',
+            'nomor_surat'     => '015/P3M-POLIBANG/ST-PM/IX/2026',
             'tanggal_mulai'   => '2026-09-01',
             'tanggal_selesai' => '2026-11-30',
         ]);
@@ -78,6 +79,7 @@ class SuratTugasGenerationTest extends TestCase
         $this->assertStringStartsWith('%PDF-', $response->getContent());
         $this->assertStringContainsString('/Title', $response->getContent());
         $this->assertStringContainsString('Surat Tugas Pengabdian Masyarakat', $response->getContent());
+        $this->assertStringContainsString('015/P3M-POLIBANG/ST-PM/IX/2026', $response->getContent());
 
         // Test route with semantic filename parameter
         $resWithFilename = $this->actingAs($this->dosen1)
@@ -107,6 +109,7 @@ class SuratTugasGenerationTest extends TestCase
             'uppdf'           => 'proposal_penelitian.pdf',
             'jeniskategori'   => 'Penelitian Dosen',
             'status'          => 'approve',
+            'nomor_surat'     => '016/P3M-POLIBANG/ST-PN/X/2026',
             'tanggal_mulai'   => '2026-10-01',
             'tanggal_selesai' => '2026-12-31',
         ]);
@@ -126,6 +129,7 @@ class SuratTugasGenerationTest extends TestCase
         $this->assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));
         $this->assertStringContainsString('Surat_Tugas_Penelitian.pdf', $response->headers->get('Content-Disposition'));
         $this->assertStringStartsWith('%PDF-', $response->getContent());
+        $this->assertStringContainsString('016/P3M-POLIBANG/ST-PN/X/2026', $response->getContent());
     }
 
     /**
@@ -211,7 +215,16 @@ class SuratTugasGenerationTest extends TestCase
         ];
         $serviceShort = new SuratTugasPdfService('Pengabdian Masyarakat');
         $pdfShort = $serviceShort->generateDocument($subShort, $membersShort);
-        $this->assertStringStartsWith('%PDF-', $pdfShort);
+        $this->assertStringContainsString('Pusat Penelitian dan Pengabdian Kepada Masyarakat', $pdfShort);
+        $this->assertStringContainsString('P3M', $pdfShort);
+        $this->assertStringContainsString('POLITEKNIK BALEKAMBANG JEPARA', $pdfShort);
+        $this->assertStringContainsString('Jl. Ponpes Balekambang Rt 02 Rw 07 Gemiring Lor', $pdfShort);
+        $this->assertStringContainsString('Nalumsari Jepara Jawa Tengah Kode Pos 59466', $pdfShort);
+        $this->assertStringContainsString('SURAT TUGAS PENGABDIAN', $pdfShort);
+        $this->assertStringContainsString('Buku Panduan P3M Politeknik Balekambang Jepara', $pdfShort);
+        $this->assertStringContainsString('Ketua P3M Polibang', $pdfShort);
+        $this->assertStringContainsString('Sofia Ulfah, M. Kom', $pdfShort);
+        $this->assertStringContainsString('NIDN : 0619099004', $pdfShort);
 
         // 2. Data Panjang (Nama sangat panjang & judul multi-baris)
         $subLong = (object)[
@@ -233,6 +246,8 @@ class SuratTugasGenerationTest extends TestCase
         $serviceLong = new SuratTugasPdfService('Penelitian');
         $pdfLong = $serviceLong->generateDocument($subLong, $membersLong);
         $this->assertStringStartsWith('%PDF-', $pdfLong);
+        $this->assertStringContainsString('SURAT TUGAS PENELITIAN', $pdfLong);
+        $this->assertStringContainsString('Untuk melakukan penelitian dengan judul:', $pdfLong);
 
         // 3. Banyak Anggota (15+ anggota yang menguji mekanisme page break dan pengulangan header)
         $subMany = (object)[
@@ -255,6 +270,72 @@ class SuratTugasGenerationTest extends TestCase
         $serviceMany = new SuratTugasPdfService('Penelitian');
         $pdfMany = $serviceMany->generateDocument($subMany, $membersMany);
         $this->assertStringStartsWith('%PDF-', $pdfMany);
+        $this->assertGreaterThan(1, $serviceMany->PageNo());
+    }
+
+    /**
+     * Verifikasi struktur dan format template resmi SURAT TUGAS PENELITIAN FORMAT.pdf diikuti secara presisi.
+     */
+    public function test_official_template_format_structure_and_prodi_mapping(): void
+    {
+        $submission = (object)[
+            'judul'           => 'RANCANG BANGUN APLIKASI PENCATATAN KEUANGAN UMKM BERBASIS WEBSITE',
+            'ketua'           => 'A. Faiq Abror, M.Pd',
+            'nidn'            => '0612029003',
+            'prodi'           => 'R',
+            'nomor_surat'     => 'A. 007/P3M-Polibang/V/PG/2026',
+            'tanggal_mulai'   => '2026-05-15',
+            'tanggal_selesai' => '2026-07-14',
+        ];
+
+        $members = [
+            ['nama' => 'Nur Hikmah, M.E', 'nim' => '0610058202', 'prodi' => 'AB', 'jabatan' => 'Anggota'],
+            ['nama' => 'Nila Ayu Kusuma Wardani, M.E', 'nim' => '0615039702', 'prodi' => 'AK', 'jabatan' => 'Anggota'],
+            ['nama' => 'Sofia Ulfah, M.Kom', 'nim' => '0619099004', 'prodi' => 'R', 'jabatan' => 'Anggota'],
+            ['nama' => 'Muhammad Ali Subkhan, M.Pd', 'nim' => '0625109201', 'prodi' => 'AB', 'jabatan' => 'Anggota'],
+        ];
+
+        $service = new SuratTugasPdfService('Penelitian');
+        $pdf = $service->generateDocument($submission, $members);
+
+        // Header Kop
+        $this->assertStringContainsString('Pusat Penelitian dan Pengabdian Kepada Masyarakat', $pdf);
+        $this->assertStringContainsString('P3M', $pdf);
+        $this->assertStringContainsString('POLITEKNIK BALEKAMBANG JEPARA', $pdf);
+        $this->assertStringContainsString('Jl. Ponpes Balekambang Rt 02 Rw 07 Gemiring Lor', $pdf);
+        $this->assertStringContainsString('Nalumsari Jepara Jawa Tengah Kode Pos 59466', $pdf);
+        $this->assertStringContainsString('e-mail : p3mpolibang@gmail.com', $pdf);
+
+        // Judul Surat & Nomor
+        $this->assertStringContainsString('SURAT TUGAS PENELITIAN', $pdf);
+        $this->assertStringContainsString('Nomor: A. 007/P3M-Polibang/V/PG/2026', $pdf);
+
+        // Intro
+        $this->assertStringContainsString('Ketua Pusat Penelitian dan Pengabdian kepada Masyarakat memberikan tugas kepada:', $pdf);
+
+        // Table headers
+        $this->assertStringContainsString('NO', $pdf);
+        $this->assertStringContainsString('NAMA', $pdf);
+        $this->assertStringContainsString('NIDN/NUPTK/NIM', $pdf);
+        $this->assertStringContainsString('PROGRAM STUDI', $pdf);
+        $this->assertStringContainsString('Jabatan', $pdf);
+
+        // Prodi full mapping
+        $this->assertStringContainsString('Rekayasa Perangkat Lunak', $pdf);
+        $this->assertStringContainsString('Administrasi Bisnis Internasional', $pdf);
+        $this->assertStringContainsString('Akuntansi Keuangan Publik', $pdf);
+
+        // Detail
+        $this->assertStringContainsString('Untuk melakukan penelitian dengan judul:', $pdf);
+        $this->assertStringContainsString('RANCANG BANGUN APLIKASI PENCATATAN KEUANGAN UMKM BERBASIS WEBSITE', $pdf);
+        $this->assertStringContainsString('15 Mei', $pdf);
+        $this->assertStringContainsString('14 Juli 2026', $pdf);
+        $this->assertStringContainsString('Buku Panduan P3M Politeknik Balekambang Jepara', $pdf);
+
+        // Signature block
+        $this->assertStringContainsString('Ketua P3M Polibang', $pdf);
+        $this->assertStringContainsString('Sofia Ulfah, M. Kom', $pdf);
+        $this->assertStringContainsString('NIDN : 0619099004', $pdf);
     }
 
     /**
@@ -279,6 +360,7 @@ class SuratTugasGenerationTest extends TestCase
             'uppdf'           => 'proposal.pdf',
             'jeniskategori'   => 'Penelitian Dosen',
             'status'          => 'approve',
+            'nomor_surat'     => '025/P3M/ST-PN/X/2026',
             'tanggal_mulai'   => '2026-10-01',
             'tanggal_selesai' => '2026-10-31',
         ]);
@@ -294,5 +376,418 @@ class SuratTugasGenerationTest extends TestCase
             ->get(route('p3m.surat-tugaspen.download', ['id' => $penelitian->id, 'disposition' => 'attachment']));
         $resAttachment->assertOk();
         $this->assertStringContainsString('attachment; filename="Surat_Tugas_Penelitian.pdf"', $resAttachment->headers->get('Content-Disposition'));
+    }
+
+    /**
+     * Admin Approve Workflow: Pengabdian -> Input Nomor Surat -> Simpan -> Dosen Download -> Nomor Surat tampil di PDF.
+     */
+    public function test_admin_approve_flow_pengabdian_saves_nomor_surat_and_dosen_downloads_pdf(): void
+    {
+        $pengabdian = p3mModel::create([
+            'user_id'         => $this->dosen1->id,
+            'judul'           => 'Pelatihan E-Commerce untuk UMKM Jepara',
+            'bidang'          => 'Teknologi Informasi',
+            'ketua'           => 'Drs. H. Pengabdi, M.M.',
+            'jeniskelamin'    => 'L',
+            'nidn'            => '0619098850',
+            'jabatan'         => 'Lektor',
+            'prodi'           => 'R',
+            'telp'            => '08123456789',
+            'alamat'          => 'Jepara',
+            'lokasi'          => 'Sentra Ukir Jepara',
+            'lamapenelitian'  => '45',
+            'biaya'           => '10000000',
+            'uppdf'           => 'proposal.pdf',
+            'jeniskategori'   => 'Pengabdian Dosen',
+            'status'          => 'proses',
+            'tanggal_mulai'   => '2026-10-01',
+            'tanggal_selesai' => '2026-11-15',
+        ]);
+
+        $nomorSurat = '033/P3M-POLIBANG/ST-PM/X/2026';
+
+        // 1. Admin approve dengan input nomor surat
+        $approveResponse = $this->actingAs($this->admin)
+            ->patch(route('plppm.ppengabdian.status', $pengabdian->id), [
+                'status'      => 'approve',
+                'nomor_surat' => $nomorSurat,
+            ]);
+
+        $approveResponse->assertRedirect(route('plppm.lpengabdian'));
+        $approveResponse->assertSessionHas('success');
+
+        // 2. Periksa data tersimpan konsisten di database
+        $this->assertDatabaseHas('ajupengabdian', [
+            'id'          => $pengabdian->id,
+            'status'      => 'approve',
+            'nomor_surat' => $nomorSurat,
+        ]);
+
+        // 3. Dosen pemilik mengunduh PDF dan memastikan nomor surat tampil di dokumen
+        $downloadResponse = $this->actingAs($this->dosen1)
+            ->get(route('p3m.surat-tugas.download', $pengabdian->id));
+
+        $downloadResponse->assertStatus(200);
+        $downloadResponse->assertHeader('Content-Type', 'application/pdf');
+        $this->assertStringContainsString($nomorSurat, $downloadResponse->getContent());
+        $this->assertStringContainsString('Nomor: ' . $nomorSurat, $downloadResponse->getContent());
+    }
+
+    /**
+     * Admin Approve Workflow: Penelitian -> Input Nomor Surat -> Simpan -> Dosen Download -> Nomor Surat tampil di PDF.
+     */
+    public function test_admin_approve_flow_penelitian_saves_nomor_surat_and_dosen_downloads_pdf(): void
+    {
+        $penelitian = ajuan_penelitianModel::create([
+            'user_id'         => $this->dosen2->id,
+            'judul'           => 'Rancang Bangun Sistem Smart GreenHouse Berbasis ESP32',
+            'bidang'          => 'Teknologi Informasi',
+            'ketua'           => 'Ir. Peneliti Hebat, M.T.',
+            'jeniskelamin'    => 'L',
+            'nidn'            => '0619098851',
+            'jabatan'         => 'Lektor Kepala',
+            'prodi'           => 'A',
+            'telp'            => '08123456780',
+            'alamat'          => 'Jepara',
+            'lokasi'          => 'Laboratorium Polibang',
+            'lamapenelitian'  => '60',
+            'biaya'           => '14000000',
+            'uppdf'           => 'proposal.pdf',
+            'jeniskategori'   => 'Penelitian Dosen',
+            'status'          => 'proses',
+            'tanggal_mulai'   => '2026-10-01',
+            'tanggal_selesai' => '2026-11-30',
+        ]);
+
+        $nomorSurat = '034/P3M-POLIBANG/ST-PN/X/2026';
+
+        // 1. Admin approve dengan input nomor surat
+        $approveResponse = $this->actingAs($this->admin)
+            ->patch(route('plppm.ppenelitian.status', $penelitian->id), [
+                'status'      => 'approve',
+                'nomor_surat' => $nomorSurat,
+            ]);
+
+        $approveResponse->assertRedirect(route('plppm.lpeneleitian'));
+        $approveResponse->assertSessionHas('success');
+
+        // 2. Periksa data tersimpan konsisten di database
+        $this->assertDatabaseHas('ajuan_penelitian_models', [
+            'id'          => $penelitian->id,
+            'status'      => 'approve',
+            'nomor_surat' => $nomorSurat,
+        ]);
+
+        // 3. Dosen pemilik mengunduh PDF dan memastikan nomor surat tampil di dokumen
+        $downloadResponse = $this->actingAs($this->dosen2)
+            ->get(route('p3m.surat-tugaspen.download', $penelitian->id));
+
+        $downloadResponse->assertStatus(200);
+        $downloadResponse->assertHeader('Content-Type', 'application/pdf');
+        $this->assertStringContainsString($nomorSurat, $downloadResponse->getContent());
+        $this->assertStringContainsString('Nomor: ' . $nomorSurat, $downloadResponse->getContent());
+    }
+
+    /**
+     * Validasi: Approval gagal ketika nomor surat kosong atau hanya spasi (Pengabdian & Penelitian).
+     */
+    public function test_admin_approval_validation_fails_when_nomor_surat_is_empty_or_whitespace(): void
+    {
+        $pengabdian = p3mModel::create([
+            'user_id'         => $this->dosen1->id,
+            'judul'           => 'Pengabdian Uji Validasi Nomor Kosong',
+            'bidang'          => 'Sosial Humaniora',
+            'ketua'           => 'Dosen Penguji',
+            'jeniskelamin'    => 'L',
+            'nidn'            => '0619098852',
+            'jabatan'         => 'Asisten Ahli',
+            'prodi'           => 'AB',
+            'telp'            => '08123456781',
+            'alamat'          => 'Jepara',
+            'lokasi'          => 'Balekambang',
+            'lamapenelitian'  => '30',
+            'biaya'           => '6000000',
+            'uppdf'           => 'proposal.pdf',
+            'jeniskategori'   => 'Pengabdian Dosen',
+            'status'          => 'proses',
+            'tanggal_mulai'   => '2026-10-01',
+            'tanggal_selesai' => '2026-10-31',
+        ]);
+
+        // Kasus 1: nomor_surat null / empty string
+        $responseEmpty = $this->actingAs($this->admin)
+            ->patch(route('plppm.ppengabdian.status', $pengabdian->id), [
+                'status'      => 'approve',
+                'nomor_surat' => '',
+            ]);
+
+        $responseEmpty->assertSessionHasErrors('nomor_surat');
+        $this->assertDatabaseHas('ajupengabdian', [
+            'id'          => $pengabdian->id,
+            'status'      => 'proses',
+            'nomor_surat' => null,
+        ]);
+
+        // Kasus 2: nomor_surat hanya spasi
+        $responseSpaces = $this->actingAs($this->admin)
+            ->patch(route('plppm.ppengabdian.status', $pengabdian->id), [
+                'status'      => 'approve',
+                'nomor_surat' => '   ',
+            ]);
+
+        $responseSpaces->assertSessionHasErrors('nomor_surat');
+        $this->assertDatabaseHas('ajupengabdian', [
+            'id'          => $pengabdian->id,
+            'status'      => 'proses',
+            'nomor_surat' => null,
+        ]);
+    }
+
+    /**
+     * Validasi: Approval gagal ketika ID submission salah / tidak ada di database (404).
+     */
+    public function test_admin_approval_fails_with_invalid_id(): void
+    {
+        $nonExistentId = 999999;
+
+        // Pengabdian dengan ID salah
+        $responsePeng = $this->actingAs($this->admin)
+            ->patch(route('plppm.ppengabdian.status', $nonExistentId), [
+                'status'      => 'approve',
+                'nomor_surat' => '099/ST-PM/2026',
+            ]);
+
+        $responsePeng->assertStatus(404);
+
+        // Penelitian dengan ID salah
+        $responsePenel = $this->actingAs($this->admin)
+            ->patch(route('plppm.ppenelitian.status', $nonExistentId), [
+                'status'      => 'approve',
+                'nomor_surat' => '099/ST-PN/2026',
+            ]);
+
+        $responsePenel->assertStatus(404);
+    }
+
+    /**
+     * Validasi: Approval gagal ketika transisi status tidak valid (misal dari non-approve langsung ke approve).
+     */
+    public function test_admin_approval_fails_on_invalid_status_transition(): void
+    {
+        $pengabdian = p3mModel::create([
+            'user_id'         => $this->dosen1->id,
+            'judul'           => 'Pengabdian Berstatus Non-Approve',
+            'bidang'          => 'Teknologi Informasi',
+            'ketua'           => 'Dosen Ditolak',
+            'jeniskelamin'    => 'L',
+            'nidn'            => '0619098853',
+            'jabatan'         => 'Lektor',
+            'prodi'           => 'R',
+            'telp'            => '08123456782',
+            'alamat'          => 'Jepara',
+            'lokasi'          => 'Jepara',
+            'lamapenelitian'  => '30',
+            'biaya'           => '5000000',
+            'uppdf'           => 'proposal.pdf',
+            'jeniskategori'   => 'Pengabdian Dosen',
+            'status'          => 'non-approve',
+            'tanggal_mulai'   => '2026-10-01',
+            'tanggal_selesai' => '2026-10-31',
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->patch(route('plppm.ppengabdian.status', $pengabdian->id), [
+                'status'      => 'approve',
+                'nomor_surat' => '040/P3M/ST/2026',
+            ]);
+
+        $response->assertSessionHasErrors('status');
+        $this->assertDatabaseHas('ajupengabdian', [
+            'id'          => $pengabdian->id,
+            'status'      => 'non-approve',
+            'nomor_surat' => null,
+        ]);
+    }
+
+    /**
+     * Validasi: Download surat sebelum nomor surat tersedia harus ditolak (403).
+     */
+    public function test_download_surat_tugas_forbidden_before_nomor_surat_is_available(): void
+    {
+        // 1. Pengabdian berstatus approve tapi nomor_surat masih null
+        $pengabdian = p3mModel::create([
+            'user_id'         => $this->dosen1->id,
+            'judul'           => 'Pengabdian Tanpa Nomor Surat',
+            'bidang'          => 'Teknologi Informasi',
+            'ketua'           => 'Dosen Pemilik',
+            'jeniskelamin'    => 'L',
+            'nidn'            => '0619098854',
+            'jabatan'         => 'Lektor',
+            'prodi'           => 'R',
+            'telp'            => '08123456783',
+            'alamat'          => 'Jepara',
+            'lokasi'          => 'Jepara',
+            'lamapenelitian'  => '30',
+            'biaya'           => '5000000',
+            'uppdf'           => 'proposal.pdf',
+            'jeniskategori'   => 'Pengabdian Dosen',
+            'status'          => 'approve',
+            'nomor_surat'     => null,
+            'tanggal_mulai'   => '2026-10-01',
+            'tanggal_selesai' => '2026-10-31',
+        ]);
+
+        $resPengabdian = $this->actingAs($this->dosen1)
+            ->get(route('p3m.surat-tugas.download', $pengabdian->id));
+
+        $resPengabdian->assertStatus(403);
+
+        // 2. Penelitian berstatus approve tapi nomor_surat masih null
+        $penelitian = ajuan_penelitianModel::create([
+            'user_id'         => $this->dosen1->id,
+            'judul'           => 'Penelitian Tanpa Nomor Surat',
+            'bidang'          => 'Teknologi Informasi',
+            'ketua'           => 'Dosen Pemilik',
+            'jeniskelamin'    => 'L',
+            'nidn'            => '0619098855',
+            'jabatan'         => 'Lektor',
+            'prodi'           => 'R',
+            'telp'            => '08123456784',
+            'alamat'          => 'Jepara',
+            'lokasi'          => 'Jepara',
+            'lamapenelitian'  => '30',
+            'biaya'           => '5000000',
+            'uppdf'           => 'proposal.pdf',
+            'jeniskategori'   => 'Penelitian Dosen',
+            'status'          => 'approve',
+            'nomor_surat'     => null,
+            'tanggal_mulai'   => '2026-10-01',
+            'tanggal_selesai' => '2026-10-31',
+        ]);
+
+        $resPenelitian = $this->actingAs($this->dosen1)
+            ->get(route('p3m.surat-tugaspen.download', $penelitian->id));
+
+        $resPenelitian->assertStatus(403);
+    }
+
+    /**
+     * Keamanan: Dosen tidak dapat memanipulasi nomor_surat melalui endpoint edit/update.
+     */
+    public function test_dosen_cannot_modify_nomor_surat_via_update(): void
+    {
+        $originalNomor = '050/P3M-POLIBANG/ST-PM/2026';
+        $pengabdian = p3mModel::create([
+            'user_id'         => $this->dosen1->id,
+            'judul'           => 'Pengabdian Terkunci',
+            'bidang'          => 'Teknologi Informasi',
+            'ketua'           => 'Dosen Pemilik',
+            'jeniskelamin'    => 'L',
+            'nidn'            => '0619098856',
+            'jabatan'         => 'LT',
+            'prodi'           => 'R',
+            'telp'            => '08123456785',
+            'alamat'          => 'Jepara',
+            'lokasi'          => 'Jepara',
+            'lamapenelitian'  => '30',
+            'biaya'           => '5000000',
+            'uppdf'           => 'proposal.pdf',
+            'jeniskategori'   => 'Pengabdian Dosen',
+            'status'          => 'non-approve', // editable only when non-approve
+            'nomor_surat'     => $originalNomor,
+            'tanggal_mulai'   => '2026-10-01',
+            'tanggal_selesai' => '2026-10-31',
+        ]);
+
+        $this->actingAs($this->dosen1)->post(route('dosen.updatep3m', $pengabdian->id), [
+            'judul'           => 'Judul Diperbarui',
+            'bidang'          => 'Teknologi Informasi',
+            'jeniskategori'   => 'Pengabdian Dosen',
+            'lokasi'          => 'Jepara Baru',
+            'lamapenelitian'  => '30',
+            'tanggal_mulai'   => '2026-10-01',
+            'tanggal_selesai' => '2026-10-31',
+            'biaya'           => '5000000',
+            'ketua'           => 'Dosen Pemilik',
+            'jabatan'         => 'LT',
+            'nidn'            => '0619098856',
+            'telp'            => '08123456785',
+            'alamat'          => 'Jepara',
+            'jeniskelamin'    => 'L',
+            'prodi'           => 'R',
+            'nomor_surat'     => 'PALSU/999/ST-HACKED',
+            'anggota'         => [
+                ['nama' => 'Anggota 1', 'nim' => '123', 'prodi' => 'R', 'jabatan' => 'MHS'],
+            ],
+        ]);
+
+        $pengabdian->refresh();
+        $this->assertSame($originalNomor, $pengabdian->nomor_surat);
+        $this->assertNotSame('PALSU/999/ST-HACKED', $pengabdian->nomor_surat);
+    }
+
+    /**
+     * Isolasi: Nomor surat tidak pernah tertukar atau bertabrakan antara Pengabdian dan Penelitian.
+     */
+    public function test_nomor_surat_isolation_between_pengabdian_and_penelitian(): void
+    {
+        $nomorPengabdian = '077/P3M/ST-PENGABDIAN/2026';
+        $nomorPenelitian = '088/P3M/ST-PENELITIAN/2026';
+
+        $pengabdian = p3mModel::create([
+            'user_id'         => $this->dosen1->id,
+            'judul'           => 'Pengabdian Masyarakat Mandiri',
+            'bidang'          => 'Sosial Humaniora',
+            'ketua'           => 'Dosen A',
+            'jeniskelamin'    => 'L',
+            'nidn'            => '0619098857',
+            'jabatan'         => 'Lektor',
+            'prodi'           => 'AB',
+            'telp'            => '08123456786',
+            'alamat'          => 'Jepara',
+            'lokasi'          => 'Jepara',
+            'lamapenelitian'  => '30',
+            'biaya'           => '7000000',
+            'uppdf'           => 'proposal_pengabdian.pdf',
+            'jeniskategori'   => 'Pengabdian Dosen',
+            'status'          => 'approve',
+            'nomor_surat'     => $nomorPengabdian,
+            'tanggal_mulai'   => '2026-10-01',
+            'tanggal_selesai' => '2026-10-31',
+        ]);
+
+        $penelitian = ajuan_penelitianModel::create([
+            'user_id'         => $this->dosen1->id,
+            'judul'           => 'Penelitian Terapan Mandiri',
+            'bidang'          => 'Teknologi Informasi',
+            'ketua'           => 'Dosen B',
+            'jeniskelamin'    => 'P',
+            'nidn'            => '0619098858',
+            'jabatan'         => 'Lektor',
+            'prodi'           => 'R',
+            'telp'            => '08123456787',
+            'alamat'          => 'Jepara',
+            'lokasi'          => 'Jepara',
+            'lamapenelitian'  => '30',
+            'biaya'           => '9000000',
+            'uppdf'           => 'proposal_penelitian.pdf',
+            'jeniskategori'   => 'Penelitian Dosen',
+            'status'          => 'approve',
+            'nomor_surat'     => $nomorPenelitian,
+            'tanggal_mulai'   => '2026-10-01',
+            'tanggal_selesai' => '2026-10-31',
+        ]);
+
+        $resPeng = $this->actingAs($this->dosen1)
+            ->get(route('p3m.surat-tugas.download', $pengabdian->id));
+        $resPeng->assertOk();
+        $this->assertStringContainsString($nomorPengabdian, $resPeng->getContent());
+        $this->assertStringNotContainsString($nomorPenelitian, $resPeng->getContent());
+
+        $resPen = $this->actingAs($this->dosen1)
+            ->get(route('p3m.surat-tugaspen.download', $penelitian->id));
+        $resPen->assertOk();
+        $this->assertStringContainsString($nomorPenelitian, $resPen->getContent());
+        $this->assertStringNotContainsString($nomorPengabdian, $resPen->getContent());
     }
 }

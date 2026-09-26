@@ -17,7 +17,7 @@ class suratcontroller extends Controller
         $penelitian = p3mModel::with('anggotap3m')->findOrFail($id);
         $this->authorizeLetterDownload($request, $penelitian);
 
-        $templatePath = storage_path('app/public/STPG1.pdf');
+        $templatePath = storage_path('app/templates/SURAT TUGAS PENELITIAN FORMAT.pdf');
         $pdfService = new SuratTugasPdfService('Pengabdian Masyarakat', $templatePath);
         $pdfContent = $pdfService->generateDocument($penelitian, $penelitian->anggotap3m);
 
@@ -37,7 +37,7 @@ class suratcontroller extends Controller
         $penelitian = ajuan_penelitianModel::with('anggotap3m')->findOrFail($id);
         $this->authorizeLetterDownload($request, $penelitian);
 
-        $templatePath = storage_path('app/public/STPN1.pdf');
+        $templatePath = storage_path('app/templates/SURAT TUGAS PENELITIAN FORMAT.pdf');
         $pdfService = new SuratTugasPdfService('Penelitian', $templatePath);
         $pdfContent = $pdfService->generateDocument($penelitian, $penelitian->anggotap3m);
 
@@ -60,6 +60,11 @@ class suratcontroller extends Controller
         abort_unless(
             $user->role === 'admin' || (int) $submission->user_id === (int) $user->id,
             403
+        );
+        abort_if(
+            blank($submission->nomor_surat),
+            403,
+            'Surat tugas belum dapat diunduh karena nomor surat belum diterbitkan.'
         );
     }
 }

@@ -425,6 +425,14 @@
                             </a>
                         </li>
 
+                        <li class="nav-item">
+                            <a href="{{ route('plppm.surat_keluar') }}"
+                                class="nav-link {{ request()->routeIs('plppm.surat_keluar*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-paper-plane"></i>
+                                <p>Riwayat Surat Keluar</p>
+                            </a>
+                        </li>
+
                         <li class="nav-item mt-2">
                             <form action="{{ route('logout') }}" method="POST" data-turbo="false">
                                 @csrf

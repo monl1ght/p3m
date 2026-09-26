@@ -55,11 +55,14 @@ class StatusTransitionTest extends TestCase
         ]);
     }
 
-    private function patchStatus(string $status, ?string $reason = null): \Illuminate\Testing\TestResponse
+    private function patchStatus(string $status, ?string $reason = null, ?string $nomorSurat = null): \Illuminate\Testing\TestResponse
     {
         $payload = ['status' => $status];
         if ($reason !== null) {
             $payload['reason'] = $reason;
+        }
+        if ($status === 'approve') {
+            $payload['nomor_surat'] = $nomorSurat ?? '001/P3M-POLIBANG/ST/2026';
         }
 
         return $this->actingAs($this->admin)

@@ -333,7 +333,7 @@ body {
                             <div class="team-footer">
                                 <div class="team-meta">
                                     <i class="fas fa-id-badge"></i>
-                                    <span>NIDN: {{ !empty($d->NIDN) ? $d->NIDN : '-' }}</span>
+                                    <span>{{ $d->jenis_identitas ?? 'NIDN' }}: {{ !empty($d->NIDN) ? $d->NIDN : '-' }}</span>
                                 </div>
 
                                 @if (!empty($d->email_pengelola))

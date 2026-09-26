@@ -275,6 +275,7 @@ class MediumP2AuditTest extends TestCase
             'uppdf'           => 'proposal.pdf',
             'jeniskategori'   => 'Penelitian Dosen',
             'status'          => 'approve',
+            'nomor_surat'     => '001/P3M-POLIBANG/ST-PN/2026',
             'tanggal_mulai'   => now()->toDateString(),
             'tanggal_selesai' => now()->addMonths(2)->toDateString(),
         ]);

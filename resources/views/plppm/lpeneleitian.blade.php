@@ -390,6 +390,21 @@ table.users-table {
     background: #b91c1c; transform: translateY(-1px);
     box-shadow: 0 8px 20px rgba(185,28,28,.25);
 }
+.modal-icon.modal-icon-success {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--forest-soft); color: var(--forest-mid); border: 1px solid #bbf7d0;
+    display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+}
+.btn-modal-submit.btn-success {
+    height: 40px; padding: 0 20px; border-radius: var(--r-md);
+    background: var(--forest-mid); border: none; color: #fff;
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: all .18s;
+    box-shadow: 0 4px 14px rgba(0,87,59,.2); display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-modal-submit.btn-success:hover {
+    background: var(--forest); transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(0,61,45,.25);
+}
 
 /* Responsive */
 @media (max-width: 767.98px) {
@@ -549,6 +564,7 @@ table.users-table {
                                     };
                                 @endphp
                                 <span class="status-pill {{ $badgeClass }}">{{ $statusLabel }}</span>
+
                             </td>
                             <td class="text-center">
                                 <div class="action-wrap">
@@ -561,19 +577,15 @@ table.users-table {
                                             Aksi <i class="fas fa-chevron-down" style="font-size:10px; margin-left:3px; color: var(--light);"></i>
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right">
-                                            <form action="{{ route('plppm.ppenelitian.status', $d->id) }}" method="POST" id="approve-lpen-{{ $d->id }}">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="status" value="approve">
-                                                <button type="button" class="dropdown-item text-success"
-                                                    data-p3m-approve
-                                                    data-type="Proposal Penelitian"
-                                                    data-title="Setujui Proposal Penelitian"
-                                                    data-label="{{ Str::limit($d->judul ?? 'usulan ini', 40) }}"
-                                                    data-form-id="approve-lpen-{{ $d->id }}">
+                                            @if ($d->status === 'approve')
+                                                <button type="button" class="dropdown-item text-success" data-toggle="modal" data-target="#modal-approve-{{ $d->id }}">
+                                                    <i class="fas fa-edit"></i> Edit Nomor Surat
+                                                </button>
+                                            @else
+                                                <button type="button" class="dropdown-item text-success" data-toggle="modal" data-target="#modal-approve-{{ $d->id }}">
                                                     <i class="fas fa-check"></i> Setujui (Approve)
                                                 </button>
-                                            </form>
+                                            @endif
 
                                             <form action="{{ route('plppm.ppenelitian.status', $d->id) }}" method="POST" id="proses-lpen-{{ $d->id }}">
                                                 @csrf
@@ -612,6 +624,60 @@ table.users-table {
         </div>
     </section>
 </div>
+
+{{-- Modals Approve / Setujui & Nomor Surat --}}
+@foreach ($penelitians as $d)
+<div class="modal fade p3m-modal" id="modal-approve-{{ $d->id }}" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content text-left">
+            <form action="{{ route('plppm.ppenelitian.status', $d->id) }}" method="POST">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="status" value="approve">
+                <div class="modal-header">
+                    <div class="modal-icon modal-icon-success"><i class="fas fa-file-signature"></i></div>
+                    <div class="modal-head-text">
+                        <h5>Persetujuan & Nomor Surat Tugas</h5>
+                        <p>Input Nomor Surat resmi untuk menerbitkan Surat Tugas Penelitian ini.</p>
+                    </div>
+                    <button type="button" class="modal-close-btn" data-dismiss="modal" aria-label="Tutup">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--r-md); padding: 14px 16px; margin-bottom: 18px;">
+                        <div style="font-size: 11px; font-weight: 800; color: var(--forest-mid); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px;">
+                            <i class="fas fa-file-alt mr-1"></i> Usulan Penelitian
+                        </div>
+                        <div style="font-size: 13.5px; font-weight: 700; color: var(--ink); line-height: 1.45;">{{ $d->judul }}</div>
+                        <div style="font-size: 12px; color: var(--muted); margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+                            <span><i class="fas fa-user-circle"></i> {{ $d->ketua }}</span>
+                            <span>&bull;</span>
+                            <span>{{ $d->prodi ?? 'Polibang' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="form-field mb-0">
+                        <label>Nomor Surat Tugas <span class="req">*</span></label>
+                        <input type="text" name="nomor_surat" class="form-input" required
+                            placeholder="Contoh: 016/P3M-POLIBANG/ST-PN/X/2026"
+                            value="{{ old('nomor_surat', $d->nomor_surat ?? '') }}"
+                            autocomplete="off">
+                        <span class="form-hint">
+                            <i class="fas fa-info-circle mr-1 text-primary"></i>
+                            Nomor surat wajib diisi dan akan dicetak otomatis pada dokumen PDF Surat Tugas.
+                        </span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-cancel" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn-modal-submit btn-success">
+                        <i class="fas fa-check"></i> Simpan & Setujui
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 {{-- Modals Non-Approve / Tolak & Revisi --}}
 @foreach ($penelitians as $d)

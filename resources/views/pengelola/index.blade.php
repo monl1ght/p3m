@@ -191,6 +191,33 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
 .nik-value { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--tx); font-weight: 600;}
 .nik-value.empty { color: var(--light); font-style: italic; }
 
+.identitas-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.badge-identitas {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: var(--r-sm);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    line-height: 1.2;
+}
+.badge-identitas.badge-nidn {
+    background: var(--forest-soft);
+    color: var(--forest-mid);
+    border: 1px solid #b5ddc7;
+}
+.badge-identitas.badge-nuptk {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
 .role-badge {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 5px 11px; border-radius: 99px; font-size: 12px; font-weight: 800;
@@ -535,7 +562,7 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                 </div>
                 <div class="search-wrap">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" id="userSearch" placeholder="Cari nama, NIDN, atau jabatan...">
+                    <input type="text" class="search-input" id="userSearch" placeholder="Cari nama, NIDN/NUPTK, atau jabatan...">
                 </div>
             </div>
 
@@ -545,8 +572,8 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                     <thead>
                         <tr>
                             <th width="5%">No</th>
-                            <th width="38%">Pengelola</th>
-                            <th width="15%">NIDN</th>
+                            <th width="35%">Pengelola</th>
+                            <th width="18%">NIDN/NUPTK</th>
                             <th width="27%">Jabatan</th>
                             <th width="15%" class="text-center">Aksi</th>
                         </tr>
@@ -564,7 +591,7 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                                 <div class="user-cell">
                                     <div class="u-avatar">
                                         @if($photoExists)
-                                            <img src="{{ asset($photoPath) }}" alt="{{ $d->nama_pengelola }}">
+                                             <img src="{{ asset($photoPath) }}" alt="{{ $d->nama_pengelola }}">
                                         @else
                                             {{ $initial }}
                                         @endif
@@ -576,7 +603,12 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                                 </div>
                             </td>
                             <td>
-                                <span class="nik-value {{ empty($d->NIDN) ? 'empty' : '' }}">{{ $d->NIDN ?? '—' }}</span>
+                                <div class="identitas-cell">
+                                    <span class="badge-identitas badge-{{ strtolower($d->jenis_identitas ?? 'nidn') }}">
+                                        {{ $d->jenis_identitas ?? 'NIDN' }}
+                                    </span>
+                                    <span class="nik-value {{ empty($d->NIDN) ? 'empty' : '' }}">{{ $d->NIDN ?? '—' }}</span>
+                                </div>
                             </td>
                             <td>
                                 <span class="role-badge badge-default">{{ $d->jabatan_pengelola }}</span>
@@ -700,8 +732,15 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                 </div>
                 
                 <div class="form-field">
-                    <label>NIDN <span class="req">*</span></label>
-                    <input type="text" name="NIDN" id="createNIDN" class="form-input" value="{{ old('NIDN') }}" placeholder="Masukkan NIDN" required>
+                    <label>Jenis Identitas <span class="req">*</span></label>
+                    <select name="jenis_identitas" id="createJenisIdentitas" class="form-select" required>
+                        <option value="NIDN" {{ old('jenis_identitas', 'NIDN') === 'NIDN' ? 'selected' : '' }}>NIDN</option>
+                        <option value="NUPTK" {{ old('jenis_identitas') === 'NUPTK' ? 'selected' : '' }}>NUPTK</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label id="createLabelIdentitas">Nomor NIDN/NUPTK <span class="req">*</span></label>
+                    <input type="text" name="NIDN" id="createNIDN" class="form-input" value="{{ old('NIDN') }}" placeholder="Masukkan nomor NIDN/NUPTK" required>
                 </div>
                 <div class="form-field">
                     <label>Jabatan <span class="req">*</span></label>
@@ -809,8 +848,15 @@ table.users-table { width: 100% !important; margin: 0 !important; border-collaps
                 </div>
                 
                 <div class="form-field">
-                    <label>NIDN <span class="req">*</span></label>
-                    <input type="text" name="NIDN" id="editNIDN{{ $d->id }}" class="form-input" value="{{ old('NIDN', $d->NIDN) }}" placeholder="Masukkan NIDN" required>
+                    <label>Jenis Identitas <span class="req">*</span></label>
+                    <select name="jenis_identitas" id="editJenisIdentitas{{ $d->id }}" class="form-select" required>
+                        <option value="NIDN" {{ old('jenis_identitas', $d->jenis_identitas ?? 'NIDN') === 'NIDN' ? 'selected' : '' }}>NIDN</option>
+                        <option value="NUPTK" {{ old('jenis_identitas', $d->jenis_identitas ?? 'NIDN') === 'NUPTK' ? 'selected' : '' }}>NUPTK</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label id="editLabelIdentitas{{ $d->id }}">Nomor NIDN/NUPTK <span class="req">*</span></label>
+                    <input type="text" name="NIDN" id="editNIDN{{ $d->id }}" class="form-input" value="{{ old('NIDN', $d->NIDN) }}" placeholder="Masukkan nomor NIDN/NUPTK" required>
                 </div>
                 <div class="form-field">
                     <label>Jabatan <span class="req">*</span></label>
@@ -850,7 +896,7 @@ $(function () {
         pageLength: 10,
         language: {
             search: "",
-            searchPlaceholder: "Cari nama, NIDN, atau jabatan...",
+            searchPlaceholder: "Cari nama, NIDN/NUPTK, atau jabatan...",
             info: "Menampilkan _START_-_END_ dari _TOTAL_ data",
             paginate: {
                 previous: '<i class="fas fa-chevron-left"></i>',
@@ -883,6 +929,21 @@ $(function () {
 
     $('#userSearch').on('keyup', function () { table.search(this.value).draw(); });
     $('#pageLengthSelect').on('change', function () { table.page.len(+this.value).draw(); });
+
+    function updateIdentitasPlaceholder($select) {
+        var val = $select.val();
+        var $form = $select.closest('form');
+        var $input = $form.find('input[name="NIDN"]');
+        if (val === 'NUPTK') {
+            $input.attr('placeholder', 'Masukkan nomor NUPTK');
+        } else {
+            $input.attr('placeholder', 'Masukkan nomor NIDN');
+        }
+    }
+
+    $(document).on('change', 'select[name="jenis_identitas"]', function() {
+        updateIdentitasPlaceholder($(this));
+    });
 
     @if (session('form_context') === 'create_pengelola')
         $('#createPengelolaModal').modal('show');
