@@ -289,10 +289,10 @@ class SuratTugasGenerationTest extends TestCase
         ];
 
         $members = [
-            ['nama' => 'Nur Hikmah, M.E', 'nim' => '0610058202', 'prodi' => 'AB', 'jabatan' => 'Anggota'],
-            ['nama' => 'Nila Ayu Kusuma Wardani, M.E', 'nim' => '0615039702', 'prodi' => 'AK', 'jabatan' => 'Anggota'],
-            ['nama' => 'Sofia Ulfah, M.Kom', 'nim' => '0619099004', 'prodi' => 'R', 'jabatan' => 'Anggota'],
-            ['nama' => 'Muhammad Ali Subkhan, M.Pd', 'nim' => '0625109201', 'prodi' => 'AB', 'jabatan' => 'Anggota'],
+            ['nama' => 'Nur Hikmah, M.E', 'nim' => '0610058202', 'prodi' => 'AB', 'jabatan' => 'DS'],
+            ['nama' => 'Nila Ayu Kusuma Wardani, M.E', 'nim' => '0615039702', 'prodi' => 'AK', 'jabatan' => 'DS'],
+            ['nama' => 'Sofia Ulfah, M.Kom', 'nim' => '0619099004', 'prodi' => 'A', 'jabatan' => 'MHS'],
+            ['nama' => 'Muhammad Ali Subkhan, M.Pd', 'nim' => '0625109201', 'prodi' => 'AB', 'jabatan' => 'MHS'],
         ];
 
         $service = new SuratTugasPdfService('Penelitian');
@@ -322,8 +322,15 @@ class SuratTugasGenerationTest extends TestCase
 
         // Prodi full mapping
         $this->assertStringContainsString('Rekayasa Perangkat Lunak', $pdf);
+        $this->assertStringContainsString('Bisnis Digital', $pdf);
         $this->assertStringContainsString('Administrasi Bisnis Internasional', $pdf);
         $this->assertStringContainsString('Akuntansi Keuangan Publik', $pdf);
+
+        // Jabatan mapping: Ketua for ketua, Anggota for members, NO internal codes DS/MHS
+        $this->assertStringContainsString('(Ketua)', $pdf);
+        $this->assertStringContainsString('(Anggota)', $pdf);
+        $this->assertStringNotContainsString('(DS)', $pdf);
+        $this->assertStringNotContainsString('(MHS)', $pdf);
 
         // Detail
         $this->assertStringContainsString('Untuk melakukan penelitian dengan judul:', $pdf);
@@ -789,5 +796,220 @@ class SuratTugasGenerationTest extends TestCase
         $resPen->assertOk();
         $this->assertStringContainsString($nomorPenelitian, $resPen->getContent());
         $this->assertStringNotContainsString($nomorPengabdian, $resPen->getContent());
+    }
+
+    /**
+     * Uji konsistensi penuh Pengabdian: Database -> Detail Admin -> Berkas PDF
+     * Sesuai skenario submission nyata: Bisnis Digital (AB), internal code DS/MHS diubah menjadi Ketua & Anggota pada PDF.
+     */
+    public function test_surat_tugas_pengabdian_data_consistency_between_detail_database_and_pdf(): void
+    {
+        $pengabdian = p3mModel::create([
+            'user_id'         => $this->dosen1->id,
+            'judul'           => 'EDUKASI SAHAM DAN KRIPTO: DARI FOMO KE MELEK FINANSIAL SEBAGAI BENTUK LITERASI KEUANGAN DI SMK ROUDLOTUL MUBTADIIN BALEKAMBANG JEPARA',
+            'bidang'          => 'Ekonomi dan Bisnis',
+            'ketua'           => 'Fatikha Rizqya Nur, S.E., M.E',
+            'jeniskelamin'    => 'P',
+            'nidn'            => '7145777678230203',
+            'jabatan'         => 'DS',
+            'prodi'           => 'A',
+            'telp'            => '08123456789',
+            'alamat'          => 'Jepara',
+            'lokasi'          => 'SMK Roudlotul Mubtadiin',
+            'lamapenelitian'  => '5',
+            'biaya'           => '5000000',
+            'uppdf'           => 'proposal.pdf',
+            'jeniskategori'   => 'Pengabdian Dosen',
+            'status'          => 'approve',
+            'nomor_surat'     => 'A. 001/P3M-Polibang/IX/PG/2026',
+            'tanggal_mulai'   => '2026-11-16',
+            'tanggal_selesai' => '2026-11-20',
+        ]);
+
+        $m1 = anggotap3mModel::create([
+            'ajupengab_model_id' => $pengabdian->id,
+            'nama'               => 'Taufiqurrohman, S.E., M.E',
+            'nim'                => '5042766667130443',
+            'prodi'              => 'AB',
+            'jabatan'            => 'DS',
+        ]);
+
+        $m2 = anggotap3mModel::create([
+            'ajupengab_model_id' => $pengabdian->id,
+            'nama'               => 'Muhammad Dliyauddin, M.Kom',
+            'nim'                => '4438776677130242',
+            'prodi'              => 'R',
+            'jabatan'            => 'DS',
+        ]);
+
+        $m3 = anggotap3mModel::create([
+            'ajupengab_model_id' => $pengabdian->id,
+            'nama'               => 'Muhammad Faqih',
+            'nim'                => '2024010027',
+            'prodi'              => 'R',
+            'jabatan'            => 'MHS',
+        ]);
+
+        $m4 = anggotap3mModel::create([
+            'ajupengab_model_id' => $pengabdian->id,
+            'nama'               => 'Nilna Syarifah',
+            'nim'                => '2025050094',
+            'prodi'              => 'AB',
+            'jabatan'            => 'MHS',
+        ]);
+
+        $m5 = anggotap3mModel::create([
+            'ajupengab_model_id' => $pengabdian->id,
+            'nama'               => 'Sinta Zuliyana Alfat H',
+            'nim'                => '2025050095',
+            'prodi'              => 'AB',
+            'jabatan'            => 'MHS',
+        ]);
+
+        // 1. Verifikasi Data Halaman Detail Admin
+        $resDetail = $this->actingAs($this->admin)
+            ->get(route('detail.detail', ['tipe' => 'ajupengab', 'id' => $pengabdian->id]));
+        $resDetail->assertOk();
+        $detailHtml = $resDetail->getContent();
+
+        // Di halaman detail, prodi AB tampil sebagai Bisnis Digital, R tampil sebagai Rekayasa Perangkat Lunak
+        $this->assertStringContainsString('Bisnis Digital', $detailHtml);
+        $this->assertStringContainsString('Rekayasa Perangkat Lunak', $detailHtml);
+        $this->assertStringContainsString('Taufiqurrohman, S.E., M.E', $detailHtml);
+        $this->assertStringContainsString('Muhammad Dliyauddin, M.Kom', $detailHtml);
+        $this->assertStringContainsString('Muhammad Faqih', $detailHtml);
+        $this->assertStringContainsString('Nilna Syarifah', $detailHtml);
+        $this->assertStringContainsString('Sinta Zuliyana Alfat H', $detailHtml);
+
+        // 2. Verifikasi Data Berkas PDF Surat Tugas
+        $resPdf = $this->actingAs($this->admin)
+            ->get(route('p3m.surat-tugas.download', $pengabdian->id));
+        $resPdf->assertOk();
+        $this->assertEquals('application/pdf', $resPdf->headers->get('Content-Type'));
+        $pdfContent = $resPdf->getContent();
+
+        // Periksa nomor surat dan judul
+        $this->assertStringContainsString('SURAT TUGAS PENGABDIAN', $pdfContent);
+        $this->assertStringContainsString('A. 001/P3M-Polibang/IX/PG/2026', $pdfContent);
+
+        // Periksa Ketua (Fatikha)
+        $this->assertStringContainsString('Fatikha Rizqya Nur, S.E., M.E', $pdfContent);
+        $this->assertStringContainsString('7145777678230203', $pdfContent);
+        $this->assertStringContainsString('Administrasi Bisnis Internasional', $pdfContent);
+        $this->assertStringContainsString('Ketua', $pdfContent);
+
+        // Periksa Anggota: Program Studi Bisnis Digital wajib tampil (BUKAN Administrasi Bisnis Internasional)
+        $this->assertStringContainsString('Bisnis Digital', $pdfContent);
+        $this->assertStringContainsString('Taufiqurrohman, S.E., M.E', $pdfContent);
+        $this->assertStringContainsString('5042766667130443', $pdfContent);
+
+        $this->assertStringContainsString('Muhammad Dliyauddin, M.Kom', $pdfContent);
+        $this->assertStringContainsString('4438776677130242', $pdfContent);
+        $this->assertStringContainsString('Rekayasa Perangkat Lunak', $pdfContent);
+
+        $this->assertStringContainsString('Muhammad Faqih', $pdfContent);
+        $this->assertStringContainsString('2024010027', $pdfContent);
+
+        $this->assertStringContainsString('Nilna Syarifah', $pdfContent);
+        $this->assertStringContainsString('2025050094', $pdfContent);
+
+        $this->assertStringContainsString('Sinta Zuliyana Alfat H', $pdfContent);
+        $this->assertStringContainsString('2025050095', $pdfContent);
+
+        // Periksa Jabatan pada PDF: hanya 'Ketua' dan 'Anggota', TIDAK ADA kode internal 'DS' atau 'MHS'
+        $this->assertStringContainsString('(Ketua)', $pdfContent);
+        $this->assertStringContainsString('(Anggota)', $pdfContent);
+        $this->assertStringNotContainsString('(DS)', $pdfContent);
+        $this->assertStringNotContainsString('(MHS)', $pdfContent);
+    }
+
+    /**
+     * Uji konsistensi penuh Penelitian: Database -> Detail Admin -> Berkas PDF
+     * Memastikan prodi AK (Akuntansi Keuangan Publik), AP (Agribisnis Peternakan), dan jabatan Anggota konsisten 100%.
+     */
+    public function test_surat_tugas_penelitian_data_consistency_between_detail_database_and_pdf(): void
+    {
+        $penelitian = ajuan_penelitianModel::create([
+            'user_id'         => $this->dosen2->id,
+            'judul'           => 'Rancang Bangun Model Prediksi Keuangan Publik Berbasis AI',
+            'bidang'          => 'Teknologi Informasi',
+            'ketua'           => 'Dr. H. Peneliti Utama, M.Kom.',
+            'jeniskelamin'    => 'L',
+            'nidn'            => '0619098899',
+            'jabatan'         => 'KP',
+            'prodi'           => 'AK',
+            'telp'            => '08123456781',
+            'alamat'          => 'Jepara',
+            'lokasi'          => 'Kampus Polibang',
+            'lamapenelitian'  => '90',
+            'biaya'           => '15000000',
+            'uppdf'           => 'proposal_penelitian.pdf',
+            'jeniskategori'   => 'Penelitian Dosen',
+            'status'          => 'approve',
+            'nomor_surat'     => 'B. 088/P3M-Polibang/X/PN/2026',
+            'tanggal_mulai'   => '2026-10-01',
+            'tanggal_selesai' => '2026-12-31',
+        ]);
+
+        anggotap3mModel::create([
+            'ajupenel_model_id' => $penelitian->id,
+            'nama'              => 'Peneliti Anggota Satu, M.Ak.',
+            'nim'               => '0610098811',
+            'prodi'             => 'AK',
+            'jabatan'           => 'DS',
+        ]);
+
+        anggotap3mModel::create([
+            'ajupenel_model_id' => $penelitian->id,
+            'nama'              => 'Mahasiswa Peneliti Satu',
+            'nim'               => '2024010888',
+            'prodi'             => 'AP',
+            'jabatan'           => 'MHS',
+        ]);
+
+        anggotap3mModel::create([
+            'ajupenel_model_id' => $penelitian->id,
+            'nama'              => 'Peneliti Anggota Dua, M.M.',
+            'nim'               => '0610098822',
+            'prodi'             => 'AB',
+            'jabatan'           => 'LT',
+        ]);
+
+        // 1. Verifikasi Detail Admin
+        $resDetail = $this->actingAs($this->admin)
+            ->get(route('detail.detail', ['tipe' => 'ajupenel', 'id' => $penelitian->id]));
+        $resDetail->assertOk();
+        $detailHtml = $resDetail->getContent();
+
+        $this->assertStringContainsString('Akuntansi Keuangan Publik', $detailHtml);
+        $this->assertStringContainsString('Agribisnis Peternakan', $detailHtml);
+        $this->assertStringContainsString('Bisnis Digital', $detailHtml);
+
+        // 2. Verifikasi PDF Surat Tugas
+        $resPdf = $this->actingAs($this->admin)
+            ->get(route('p3m.surat-tugaspen.download', $penelitian->id));
+        $resPdf->assertOk();
+        $pdfContent = $resPdf->getContent();
+
+        $this->assertStringContainsString('SURAT TUGAS PENELITIAN', $pdfContent);
+        $this->assertStringContainsString('B. 088/P3M-Polibang/X/PN/2026', $pdfContent);
+        $this->assertStringContainsString('Dr. H. Peneliti Utama, M.Kom.', $pdfContent);
+        $this->assertStringContainsString('0619098899', $pdfContent);
+        $this->assertStringContainsString('Akuntansi Keuangan Publik', $pdfContent);
+        $this->assertStringContainsString('Ketua', $pdfContent);
+
+        $this->assertStringContainsString('Peneliti Anggota Satu, M.Ak.', $pdfContent);
+        $this->assertStringContainsString('Mahasiswa Peneliti Satu', $pdfContent);
+        $this->assertStringContainsString('Agribisnis Peternakan', $pdfContent);
+        $this->assertStringContainsString('Peneliti Anggota Dua, M.M.', $pdfContent);
+        $this->assertStringContainsString('Bisnis Digital', $pdfContent);
+
+        // Pastikan Jabatan pada seluruh anggota adalah 'Anggota' dan tidak ada kode internal
+        $this->assertStringContainsString('(Ketua)', $pdfContent);
+        $this->assertStringContainsString('(Anggota)', $pdfContent);
+        $this->assertStringNotContainsString('(DS)', $pdfContent);
+        $this->assertStringNotContainsString('(MHS)', $pdfContent);
+        $this->assertStringNotContainsString('(LT)', $pdfContent);
+        $this->assertStringNotContainsString('(KP)', $pdfContent);
     }
 }

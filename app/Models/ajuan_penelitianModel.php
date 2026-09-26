@@ -35,7 +35,7 @@ class ajuan_penelitianModel extends Model
     ];
     public function anggotap3m()
     {
-        return $this->hasMany(anggotap3mModel::class, 'ajupenel_model_id', 'id');
+        return $this->hasMany(anggotap3mModel::class, 'ajupenel_model_id', 'id')->orderBy('id', 'asc');
     }
 
     public function user()

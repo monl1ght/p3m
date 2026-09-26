@@ -845,16 +845,9 @@ section.content {
                                     'DS' => 'Dosen',
                                     'MHS' => 'Mahasiswa'
                                 ];
-                                $prodiMap = [
-                                    'R' => 'Rekayasa Perangkat Lunak',
-                                    'A' => 'Agribisnis',
-                                    'AK' => 'Akuntansi Perpajakan',
-                                    'AB' => 'Bisnis Digital',
-                                    'AP' => 'Agro Peternakan'
-                                ];
 
                                 $cJabatan = $jabatanMap[$penelitians->jabatan ?? ''] ?? ($penelitians->jabatan ?? '-');
-                                $cProdi = $prodiMap[$penelitians->prodi ?? ''] ?? ($penelitians->prodi ?? '-');
+                                $cProdi = \App\Services\SuratTugasPdfService::formatProdi($penelitians->prodi ?? null);
                                 $cInitial = strtoupper(substr($penelitians->ketua ?? 'P', 0, 1));
                             @endphp
 
@@ -919,7 +912,7 @@ section.content {
                                             @foreach($penelitians->anggotap3m as $anggota)
                                                 @php
                                                     $mJab = $jabatanMap[$anggota->jabatan ?? ''] ?? ($anggota->jabatan ?? '-');
-                                                    $mProd = $prodiMap[$anggota->prodi ?? ''] ?? ($anggota->prodi ?? '-');
+                                                    $mProd = \App\Services\SuratTugasPdfService::formatProdi($anggota->prodi ?? null);
                                                 @endphp
                                                 <tr>
                                                     <td>

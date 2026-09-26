@@ -191,21 +191,36 @@ class SuratTugasPdfService extends Fpdi
     }
 
     /**
-     * Format kode Program Studi menjadi nama resmi lengkap sesuai format template.
+     * Format kode Program Studi menjadi nama resmi lengkap sesuai master prodi kampus.
+     * Konsisten 100% antara database, tampilan detail admin, dan berkas PDF:
+     * - R / RPL: Rekayasa Perangkat Lunak
+     * - AB / BD: Bisnis Digital
+     * - A / ABI: Administrasi Bisnis Internasional
+     * - AK / AKP: Akuntansi Keuangan Publik
+     * - AP: Agribisnis Peternakan
      */
-    public function formatProdi(?string $prodi): string
+    public static function formatProdi(?string $prodi): string
     {
         if (!$prodi) {
             return '-';
         }
         $clean = trim($prodi);
+        if ($clean === '') {
+            return '-';
+        }
         return match (strtoupper($clean)) {
-            'R', 'RPL'                            => 'Rekayasa Perangkat Lunak',
-            'AB', 'ABI'                           => 'Administrasi Bisnis Internasional',
-            'AK', 'AKP', 'AKUNTANSI'              => 'Akuntansi Keuangan Publik',
-            'A', 'AGRI', 'AGRIBISNIS'             => 'Agribisnis',
-            'AP', 'ADMINISTRASI PERKANTORAN'      => 'Administrasi Perkantoran',
-            default                               => $clean,
+            'R', 'RPL'                                                            => 'Rekayasa Perangkat Lunak',
+            'AB', 'BD'                                                            => 'Bisnis Digital',
+            'A', 'ABI'                                                            => 'Administrasi Bisnis Internasional',
+            'AK', 'AKP'                                                           => 'Akuntansi Keuangan Publik',
+            'AP'                                                                  => 'Agribisnis Peternakan',
+            'AGRI', 'AGRIBISNIS'                                                  => 'Agribisnis',
+            'AKUNTANSI', 'AKUNTANSI KEUANGAN PUBLIK', 'AKUTANSI KEUANGAN PUBLIK' => 'Akuntansi Keuangan Publik',
+            'BISNIS DIGITAL'                                                      => 'Bisnis Digital',
+            'ADMINISTRASI BISNIS INTERNASIONAL'                                   => 'Administrasi Bisnis Internasional',
+            'REKAYASA PERANGKAT LUNAK'                                            => 'Rekayasa Perangkat Lunak',
+            'AGRIBISNIS PETERNAKAN', 'AGRIBISNIS PERTERNAKAN', 'AGRE BISNIS PERTERNAKAN', 'AGRO PETERNAKAN' => 'Agribisnis Peternakan',
+            default                                                               => $clean,
         };
     }
 
@@ -371,37 +386,44 @@ class SuratTugasPdfService extends Fpdi
         // Siapkan baris data tabel
         $tableRows = [];
 
-        // 1. Ketua
-        $ketuaProdi = $this->formatProdi($submission->prodi ?? null);
-        $ketuaNidn = !empty($submission->nidn) ? $submission->nidn : '-';
+        // 1. Ketua Pengusul
+        $ketuaNama = !empty($submission->ketua) ? trim((string)$submission->ketua) : '-';
+        $ketuaNidn = !empty($submission->nidn) ? trim((string)$submission->nidn) : '-';
+        $ketuaProdi = self::formatProdi($submission->prodi ?? null);
+
         $tableRows[] = [
             '1.',
-            $submission->ketua ?? '-',
+            $ketuaNama,
             $ketuaNidn,
             $ketuaProdi,
             'Ketua',
         ];
 
-        // 2. Anggota
+        // 2. Anggota Pengusul
+        // Mapping resmi surat: Ketua khusus untuk ketua pengusul, dan Anggota untuk seluruh anggota lainnya.
+        // Tidak menampilkan kode internal database seperti DS, MHS, LT, dsb.
         $no = 2;
         foreach ($anggotaList as $item) {
-            $nama = is_array($item) ? ($item['nama'] ?? '-') : ($item->nama ?? '-');
-            $nim = is_array($item) ? ($item['nim'] ?? '-') : ($item->nim ?? '-');
-            $prodi = is_array($item) ? ($item['prodi'] ?? null) : ($item->prodi ?? null);
-            $rawJabatan = is_array($item) ? ($item['jabatan'] ?? 'Anggota') : ($item->jabatan ?? 'Anggota');
-            $cleanJabatan = trim((string)$rawJabatan);
-            if (empty($cleanJabatan) || strtoupper($cleanJabatan) === 'KP' || strtoupper($cleanJabatan) === 'ANGGOTA') {
-                $jabatan = 'Anggota';
-            } else {
-                $jabatan = $cleanJabatan;
+            $rawNama = is_array($item) ? ($item['nama'] ?? null) : ($item->nama ?? null);
+            $rawNim = is_array($item) ? ($item['nim'] ?? null) : ($item->nim ?? null);
+            $rawProdi = is_array($item) ? ($item['prodi'] ?? null) : ($item->prodi ?? null);
+
+            $cleanNama = !empty($rawNama) ? trim((string)$rawNama) : '-';
+            $cleanNim = !empty($rawNim) ? trim((string)$rawNim) : '-';
+
+            // Lewati jika data ketua tidak sengaja terinput ulang di daftar anggota
+            if ($cleanNama !== '-' && strcasecmp($cleanNama, $ketuaNama) === 0) {
+                if ($cleanNim === '-' || $ketuaNidn === '-' || strcasecmp($cleanNim, $ketuaNidn) === 0) {
+                    continue;
+                }
             }
 
             $tableRows[] = [
                 (string)$no++ . '.',
-                $nama ?: '-',
-                $nim ?: '-',
-                $this->formatProdi($prodi),
-                $jabatan,
+                $cleanNama,
+                $cleanNim,
+                self::formatProdi($rawProdi),
+                'Anggota',
             ];
         }
 
