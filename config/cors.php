@@ -19,7 +19,19 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    // SEC-CORS-01: Env-driven allowed origins. No wildcard fallback.
+    //
+    // Priority:
+    //   1. CORS_ALLOWED_ORIGINS env var (CSV) — if set, used as-is
+    //   2. Fallback to APP_URL — safe default for both local and production
+    //
+    // Local:      APP_URL=http://localhost      → allowed: ["http://localhost"]
+    // Production: APP_URL=https://p3m.polibang.ac.id → allowed: ["https://p3m.polibang.ac.id"]
+    // Multi-origin: CORS_ALLOWED_ORIGINS=https://p3m.polibang.ac.id,https://admin.polibang.ac.id
+    'allowed_origins' => array_filter(
+        array_map('trim', explode(',', env('CORS_ALLOWED_ORIGINS', env('APP_URL', 'http://localhost')))),
+        fn (string $v) => $v !== ''
+    ),
 
     'allowed_origins_patterns' => [],
 

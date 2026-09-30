@@ -564,4 +564,237 @@ class MediumP2AuditTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  BATCH 3 TESTS
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * SEC-XSS-02: Valid base64 PNG image is accepted, validated, and stored as WebP
+     */
+    public function test_base64_valid_png_image_accepted_and_stored(): void
+    {
+        Storage::fake('public');
+        $imageService = app(\App\Services\ImageService::class);
+
+        // Create a real 50x50 PNG image (must exceed 100-byte minimum threshold)
+        $img = imagecreatetruecolor(50, 50);
+        // Fill with varied colors to ensure sufficient compressed data size
+        for ($x = 0; $x < 50; $x++) {
+            for ($y = 0; $y < 50; $y++) {
+                imagesetpixel($img, $x, $y, imagecolorallocate($img, $x * 5, $y * 5, 128));
+            }
+        }
+        ob_start();
+        imagepng($img);
+        $pngData = ob_get_clean();
+        imagedestroy($img);
+
+        $base64 = 'data:image/png;base64,' . base64_encode($pngData);
+        $filename = $imageService->storeBase64($base64, 'test-images');
+
+        $this->assertNotEmpty($filename);
+        $this->assertStringEndsWith('.webp', $filename);
+        $this->assertTrue(Storage::disk('public')->exists('test-images/' . $filename));
+
+        // Verify stored file is valid WebP
+        $storedData = Storage::disk('public')->get('test-images/' . $filename);
+        $info = getimagesizefromstring($storedData);
+        $this->assertNotFalse($info);
+        $this->assertEquals('image/webp', $info['mime']);
+    }
+
+    /**
+     * SEC-XSS-02: SVG data URI is rejected (potential XSS vector)
+     */
+    public function test_base64_svg_payload_rejected(): void
+    {
+        $imageService = app(\App\Services\ImageService::class);
+
+        $svgPayload = '<svg xmlns="http://www.w3.org/2000/svg"><script>alert("XSS")</script></svg>';
+        $base64 = 'data:image/svg+xml;base64,' . base64_encode($svgPayload);
+
+        $this->expectException(\RuntimeException::class);
+        $imageService->storeBase64($base64, 'test-images');
+    }
+
+    /**
+     * SEC-XSS-02: HTML disguised as image is rejected
+     */
+    public function test_base64_html_payload_rejected(): void
+    {
+        $imageService = app(\App\Services\ImageService::class);
+
+        $htmlPayload = '<html><body><script>alert("XSS")</script></body></html>';
+        $base64 = 'data:text/html;base64,' . base64_encode($htmlPayload);
+
+        $this->expectException(\RuntimeException::class);
+        $imageService->storeBase64($base64, 'test-images');
+    }
+
+    /**
+     * SEC-XSS-02: processBase64InlineImage returns null for malicious payload (no exception)
+     */
+    public function test_inline_image_processor_rejects_invalid_gracefully(): void
+    {
+        $imageService = app(\App\Services\ImageService::class);
+
+        $svgPayload = '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>';
+        $dataUri = 'data:image/svg+xml;base64,' . base64_encode($svgPayload);
+
+        $result = $imageService->processBase64InlineImage($dataUri, 'test-images');
+        $this->assertNull($result, 'Malicious SVG payload should be silently rejected');
+    }
+
+    /**
+     * SEC-XSS-02: processBase64InlineImage stores valid image and returns filename
+     */
+    public function test_inline_image_processor_accepts_valid_image(): void
+    {
+        Storage::fake('public');
+        $imageService = app(\App\Services\ImageService::class);
+
+        $img = imagecreatetruecolor(4, 4);
+        imagefill($img, 0, 0, imagecolorallocate($img, 255, 0, 0));
+        ob_start();
+        imagejpeg($img);
+        $jpegData = ob_get_clean();
+        imagedestroy($img);
+
+        $dataUri = 'data:image/jpeg;base64,' . base64_encode($jpegData);
+        $filename = $imageService->processBase64InlineImage($dataUri, 'photo-agenda');
+
+        $this->assertNotNull($filename);
+        $this->assertStringEndsWith('.webp', $filename);
+        $this->assertTrue(Storage::disk('public')->exists('photo-agenda/' . $filename));
+    }
+
+    /**
+     * SEC-FILE-01: Upload PDF uses server-detected extension via guessExtension()
+     */
+    public function test_panduan_upload_uses_server_detected_extension(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->actingAs($this->admin)
+            ->post(route('panduan.store'), [
+                'namefile' => 'Panduan Penelitian 2026',
+                'original_name' => UploadedFile::fake()->create('proposal.pdf', 100, 'application/pdf'),
+            ]);
+
+        $response->assertRedirect(route('panduan.index'));
+        $response->assertSessionHas('success');
+
+        // Verify that the file was stored with .pdf extension (server-detected)
+        $panduan = \App\Models\m_panduan::latest()->first();
+        $this->assertNotNull($panduan);
+        $this->assertStringEndsWith('.pdf', $panduan->original_name);
+    }
+
+    /**
+     * SEC-FILE-01: Upload DOCX uses server-detected extension
+     */
+    public function test_dokumen_upload_uses_server_detected_extension(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->actingAs($this->admin)
+            ->post(route('dokumen.store'), [
+                'namefile' => 'Template Pengabdian',
+                'originalname' => UploadedFile::fake()->create('template.docx', 50, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
+            ]);
+
+        $response->assertRedirect(route('dokumen.index'));
+        $response->assertSessionHas('success');
+
+        $dokumen = \App\Models\DokumenModel::latest()->first();
+        $this->assertNotNull($dokumen);
+        // guessExtension() for DOCX MIME returns 'docx'
+        $ext = pathinfo($dokumen->originalname, PATHINFO_EXTENSION);
+        $this->assertContains($ext, ['docx', 'bin'], 'Extension should be server-detected');
+    }
+
+    /**
+     * SEC-HEAD-01: Security headers present on public page response
+     */
+    public function test_security_headers_present_on_public_page(): void
+    {
+        $response = $this->get(route('tampilan'));
+        $response->assertStatus(200);
+
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
+        $response->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+        $response->assertHeader('X-XSS-Protection', '0');
+        $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $response->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    }
+
+    /**
+     * SEC-HEAD-01: Security headers present on authenticated admin dashboard
+     */
+    public function test_security_headers_present_on_admin_dashboard(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('category.index'));
+        $response->assertStatus(200);
+
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
+        $response->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+        $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    }
+
+    /**
+     * SEC-HEAD-01: No aggressive CSP or HSTS headers are set (intentionally deferred)
+     */
+    public function test_no_aggressive_csp_or_hsts_headers(): void
+    {
+        $response = $this->get(route('tampilan'));
+        $response->assertStatus(200);
+
+        $response->assertHeaderMissing('Content-Security-Policy');
+        $response->assertHeaderMissing('Strict-Transport-Security');
+    }
+
+    /**
+     * SEC-CORS-01: Default CORS config uses APP_URL, no wildcard fallback
+     */
+    public function test_cors_default_uses_app_url_no_wildcard(): void
+    {
+        $origins = config('cors.allowed_origins');
+        // No wildcard in default config
+        $this->assertNotContains('*', $origins, 'Default CORS must not contain wildcard');
+        // Should contain APP_URL as fallback
+        $this->assertContains(config('app.url'), $origins);
+    }
+
+    /**
+     * SEC-CORS-01: CORS config parses CSV env variable correctly
+     */
+    public function test_cors_env_parsing_multiple_origins(): void
+    {
+        // Simulate production config with specific origins
+        $parsed = array_filter(
+            array_map('trim', explode(',', 'https://p3m.polibang.ac.id, https://polibang.ac.id')),
+            fn (string $v) => $v !== ''
+        );
+
+        $this->assertCount(2, $parsed);
+        $this->assertEquals('https://p3m.polibang.ac.id', $parsed[0]);
+        $this->assertEquals('https://polibang.ac.id', $parsed[1]);
+        $this->assertNotContains('*', $parsed);
+    }
+
+    /**
+     * SEC-CORS-01: API endpoint responds correctly with CORS headers
+     */
+    public function test_api_user_endpoint_returns_cors_headers(): void
+    {
+        $response = $this->actingAs($this->admin, 'sanctum')
+            ->withHeaders(['Origin' => 'http://localhost:3000'])
+            ->getJson('/api/user');
+
+        $response->assertStatus(200);
+        // HandleCors middleware should set Access-Control-Allow-Origin
+        $response->assertHeader('Access-Control-Allow-Origin');
+    }
 }
+

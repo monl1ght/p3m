@@ -76,7 +76,8 @@ class DokumenController extends Controller
         }
 
         $docs = $request->file('originalname');
-        $nama_docs = date('YmdHis') . '_' . uniqid() . '.' . $docs->getClientOriginalExtension();
+        // SEC-FILE-01: Use server-detected extension instead of client-supplied
+        $nama_docs = date('YmdHis') . '_' . uniqid() . '.' . ($docs->guessExtension() ?: 'bin');
         // Simpan berkas ke storage disk publik pada subdirektori dokumen
         Storage::disk('public')->putFileAs('dokumen', $docs, $nama_docs);
 
@@ -133,7 +134,8 @@ class DokumenController extends Controller
             }
 
             $docs = $request->file('originalname');
-            $nama_docs = date('YmdHis') . '_' . uniqid() . '.' . $docs->getClientOriginalExtension();
+            // SEC-FILE-01: Use server-detected extension instead of client-supplied
+            $nama_docs = date('YmdHis') . '_' . uniqid() . '.' . ($docs->guessExtension() ?: 'bin');
             Storage::disk('public')->putFileAs('dokumen', $docs, $nama_docs);
             $dokumen->originalname = $nama_docs;
         }

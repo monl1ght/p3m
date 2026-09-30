@@ -88,27 +88,97 @@ class ImageService
     }
 
     /**
+     * Allowed raster image MIME types for base64 upload validation.
+     * SVG, HTML, and other non-raster types are explicitly excluded.
+     */
+    private const ALLOWED_BASE64_MIMES = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+    ];
+
+    /**
      * Store a base64 encoded image directly (e.g., from Cropper.js).
-     * Assumes the frontend already handled cropping and compression to WebP.
+     * Validates with server-side magic bytes detection, rejects non-image payloads,
+     * and re-encodes through GD to neutralize any embedded scripts.
      *
      * @param string $base64 The base64 data string
      * @param string $directory The public storage directory
+     * @param int $quality The WebP quality (0-100)
      * @return string The generated filename
      */
-    public function storeBase64(string $base64, string $directory): string
+    public function storeBase64(string $base64, string $directory, int $quality = 82): string
     {
-        $base64Data = preg_replace('/^data:image\/\w+;base64,/', '', $base64);
-        $imageData  = base64_decode($base64Data);
+        $base64Data = preg_replace('/^data:[^;]+;base64,/', '', $base64);
+        $imageData  = base64_decode($base64Data, true);
 
         if ($imageData === false || strlen($imageData) < 100) {
             throw new RuntimeException('Data gambar base64 tidak valid.');
         }
 
+        // Server-side validation: check actual magic bytes, not client MIME claim
+        $info = @getimagesizefromstring($imageData);
+        if ($info === false) {
+            throw new RuntimeException('Data bukan gambar yang valid (magic bytes gagal).');
+        }
+
+        $detectedMime = $info['mime'] ?? '';
+        if (!in_array($detectedMime, self::ALLOWED_BASE64_MIMES, true)) {
+            throw new RuntimeException('Format gambar tidak diizinkan: ' . $detectedMime);
+        }
+
+        // Re-encode through GD to strip any embedded payloads (EXIF, trailing data, polyglots)
+        $image = @imagecreatefromstring($imageData);
+        if (!$image) {
+            throw new RuntimeException('Gagal memproses gambar base64 melalui GD.');
+        }
+
+        // Preserve transparency for PNG sources
+        if ($detectedMime === 'image/png') {
+            imagepalettetotruecolor($image);
+            imagealphablending($image, true);
+            imagesavealpha($image, true);
+        }
+
+        ob_start();
+        imagewebp($image, null, $quality);
+        $webpData = ob_get_clean();
+        imagedestroy($image);
+
+        if (!$webpData) {
+            throw new RuntimeException('Gagal mengonversi gambar base64 ke WebP.');
+        }
+
         $filename = Str::uuid()->toString() . '.webp';
         $path = rtrim($directory, '/') . '/' . $filename;
 
-        Storage::disk('public')->put($path, $imageData);
+        Storage::disk('public')->put($path, $webpData);
 
         return $filename;
+    }
+
+    /**
+     * Process a base64 data URI from an inline <img> tag (e.g., WYSIWYG editor).
+     * Validates the data URI, decodes, checks magic bytes, re-encodes through GD,
+     * and stores as WebP.
+     *
+     * @param string $dataUri The full data:image/...;base64,... string
+     * @param string $directory The public storage directory
+     * @return string|null The stored filename, or null if the data URI is not a valid image
+     */
+    public function processBase64InlineImage(string $dataUri, string $directory): ?string
+    {
+        // Only process data:image URIs
+        if (strpos($dataUri, 'data:image') !== 0) {
+            return null;
+        }
+
+        try {
+            return $this->storeBase64($dataUri, $directory);
+        } catch (RuntimeException) {
+            // Invalid/malicious payload — silently reject (image will be removed from HTML)
+            return null;
+        }
     }
 }

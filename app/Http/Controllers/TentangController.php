@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\M_tentang;
+use App\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -37,31 +38,31 @@ class TentangController extends Controller
         if ($validator->fails()) return redirect()->back()->withInput()->withErrors($validator);
 
         $htmlContent = $request->input('ourbout');
+        $imageService = app(ImageService::class);
 
         $dom = new \DOMDocument();
         @$dom->loadHTML($htmlContent);
         $images = $dom->getElementsByTagName('img');
 
+        // Collect nodes to process (DOMNodeList is live, cannot modify during iteration)
+        $toProcess = [];
         foreach ($images as $img) {
             if ($img instanceof \DOMElement) {
-                $src = $img->getAttribute('src'); // Mengambil atribut src
+                $toProcess[] = $img;
+            }
+        }
 
-                // Cek jika src adalah base64
-                if (strpos($src, 'data:image') === 0) {
-                    list($type, $data) = explode(';', $src);
-                    list(, $data) = explode(',', $data);
-                    $data = base64_decode($data);
+        foreach ($toProcess as $img) {
+            $src = $img->getAttribute('src');
 
-                    // Dapatkan ekstensi gambar
-                    $extension = explode('/', $type)[1];
-                    $filename = date('d-m-Y-H-i-s') . '-' . uniqid() . '.' . $extension;
-                    $path = 'photo-tentang/' . $filename;
-
-                    // Simpan gambar ke storage
-                    Storage::disk('public')->put($path, $data);
-
-                    // Ganti src dengan path yang baru
-                    $img->setAttribute('src', Storage::url($path));
+            // SEC-XSS-02: Validate and re-encode base64 images through ImageService
+            if (strpos($src, 'data:image') === 0) {
+                $filename = $imageService->processBase64InlineImage($src, 'photo-tentang');
+                if ($filename) {
+                    $img->setAttribute('src', Storage::url('photo-tentang/' . $filename));
+                } else {
+                    // Malicious/invalid payload — remove the image node
+                    $img->parentNode->removeChild($img);
                 }
             }
         }
@@ -97,6 +98,7 @@ class TentangController extends Controller
 
         // Mengambil konten dari textarea
         $htmlContent = $request->input('ourbout');
+        $imageService = app(ImageService::class);
 
         // Memuat HTML untuk memproses gambar
         $dom = new \DOMDocument();
@@ -111,29 +113,27 @@ class TentangController extends Controller
         // Cek apakah ada gambar baru
         $hasNewImages = false;
 
-        // Proses gambar baru dari textarea
+        // Collect nodes to process (DOMNodeList is live)
+        $toProcess = [];
         foreach ($images as $img) {
             if ($img instanceof \DOMElement) {
-                $src = $img->getAttribute('src');
+                $toProcess[] = $img;
+            }
+        }
 
-                // Cek jika src adalah base64
-                if (strpos($src, 'data:image') === 0) {
-                    $hasNewImages = true; // Menandai bahwa ada gambar baru
+        // SEC-XSS-02: Validate and re-encode base64 images through ImageService
+        foreach ($toProcess as $img) {
+            $src = $img->getAttribute('src');
 
-                    list($type, $data) = explode(';', $src);
-                    list(, $data) = explode(',', $data);
-                    $data = base64_decode($data);
+            if (strpos($src, 'data:image') === 0) {
+                $hasNewImages = true;
 
-                    // Dapatkan ekstensi gambar
-                    $extension = explode('/', $type)[1];
-                    $filename = date('d-m-Y-H-i-s') . '-' . uniqid() . '.' . $extension;
-                    $path = 'photo-tentang/' . $filename;
-
-                    // Simpan gambar ke storage
-                    Storage::disk('public')->put($path, $data);
-
-                    // Ganti src dengan path yang baru
-                    $img->setAttribute('src', Storage::url($path));
+                $filename = $imageService->processBase64InlineImage($src, 'photo-tentang');
+                if ($filename) {
+                    $img->setAttribute('src', Storage::url('photo-tentang/' . $filename));
+                } else {
+                    // Malicious/invalid payload — remove the image node
+                    $img->parentNode->removeChild($img);
                 }
             }
         }

@@ -76,7 +76,8 @@ class PanduanController extends Controller
         }
 
         $docs = $request->file('original_name');
-        $nama_docs = date('YmdHis') . '_' . uniqid() . '.' . $docs->getClientOriginalExtension();
+        // SEC-FILE-01: Use server-detected extension instead of client-supplied
+        $nama_docs = date('YmdHis') . '_' . uniqid() . '.' . ($docs->guessExtension() ?: 'bin');
         // Simpan ke storage disk publik pada subfolder panduan
         Storage::disk('public')->putFileAs('panduan', $docs, $nama_docs);
 
@@ -227,7 +228,8 @@ class PanduanController extends Controller
             }
 
             $docs = $request->file('original_name');
-            $nama_docs = date('YmdHis') . '_' . uniqid() . '.' . $docs->getClientOriginalExtension();
+            // SEC-FILE-01: Use server-detected extension instead of client-supplied
+            $nama_docs = date('YmdHis') . '_' . uniqid() . '.' . ($docs->guessExtension() ?: 'bin');
             Storage::disk('public')->putFileAs('panduan', $docs, $nama_docs);
 
             $panduan->original_name = $nama_docs;

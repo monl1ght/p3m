@@ -33,7 +33,8 @@ class SubmissionUploadCacheService
         // ── 1. Process PDF (uppdf) ──
         if ($request->hasFile('uppdf') && $request->file('uppdf')->isValid()) {
             $pdf = $request->file('uppdf');
-            $ext = strtolower($pdf->getClientOriginalExtension());
+            // SEC-FILE-01: Use server-detected extension instead of client-supplied
+            $ext = strtolower($pdf->guessExtension() ?: 'bin');
             $mime = strtolower($pdf->getMimeType() ?: '');
 
             // Ensure valid PDF up to 20 MB (20480 KB)
@@ -62,7 +63,8 @@ class SubmissionUploadCacheService
         // ── 2. Process Foto (foto) ──
         if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
             $foto = $request->file('foto');
-            $ext = strtolower($foto->getClientOriginalExtension());
+            // SEC-FILE-01: Use server-detected extension instead of client-supplied
+            $ext = strtolower($foto->guessExtension() ?: 'bin');
             $mime = strtolower($foto->getMimeType() ?: '');
             $allowedExts = ['jpg', 'jpeg', 'png'];
             $allowedMimes = ['image/jpeg', 'image/png'];
