@@ -18,6 +18,9 @@ yarn-error.log
 /.vscode
 .phpunit.result.cache
 *.backup
+*.sql
+*.dump
+*.sqlite
 route_list.json
 tree_*.txt
 /public/uploud/*
