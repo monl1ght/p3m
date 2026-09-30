@@ -124,11 +124,14 @@ class AuthorizationTest extends TestCase
         $dosen1 = User::factory()->dosen()->create();
         $dosen2 = User::factory()->dosen()->create();
 
-        $response = $this->actingAs($dosen1)->put("/profil/{$dosen2->id}", [
+        // Menggunakan URL route yang benar: /dosdash/profil/{id}
+        // (Route lama /profil/{id} tanpa prefix telah dihapus — SEC-AUTHZ-01)
+        $response = $this->actingAs($dosen1)->put("/dosdash/profil/{$dosen2->id}", [
             'name'  => $dosen1->name,
             'email' => 'baru@example.com',
         ]);
 
+        // Controller abort_unless($find->is($request->user()), 403)
         $response->assertForbidden();
         $this->assertDatabaseMissing('users', ['id' => $dosen2->id, 'email' => 'baru@example.com']);
     }
@@ -138,7 +141,9 @@ class AuthorizationTest extends TestCase
     {
         $dosen = User::factory()->dosen()->create(['email' => 'lama@example.com']);
 
-        $response = $this->actingAs($dosen)->put("/profil/{$dosen->id}", [
+        // Menggunakan URL route yang benar: /dosdash/profil/{id}
+        // (Route lama /profil/{id} tanpa prefix telah dihapus — SEC-AUTHZ-01)
+        $response = $this->actingAs($dosen)->put("/dosdash/profil/{$dosen->id}", [
             'name'  => $dosen->name,
             'email' => 'baru@example.com',
         ]);

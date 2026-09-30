@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Hki;
+use App\Models\SubmissionStatusHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -84,6 +85,9 @@ class AdminHkiController extends Controller
             'reason.max'  => 'Catatan maksimal 2000 karakter.',
         ]);
 
+        // Catat status sebelum perubahan untuk audit trail
+        $previousStatus = $hki->status;
+
         $catatan = $request->input('catatan') ?? $request->input('reason');
         $hki->catatan_admin = !blank($catatan) ? trim($catatan) : null;
 
@@ -99,6 +103,20 @@ class AdminHkiController extends Controller
         }
 
         $hki->save();
+
+        // SEC-AUTHZ-04: Catat audit trail hanya jika status benar-benar berubah.
+        // Ini mencegah duplicate history jika admin hanya memperbarui catatan.
+        if ($hki->status !== $previousStatus) {
+            SubmissionStatusHistory::create([
+                'submission_type' => 'hki',
+                'submission_id'   => $hki->id,
+                'previous_status' => $previousStatus,
+                'status'          => $hki->status,
+                'reason'          => !blank($catatan) ? trim($catatan) : null,
+                'decided_by'      => Auth::id(),
+                'decided_at'      => now(),
+            ]);
+        }
 
         return redirect()->back()
             ->with('success', 'Catatan admin untuk HKI berhasil disimpan.');

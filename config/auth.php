@@ -118,8 +118,10 @@ return [
     |--------------------------------------------------------------------------
     |
     | Digunakan sebagai gerbang verifikasi sebelum dosen dapat mendaftarkan akun.
+    | Wajib diset melalui variabel lingkungan DOSEN_REGISTRATION_PASSCODE.
+    | Jika tidak diset, fitur registrasi dosen akan ditolak (fail-closed).
     |
     */
-    'dosen_registration_passcode' => env('DOSEN_REGISTRATION_PASSCODE', 'V7#qLp2!oZ9@xR4$kP8'),
+    'dosen_registration_passcode' => env('DOSEN_REGISTRATION_PASSCODE'),
 
 ];

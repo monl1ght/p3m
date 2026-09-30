@@ -308,6 +308,13 @@ class HomeController extends Controller
     {
         $this->checkAdmin();
 
+        // SEC-AUTHZ-03: Admin tidak diperbolehkan menghapus akun yang sedang aktif digunakan.
+        // Ini mencegah hilangnya akses admin secara tidak sengaja maupun disengaja.
+        if ((int)$id === (int)Auth::id()) {
+            return redirect()->route('index')
+                ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.');
+        }
+
         // $user = Auth::user();
         $user = User::find($id);
         if ($user) {

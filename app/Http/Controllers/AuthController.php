@@ -23,8 +23,10 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials)) {
-            return back()->withInput($request->only('name'))
+        $remember = $request->boolean('remember');
+
+        if (! Auth::attempt($credentials, $remember)) {
+            return back()->withInput($request->only('name', 'remember'))
                 ->with('error', 'Nama atau password salah!');
         }
 
@@ -59,11 +61,24 @@ class AuthController extends Controller
             'passcode.required' => 'Kode otorisasi wajib diisi.',
         ]);
 
-        $expectedPasscode = (string) config('auth.dosen_registration_passcode', 'V7#qLp2!oZ9@xR4$kP8');
-        $givenPasscode    = (string) $validated['passcode'];
+        // Fail-closed: jika passcode belum dikonfigurasi di environment, tolak semua permintaan.
+        // Ini mencegah fallback ke hardcoded secret di environment yang tidak dikonfigurasi dengan benar.
+        $expectedPasscode = config('auth.dosen_registration_passcode');
+        if (blank($expectedPasscode)) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Fitur registrasi dosen saat ini tidak tersedia. Hubungi administrator P3M Polibang.',
+                ], 503);
+            }
+
+            return back()->with('error', 'Fitur registrasi dosen saat ini tidak tersedia. Hubungi administrator P3M Polibang.');
+        }
+
+        $givenPasscode = (string) $validated['passcode'];
 
         // Menggunakan hash_equals untuk mitigasi timing attack
-        if (!hash_equals($expectedPasscode, $givenPasscode)) {
+        if (!hash_equals((string) $expectedPasscode, $givenPasscode)) {
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,

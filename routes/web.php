@@ -327,11 +327,8 @@ Route::get('/public/laporan/{type}/{id}/download', [SubmissionDocumentController
 
 Route::middleware(['auth'])->get('/Propengabdian/{tipe}/{id}', [ViewlprnController::class, 'dajupeneliti'])->name('detail.detail');
 Route::middleware(['auth'])->get('/Lappengabdian/{tipe}/{id}', [ViewlprnController::class, 'kumpengneli'])->name('detail.detailk');
-// Moved to dosdash group
-
-Route::group(['middleware' => 'auth:sanctum', 'role:dosen'], function () {
-    Route::get('/profil/{id}', [DosenController::class, 'update']);
-    Route::put('/profil/{id}', [DosenController::class, 'edit']);
+// Note: Route profil dosen (/profil/{id}) hanya tersedia di dalam group dosdash
+// dengan middleware ['auth:sanctum', 'role:dosen'] yang benar (lihat di bawah).
 
     Route::prefix('dosdash')->middleware('auth:sanctum', 'role:dosen')->group(function () {
         // Profil Dosen
@@ -397,4 +394,3 @@ Route::group(['middleware' => 'auth:sanctum', 'role:dosen'], function () {
         Route::delete('/hki/{id}/delete', [DosenHkiController::class, 'destroy'])->name('dosen.hki.delete');
         Route::get('/hki/{id}/download', [DosenHkiController::class, 'download'])->name('dosen.hki.download');
     });
-});
