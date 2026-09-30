@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use App\Services\HtmlSanitizer;
 use DOMDocument;
 
 class NewsController extends Controller
@@ -134,7 +135,7 @@ class NewsController extends Controller
         // $user = auth()->user();
         $data = [];
         $data['title']       = $request->title;
-        $data['content']     = $dom->saveHTML();
+        $data['content']     = app(HtmlSanitizer::class)->sanitize($dom->saveHTML());
         $data['category_id'] = $request->category_id;
         $data['image']       = $coverFilename;
         $data['date']        = date('Y-m-d', strtotime($request->date));
@@ -252,7 +253,7 @@ class NewsController extends Controller
             $data['image'] = $filename;
         }
 
-        $data['content'] = $dom->saveHTML();
+        $data['content'] = app(HtmlSanitizer::class)->sanitize($dom->saveHTML());
         $find->update($data);
         return redirect()->route('news.index')->with('success', 'Berita berhasil diperbarui!');
     }

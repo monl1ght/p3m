@@ -27,7 +27,7 @@
     ];
 @endphp
 
-        const serverUploadErrors = {!! json_encode($serverUploadErrors) !!};
+        const serverUploadErrors = @json($serverUploadErrors);
 
         function isManagedUpload(input) {
             return input instanceof HTMLInputElement &&

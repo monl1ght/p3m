@@ -274,17 +274,17 @@
 
                             <h2>Tentang Kami</h2>
                             <div class="content-body mb-5">
-                                {!! preg_replace('#<p[^>]*>(\s*<br\s*/?>\s*|\s*)*</p>#i', '', strip_tags($bout->ourbout, '<p><br><strong><b><em><i>')) !!}
+                                {!! app(\App\Services\HtmlSanitizer::class)->sanitize(preg_replace('#<p[^>]*>(\s*<br\s*/?>\s*|\s*)*</p>#i', '', $bout->ourbout)) !!}
                             </div>
 
                             <h2>Visi P3M</h2>
                             <div class="content-body mb-5">
-                                {!! preg_replace('#<p[^>]*>(\s*<br\s*/?>\s*|\s*)*</p>#i', '', strip_tags($bout->visi, '<p><br><strong><b><em><i>')) !!}
+                                {!! app(\App\Services\HtmlSanitizer::class)->sanitize(preg_replace('#<p[^>]*>(\s*<br\s*/?>\s*|\s*)*</p>#i', '', $bout->visi)) !!}
                             </div>
 
                             <h2>Misi P3M</h2>
                             <div class="content-body">
-                                {!! strip_tags($bout->misi, '<p><ul><ol><li><br><strong><b><em><i>') !!}
+                                {!! app(\App\Services\HtmlSanitizer::class)->sanitize($bout->misi) !!}
                             </div>
                         @endforeach
                     </div>

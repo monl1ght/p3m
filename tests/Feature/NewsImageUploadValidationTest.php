@@ -107,4 +107,55 @@ class NewsImageUploadValidationTest extends TestCase
             'title' => 'Kegiatan Lama',
         ]);
     }
+
+    #[Test]
+    public function kegiatan_tambah_dan_tampilkan_membersihkan_payload_xss_dengan_aman(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $category = M_categories::create([
+            'name' => 'Teknologi',
+            'slug' => 'teknologi',
+        ]);
+
+        $imageFile = UploadedFile::fake()->image('cover.jpg', 600, 400);
+
+        $maliciousContent = '<p>Kegiatan workshop <strong>Polibang</strong>.</p>'
+            . '<script>alert("XSS_STORED")</script>'
+            . '<img src="https://example.com/logo.png" onerror="alert(1)" alt="Logo">'
+            . '<a href="javascript:alert(2)">Link Jahat</a>'
+            . '<iframe src="https://attacker.com"></iframe>';
+
+        $response = $this->actingAs($admin)->post(route('news.store'), [
+            'title'       => 'Workshop Keamanan Sistem',
+            'date'        => '2026-09-30',
+            'category_id' => $category->id,
+            'image'       => $imageFile,
+            'content'     => $maliciousContent,
+        ]);
+
+        $response->assertRedirect(route('news.index'));
+        $response->assertSessionHas('success');
+
+        $news = M_news::where('title', 'Workshop Keamanan Sistem')->first();
+        $this->assertNotNull($news);
+
+        // Verifikasi database tidak menyimpan script atau payload berbahaya
+        $this->assertStringNotContainsString('<script', $news->content);
+        $this->assertStringNotContainsString('alert(', $news->content);
+        $this->assertStringNotContainsString('onerror', $news->content);
+        $this->assertStringNotContainsString('javascript:', $news->content);
+        $this->assertStringNotContainsString('<iframe', $news->content);
+
+        // Verifikasi format yang sah tetap ada
+        $this->assertStringContainsString('Workshop Keamanan Sistem', $news->title);
+        $this->assertStringContainsString('<strong>Polibang</strong>', $news->content);
+
+        // Akses halaman detail publik
+        $detailResponse = $this->get(route('tampilan.detail', $news->id));
+        $detailResponse->assertOk();
+        $detailResponse->assertSee('Workshop Keamanan Sistem');
+        $detailResponse->assertSee('<strong>Polibang</strong>', false);
+        $detailResponse->assertDontSee('<script>alert("XSS_STORED")</script>', false);
+        $detailResponse->assertDontSee('onerror="alert(1)"', false);
+    }
 }

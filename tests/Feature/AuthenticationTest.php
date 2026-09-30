@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -20,6 +22,16 @@ class AuthenticationTest extends TestCase
     // -------------------------------------------------------------------------
     // Login
     // -------------------------------------------------------------------------
+
+    #[Test]
+    public function halaman_login_menampilkan_checkbox_ingat_saya(): void
+    {
+        $response = $this->get('/login');
+
+        $response->assertOk();
+        $response->assertSee('Ingat saya');
+        $response->assertSee('name="remember"', false);
+    }
 
     #[Test]
     public function guest_tidak_bisa_akses_dashboard_admin(): void
@@ -223,5 +235,135 @@ class AuthenticationTest extends TestCase
         $this->actingAs($admin)
             ->get('/dash')
             ->assertOk();
+    }
+
+    // -------------------------------------------------------------------------
+    // Remember Me
+    // -------------------------------------------------------------------------
+
+    #[Test]
+    public function login_dengan_ingat_saya_menerbitkan_cookie_remember_me_dan_mengisi_token(): void
+    {
+        $dosen = User::factory()->dosen()->create();
+
+        $response = $this->post('/proses-login', [
+            'name'     => $dosen->name,
+            'password' => 'password',
+            'remember' => '1',
+        ]);
+
+        $response->assertRedirect(route('dosen.dash'));
+        $this->assertAuthenticatedAs($dosen);
+
+        $recallerName = Auth::guard('web')->getRecallerName();
+        $response->assertCookie($recallerName);
+
+        $freshUser = $dosen->fresh();
+        $this->assertNotNull($freshUser->remember_token, 'remember_token harus terisi di database saat Remember Me dicentang.');
+    }
+
+    #[Test]
+    public function login_tanpa_ingat_saya_tidak_menerbitkan_cookie_remember_me(): void
+    {
+        $dosen = User::factory()->dosen()->create();
+
+        $response = $this->post('/proses-login', [
+            'name'     => $dosen->name,
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect(route('dosen.dash'));
+        $this->assertAuthenticatedAs($dosen);
+
+        $recallerName = Auth::guard('web')->getRecallerName();
+        $response->assertCookieMissing($recallerName);
+    }
+
+    #[Test]
+    public function logout_setelah_remember_me_aktif_menghapus_cookie_dan_session(): void
+    {
+        $dosen = User::factory()->dosen()->create();
+
+        $loginResponse = $this->post('/proses-login', [
+            'name'     => $dosen->name,
+            'password' => 'password',
+            'remember' => '1',
+        ]);
+
+        $recallerName = Auth::guard('web')->getRecallerName();
+        $cookie = $loginResponse->getCookie($recallerName);
+        $this->assertNotNull($cookie);
+
+        $logoutResponse = $this->withCookie($recallerName, $cookie->getValue())
+            ->post('/logout');
+
+        $logoutResponse->assertRedirect('/');
+        $this->assertGuest();
+        $logoutResponse->assertCookieExpired($recallerName);
+        $this->assertNotEquals($cookie->getValue(), $dosen->fresh()->remember_token);
+    }
+
+    #[Test]
+    public function tutup_dan_buka_kembali_browser_tetap_terautentikasi_dengan_remember_cookie(): void
+    {
+        $dosen = User::factory()->dosen()->create();
+
+        $loginResponse = $this->post('/proses-login', [
+            'name'     => $dosen->name,
+            'password' => 'password',
+            'remember' => '1',
+        ]);
+
+        $recallerName = Auth::guard('web')->getRecallerName();
+        $cookie = $loginResponse->getCookie($recallerName);
+        $this->assertNotNull($cookie, 'Cookie remember me harus ada pada respons login.');
+
+        // Simulasikan browser ditutup tanpa logout (session hilang dan guard direset)
+        $this->flushSession();
+        app('auth')->forgetGuards();
+
+        // Buka browser kembali dengan membawa cookie remember me
+        $reopenResponse = $this->withCookie($recallerName, $cookie->getValue())
+            ->get('/dosdash/dash');
+
+        $reopenResponse->assertOk();
+        $this->assertAuthenticatedAs($dosen);
+    }
+
+    #[Test]
+    public function login_remember_me_berfungsi_untuk_admin_dan_dosen(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $adminResponse = $this->post('/proses-login', [
+            'name'     => $admin->name,
+            'password' => 'password',
+            'remember' => '1',
+        ]);
+
+        $adminResponse->assertRedirect(route('dash.dashadmin'));
+        $this->assertAuthenticatedAs($admin);
+        $recallerName = Auth::guard('web')->getRecallerName();
+        $adminResponse->assertCookie($recallerName);
+    }
+
+    #[Test]
+    public function login_gagal_mempertahankan_input_remember(): void
+    {
+        User::factory()->create([
+            'name'     => 'dosentest',
+            'password' => bcrypt('password123'),
+            'role'     => 'dosen',
+        ]);
+
+        $response = $this->post('/proses-login', [
+            'name'     => 'dosentest',
+            'password' => 'passwordSalah',
+            'remember' => '1',
+        ]);
+
+        $response->assertSessionHas('error');
+        $response->assertSessionHas('_old_input.remember', '1');
+        $this->assertGuest();
     }
 }

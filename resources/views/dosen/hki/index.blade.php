@@ -1136,21 +1136,24 @@
                                                     <i class="fas fa-eye"></i>
                                                 </a>
 
-                                                {{-- Edit HKI --}}
-                                                <a href="{{ route('dosen.hki.edit', $item->id) }}"
-                                                    class="upp3m-action-btn upp3m-action-edit" title="Edit HKI"
-                                                    aria-label="Edit HKI">
-                                                    <i class="fas fa-pen"></i>
-                                                </a>
+                                                {{-- Edit & Hapus HKI (Hanya jika belum disetujui / diterima) --}}
+                                                @if ($item->status !== 'diterima')
+                                                    {{-- Edit HKI --}}
+                                                    <a href="{{ route('dosen.hki.edit', $item->id) }}"
+                                                        class="upp3m-action-btn upp3m-action-edit" title="Edit HKI"
+                                                        aria-label="Edit HKI">
+                                                        <i class="fas fa-pen"></i>
+                                                    </a>
 
-                                                {{-- Hapus HKI --}}
-                                                <button type="button"
-                                                    class="upp3m-action-btn upp3m-action-delete js-delete-hki"
-                                                    data-url="{{ route('dosen.hki.delete', $item->id) }}"
-                                                    data-title="{{ $item->judul }}" title="Hapus HKI"
-                                                    aria-label="Hapus HKI">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
+                                                    {{-- Hapus HKI --}}
+                                                    <button type="button"
+                                                        class="upp3m-action-btn upp3m-action-delete js-delete-hki"
+                                                        data-url="{{ route('dosen.hki.delete', $item->id) }}"
+                                                        data-title="{{ $item->judul }}" title="Hapus HKI"
+                                                        aria-label="Hapus HKI">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>

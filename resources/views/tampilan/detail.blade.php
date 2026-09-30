@@ -749,7 +749,7 @@ body {
                     {{-- Content Body with full formatting & justify --}}
                     <div class="article-content">
                         @if (Str::contains($cleanContent, ['<p', '<div', '<br', '<figure', '<ul', '<ol', '<h1', '<h2', '<h3', '<h4']))
-                            {!! $cleanContent !!}
+                            {!! app(\App\Services\HtmlSanitizer::class)->sanitize($cleanContent) !!}
                         @else
                             @foreach (preg_split('/\r\n|\r|\n/', $cleanContent) as $paragraph)
                                 @if (trim($paragraph) !== '')

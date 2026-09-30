@@ -138,6 +138,11 @@ class DosenHkiController extends Controller
         $user = Auth::user();
         $hki = Hki::where('user_id', $user->id)->with('anggotas')->findOrFail($id);
 
+        if ($hki->status === 'diterima') {
+            return redirect()->route('dosen.hki.index')
+                ->with('error', 'Data HKI yang sudah disetujui tidak dapat diubah.');
+        }
+
         return view('dosen.hki.edit', compact('user', 'hki'));
     }
 
@@ -148,6 +153,11 @@ class DosenHkiController extends Controller
     {
         $user = Auth::user();
         $hki = Hki::where('user_id', $user->id)->findOrFail($id);
+
+        if ($hki->status === 'diterima') {
+            return redirect()->route('dosen.hki.index')
+                ->with('error', 'Data HKI yang sudah disetujui tidak dapat diubah.');
+        }
 
         $validator = Validator::make($request->all(), [
             'judul'             => 'required|string|max:255',
@@ -198,6 +208,9 @@ class DosenHkiController extends Controller
 
         try {
             DB::transaction(function () use ($hki, $request, $newStoredPath, $originalName) {
+                $previousStatus = $hki->status;
+                $wasRejected = in_array($previousStatus, ['direvisi', 'ditolak', 'non-approve'], true);
+
                 $hki->judul            = $request->input('judul');
                 $hki->tanggal          = $request->input('tanggal');
                 $hki->jenis_hki        = $request->input('jenis_hki');
@@ -206,6 +219,11 @@ class DosenHkiController extends Controller
                 if ($newStoredPath) {
                     $hki->file_path = $newStoredPath;
                     $hki->file_name = $originalName;
+                }
+
+                if ($wasRejected) {
+                    $hki->status = 'diproses';
+                    $hki->catatan_admin = null;
                 }
 
                 $hki->read_at = null;
@@ -242,6 +260,11 @@ class DosenHkiController extends Controller
     {
         $user = Auth::user();
         $hki = Hki::where('user_id', $user->id)->findOrFail($id);
+
+        if ($hki->status === 'diterima') {
+            return redirect()->route('dosen.hki.index')
+                ->with('error', 'Data HKI yang sudah disetujui tidak dapat dihapus.');
+        }
 
         $filePath = $hki->file_path;
 

@@ -219,11 +219,59 @@
             color: #ef4444;
         }
 
+        /* ── Remember Me Checkbox ── */
+        .form-remember-wrap {
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+            margin-bottom: 26px;
+        }
+
+        .checkbox-remember-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 7.5px;
+            cursor: pointer;
+            user-select: none;
+            margin: 0;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: #64748b;
+            transition: color 0.2s ease;
+        }
+
+        .checkbox-remember-label:hover {
+            color: #1e293b;
+        }
+
+        .checkbox-remember-input {
+            width: 14.5px;
+            height: 14.5px;
+            cursor: pointer;
+            accent-color: var(--primary);
+            border-radius: 3.5px;
+            border: 1.5px solid var(--border-color);
+            margin: 0;
+            vertical-align: middle;
+            outline: none;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .checkbox-remember-input:focus-visible {
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.18);
+            outline: 2px solid var(--primary);
+            outline-offset: 1px;
+        }
+
+        .checkbox-remember-text {
+            line-height: 1;
+        }
+
         /* ── Submit Button ── */
         .btn-submit-p3m {
             width: 100%;
             height: 48px;
-            margin-top: 8px;
+            margin-top: 0;
             border: none;
             border-radius: 14px;
             background: linear-gradient(135deg, #059669 0%, #047857 100%);
@@ -600,6 +648,13 @@
                         @error('password')
                             <small class="form-error">{{ $message }}</small>
                         @enderror
+                    </div>
+
+                    <div class="form-remember-wrap">
+                        <label class="checkbox-remember-label" for="remember">
+                            <input type="checkbox" name="remember" id="remember" value="1" {{ old('remember') ? 'checked' : '' }} class="checkbox-remember-input">
+                            <span class="checkbox-remember-text">Ingat saya</span>
+                        </label>
                     </div>
 
                     <button type="submit" class="btn-submit-p3m">
