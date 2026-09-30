@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 
 class AuthController extends Controller
@@ -26,12 +27,27 @@ class AuthController extends Controller
         $remember = $request->boolean('remember');
 
         if (! Auth::attempt($credentials, $remember)) {
+            // SEC-LOG-01: Log failed login attempt
+            Log::warning('Login gagal', [
+                'username'   => $request->input('name'),
+                'ip'         => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
             return back()->withInput($request->only('name', 'remember'))
                 ->with('error', 'Nama atau password salah!');
         }
 
         $request->session()->regenerate();
         $user = $request->user();
+
+        // SEC-LOG-01: Log successful login
+        Log::info('Login berhasil', [
+            'user_id'    => $user->id,
+            'role'       => $user->role,
+            'ip'         => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return match ($user->role) {
             'admin' => redirect()->route('dash.dashadmin'),
@@ -79,6 +95,12 @@ class AuthController extends Controller
 
         // Menggunakan hash_equals untuk mitigasi timing attack
         if (!hash_equals((string) $expectedPasscode, $givenPasscode)) {
+            // SEC-LOG-01: Log failed registration passcode attempt
+            Log::warning('Passcode registrasi dosen gagal', [
+                'ip'         => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -132,6 +154,13 @@ class AuthController extends Controller
         $user->password = Hash::make($validated['password']);
         $user->role     = 'dosen'; // Eksplisit — bukan mass assignment
         $user->save();
+
+        // SEC-LOG-01: Log successful dosen registration
+        Log::info('Registrasi dosen berhasil', [
+            'user_id' => $user->id,
+            'email'   => $user->email,
+            'ip'      => $request->ip(),
+        ]);
 
         // Hanguskan session otorisasi agar tidak bisa dipakai ulang
         $request->session()->forget(['dosen_register_authorized', 'dosen_register_authorized_at']);

@@ -796,5 +796,173 @@ class MediumP2AuditTest extends TestCase
         // HandleCors middleware should set Access-Control-Allow-Origin
         $response->assertHeader('Access-Control-Allow-Origin');
     }
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  BATCH 4A TESTS
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * SEC-LOG-01: Login berhasil menghasilkan log entry
+     */
+    public function test_successful_login_is_logged(): void
+    {
+        $user = User::factory()->create([
+            'role'     => 'admin',
+            'password' => bcrypt('password123'),
+        ]);
+
+        \Illuminate\Support\Facades\Log::shouldReceive('info')
+            ->once()
+            ->withArgs(function (string $message, array $context) use ($user) {
+                return $message === 'Login berhasil'
+                    && $context['user_id'] === $user->id
+                    && $context['role'] === 'admin'
+                    && isset($context['ip'])
+                    && isset($context['user_agent']);
+            });
+
+        // Allow other log calls to pass through
+        \Illuminate\Support\Facades\Log::shouldReceive('info')
+            ->withAnyArgs()
+            ->zeroOrMoreTimes();
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')
+            ->withAnyArgs()
+            ->zeroOrMoreTimes();
+
+        $this->post('/proses-login', [
+            'name'     => $user->name,
+            'password' => 'password123',
+        ]);
+    }
+
+    /**
+     * SEC-LOG-01: Login gagal menghasilkan warning log
+     */
+    public function test_failed_login_is_logged(): void
+    {
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')
+            ->once()
+            ->withArgs(function (string $message, array $context) {
+                return $message === 'Login gagal'
+                    && $context['username'] === 'nonexistent_user'
+                    && isset($context['ip'])
+                    && isset($context['user_agent']);
+            });
+
+        \Illuminate\Support\Facades\Log::shouldReceive('info')
+            ->withAnyArgs()
+            ->zeroOrMoreTimes();
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')
+            ->withAnyArgs()
+            ->zeroOrMoreTimes();
+
+        $this->post('/proses-login', [
+            'name'     => 'nonexistent_user',
+            'password' => 'wrong_password',
+        ]);
+    }
+
+    /**
+     * SEC-LOG-01: Passcode registrasi gagal menghasilkan warning log
+     */
+    public function test_failed_registration_passcode_is_logged(): void
+    {
+        Config::set('auth.dosen_registration_passcode', 'correct-passcode');
+
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')
+            ->once()
+            ->withArgs(function (string $message, array $context) {
+                return $message === 'Passcode registrasi dosen gagal'
+                    && isset($context['ip'])
+                    && isset($context['user_agent']);
+            });
+
+        \Illuminate\Support\Facades\Log::shouldReceive('info')
+            ->withAnyArgs()
+            ->zeroOrMoreTimes();
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')
+            ->withAnyArgs()
+            ->zeroOrMoreTimes();
+
+        $this->post(route('register.verify-gate'), [
+            'passcode' => 'wrong-passcode',
+        ]);
+    }
+
+    /**
+     * SEC-LOG-01: Log login gagal TIDAK mengandung password
+     */
+    public function test_login_log_does_not_contain_password(): void
+    {
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')
+            ->once()
+            ->withArgs(function (string $message, array $context) {
+                // Verify no password-like keys exist in the context
+                $contextJson = json_encode($context);
+                return $message === 'Login gagal'
+                    && !isset($context['password'])
+                    && !str_contains($contextJson, 'supersecretpassword');
+            });
+
+        \Illuminate\Support\Facades\Log::shouldReceive('info')
+            ->withAnyArgs()
+            ->zeroOrMoreTimes();
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')
+            ->withAnyArgs()
+            ->zeroOrMoreTimes();
+
+        $this->post('/proses-login', [
+            'name'     => 'testuser',
+            'password' => 'supersecretpassword',
+        ]);
+    }
+
+    /**
+     * SEC-LOG-01: User deletion oleh admin menghasilkan log
+     */
+    public function test_user_deletion_is_logged(): void
+    {
+        $otherUser = User::factory()->create(['role' => 'dosen']);
+
+        \Illuminate\Support\Facades\Log::shouldReceive('info')
+            ->once()
+            ->withArgs(function (string $message, array $context) use ($otherUser) {
+                return $message === 'User dihapus oleh admin'
+                    && $context['deleted_user_id'] === $otherUser->id
+                    && $context['deleted_role'] === 'dosen'
+                    && isset($context['admin_id']);
+            });
+
+        \Illuminate\Support\Facades\Log::shouldReceive('info')
+            ->withAnyArgs()
+            ->zeroOrMoreTimes();
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')
+            ->withAnyArgs()
+            ->zeroOrMoreTimes();
+
+        $this->actingAs($this->admin)->delete(route('delete', $otherUser->id));
+    }
+
+    /**
+     * SEC-FILE-03: Sample/demo files sudah dihapus dari public directory
+     */
+    public function test_sample_files_removed_from_public(): void
+    {
+        $this->assertFileDoesNotExist(public_path('sample_surat_penelitian.pdf'));
+        $this->assertFileDoesNotExist(public_path('sample_surat_pengabdian.pdf'));
+        $this->assertFileDoesNotExist(public_path('demo-design.html'));
+    }
+
+    /**
+     * SEC-FILE-03: Halaman publik tidak memiliki broken references ke file yang dihapus
+     */
+    public function test_public_pages_no_broken_references_to_removed_files(): void
+    {
+        $response = $this->get(route('tampilan'));
+        $response->assertStatus(200);
+        $response->assertDontSee('sample_surat_penelitian');
+        $response->assertDontSee('sample_surat_pengabdian');
+        $response->assertDontSee('demo-design.html');
+    }
 }
 

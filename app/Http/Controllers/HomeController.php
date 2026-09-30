@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -208,6 +209,13 @@ class HomeController extends Controller
             // role diset secara eksplisit — bukan melalui fillable
             $user->role = $request->role;
             $user->save();
+
+            // SEC-LOG-01: Log user creation by admin
+            Log::info('User dibuat oleh admin', [
+                'created_user_id' => $user->id,
+                'role'            => $user->role,
+                'admin_id'        => Auth::id(),
+            ]);
         } catch (\Illuminate\Database\QueryException $e) {
             report($e);
             return redirect()
@@ -288,10 +296,21 @@ class HomeController extends Controller
         }
 
         try {
+            $oldRole = $find->role;
             $find->update($data);
             // Set role secara eksplisit karena bukan di $fillable
             $find->role = $request->role;
             $find->save();
+
+            // SEC-LOG-01: Log role change if different
+            if ($oldRole !== $find->role) {
+                Log::info('Role user diubah oleh admin', [
+                    'user_id'  => $find->id,
+                    'old_role' => $oldRole,
+                    'new_role' => $find->role,
+                    'admin_id' => Auth::id(),
+                ]);
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             report($e);
             return redirect()
@@ -318,6 +337,13 @@ class HomeController extends Controller
         // $user = Auth::user();
         $user = User::find($id);
         if ($user) {
+            // SEC-LOG-01: Log user deletion by admin
+            Log::info('User dihapus oleh admin', [
+                'deleted_user_id' => $user->id,
+                'deleted_role'    => $user->role,
+                'admin_id'        => Auth::id(),
+            ]);
+
             $user->delete();
         }
         return redirect()->route('index', compact('user'))->with('success', 'Data berhasil dihapus!');
