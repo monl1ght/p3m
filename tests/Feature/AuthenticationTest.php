@@ -34,6 +34,26 @@ class AuthenticationTest extends TestCase
     }
 
     #[Test]
+    public function user_dosen_yang_sudah_login_di_redirect_ke_dashboard_saat_akses_login(): void
+    {
+        $dosen = User::factory()->dosen()->create();
+
+        $response = $this->actingAs($dosen)->get('/login');
+
+        $response->assertRedirect(route('dosen.dash'));
+    }
+
+    #[Test]
+    public function user_admin_yang_sudah_login_di_redirect_ke_dashboard_saat_akses_login(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->get('/login');
+
+        $response->assertRedirect(route('dash.dashadmin'));
+    }
+
+    #[Test]
     public function guest_tidak_bisa_akses_dashboard_admin(): void
     {
         $response = $this->get('/dash');

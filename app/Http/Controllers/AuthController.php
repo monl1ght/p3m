@@ -14,6 +14,14 @@ class AuthController extends Controller
 {
     public function index()
     {
+        if (Auth::check()) {
+            return match (Auth::user()->role) {
+                'admin' => redirect()->route('dash.dashadmin'),
+                'dosen' => redirect()->route('dosen.dash'),
+                default => redirect('/'),
+            };
+        }
+
         return view('auth.login');
     }
 
