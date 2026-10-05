@@ -862,7 +862,7 @@ section.content {
                                         {{ $cInitial }}
                                     </div>
                                     <div class="p3m-lead-title-box">
-                                        <h3 class="p3m-lead-name">{{ $penelitians->ketua }}</h3>
+                                        <h3 class="p3m-lead-name">{{ \App\Services\SuratTugasPdfService::sanitizeText($penelitians->ketua) }}</h3>
                                         <div class="p3m-lead-tags">
                                             <span class="p3m-tag-pill">{{ $cJabatan }}</span>
                                             <span class="p3m-tag-muted">• {{ $cProdi }}</span>
@@ -921,7 +921,7 @@ section.content {
                                                 @endphp
                                                 <tr>
                                                     <td>
-                                                        <div class="p3m-member-bold">{{ $anggota->nama }}</div>
+                                                        <div class="p3m-member-bold">{{ \App\Services\SuratTugasPdfService::sanitizeText($anggota->nama) }}</div>
                                                     </td>
                                                     <td>
                                                         <span class="p3m-tag-pill" style="font-size: 11px;">{{ $mJab }}</span>

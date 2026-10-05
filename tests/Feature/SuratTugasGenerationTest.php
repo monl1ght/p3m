@@ -1012,4 +1012,84 @@ class SuratTugasGenerationTest extends TestCase
         $this->assertStringNotContainsString('(LT)', $pdfContent);
         $this->assertStringNotContainsString('(KP)', $pdfContent);
     }
+
+    /**
+     * Memastikan text-wrapping pada nama/gelar panjang (seperti Nila Ayu Kusuma Wardani, S.E., M.E)
+     * sinkron 100% antara perhitungan calculateLines dan lebar MultiCell, sehingga tinggi cell membesar
+     * otomatis dan garis border bawah tidak memotong teks (border collision bug).
+     */
+    public function test_surat_tugas_multiline_name_cell_height_agreement_and_no_border_overlap(): void
+    {
+        $service = new SuratTugasPdfService('Penelitian');
+        $service->AddPage();
+        $service->SetFont('Times', '', 9.5);
+
+        // Lebar kolom NAMA adalah 54mm, dengan indent 2.0mm maka lebar cetak MultiCell adalah 50.5mm
+        $colWidth = 54.0;
+        $printWidth = $colWidth - 3.5; // 50.5mm
+
+        $multilineName = 'Nila Ayu Kusuma Wardani, S.E., M.E';
+        $calculatedLines = $service->calculateLines($printWidth, $multilineName);
+
+        // Harus terhitung 2 baris (bukan 1 baris seperti sebelum perbaikan)
+        $this->assertEquals(2, $calculatedLines, 'Nama dan gelar panjang harus dihitung 2 baris pada printable width');
+
+        // Uji agreement langsung dengan FPDF MultiCell
+        $yBefore = $service->GetY();
+        $service->MultiCell($printWidth, 4.4, $multilineName, 0, 'L');
+        $yAfter = $service->GetY();
+        $actualLines = (int)round(($yAfter - $yBefore) / 4.4);
+
+        $this->assertEquals($calculatedLines, $actualLines, 'Perhitungan calculateLines harus identik dengan aktual FPDF MultiCell');
+    }
+
+    /**
+     * Memastikan sanitasi artefak mojibake encoding (seperti â€™ menjadi ') serta normalisasi
+     * typographic smart quotes/apostrof (’, ‘, ʼ, `, “) dan dash (–, —) pada seluruh komponen surat.
+     */
+    public function test_surat_tugas_mojibake_and_typographic_punctuation_sanitization(): void
+    {
+        // 1. Uji langsung method sanitizeText
+        $this->assertSame("M. A'zim Musyaddad", SuratTugasPdfService::sanitizeText("M. Aâ€™zim Musyaddad"));
+        $this->assertSame("M. A'zim Musyaddad", SuratTugasPdfService::sanitizeText("M. A’zim Musyaddad"));
+        $this->assertSame("M. A'zim Musyaddad", SuratTugasPdfService::sanitizeText("M. A‘zim Musyaddad"));
+        $this->assertSame("M. A'zim Musyaddad", SuratTugasPdfService::sanitizeText("M. A`zim Musyaddad"));
+        $this->assertSame("M. A'zim Musyaddad", SuratTugasPdfService::sanitizeText("M. Aʼzim Musyaddad"));
+        $this->assertSame('"Inovasi Digital" - 2026', SuratTugasPdfService::sanitizeText('“Inovasi Digital” – 2026'));
+
+        // 2. Uji hasil dokumen PDF lengkap dengan data riil Wanusobo
+        $submission = (object)[
+            'judul'           => 'CIRCULAR ECONOMY BERBASIS RUMAH TANGGA: ANALISIS PEMANFAATAN MINYAK JELANTAH MENJADI PRODUK KREATIF BERNILAI EKONOMI PADA KELOMPOK PKK DESA WANUSOBO',
+            'ketua'           => 'Nur Hikmah, M.E',
+            'nidn'            => '0610058202',
+            'prodi'           => 'A',
+            'nomor_surat'     => 'A. 010/P3M–Polibang/IX/PL/2026', // Menggunakan en-dash tipografis
+            'tanggal_mulai'   => '2026-09-01',
+            'tanggal_selesai' => '2026-09-30',
+        ];
+
+        $members = [
+            ['nama' => 'Muhammad Ali Subkan, M.Pd', 'nim' => '0625109201', 'prodi' => 'AK', 'jabatan' => 'DS'],
+            ['nama' => 'Nila Ayu Kusuma Wardani, S.E., M.E', 'nim' => '0615039702', 'prodi' => 'AK', 'jabatan' => 'DS'],
+            ['nama' => 'Purwati, S.E., M.E', 'nim' => '0610029601', 'prodi' => 'AK', 'jabatan' => 'DS'],
+            ['nama' => 'M. Hilal Abyan', 'nim' => '2023010037', 'prodi' => 'AK', 'jabatan' => 'MHS'],
+            ['nama' => 'Adinda Pretty Giftsafiani', 'nim' => '2023030131', 'prodi' => 'AK', 'jabatan' => 'MHS'],
+            ['nama' => 'M. Ariel Setyawan', 'nim' => '2023020106', 'prodi' => 'A', 'jabatan' => 'MHS'],
+            ['nama' => 'M. Aâ€™zim Musyaddad', 'nim' => '2023020106', 'prodi' => 'A', 'jabatan' => 'MHS'],
+        ];
+
+        $service = new SuratTugasPdfService('Penelitian');
+        $service->SetCompression(false);
+        $pdf = $service->generateDocument($submission, $members);
+
+        // Verifikasi tidak ada karakter mojibake â€™
+        $this->assertStringNotContainsString('â€™', $pdf);
+        $this->assertStringNotContainsString('â€˜', $pdf);
+
+        // Verifikasi nama terkonversi menjadi apostrof standar yang bersih
+        $this->assertStringContainsString("M. A'zim Musyaddad", $pdf);
+
+        // Verifikasi nomor surat tanda strip bersih
+        $this->assertStringContainsString('A. 010/P3M-Polibang/IX/PL/2026', $pdf);
+    }
 }

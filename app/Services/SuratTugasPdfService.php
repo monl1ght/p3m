@@ -174,7 +174,7 @@ class SuratTugasPdfService extends Fpdi
         $this->Cell(170, 5.2, 'POLITEKNIK BALEKAMBANG JEPARA', 0, 1, 'C');
 
         if (!empty($nomorSurat)) {
-            $cleanNomor = str_replace(['–', '—'], '-', trim((string)$nomorSurat));
+            $cleanNomor = self::sanitizeText($nomorSurat);
             if (!preg_match('/^nomor\s*:/i', $cleanNomor)) {
                 $displayNomor = 'Nomor: ' . $cleanNomor;
             } else {
@@ -191,6 +191,76 @@ class SuratTugasPdfService extends Fpdi
     }
 
     /**
+     * Sanitasi teks dari karakter mojibake, curly punctuation, dan encoding artifact.
+     * Mengubah smart quotes/apostrof ('’, '‘', 'â€™', dll) menjadi apostrof standar (')
+     * serta dash/hyphen tipografis menjadi strip (-) standar ASCII.
+     */
+    public static function sanitizeText(?string $text): string
+    {
+        if ($text === null) {
+            return '';
+        }
+
+        $str = (string)$text;
+
+        // 1. Tangani artefak mojibake umum (double-encoded UTF-8 to Latin1 / CP1252)
+        $mojibakeMap = [
+            'â€™' => "'",
+            'â€˜' => "'",
+            'â€œ' => '"',
+            'â€ ' => '"',
+            'â€“' => '-',
+            'â€”' => '-',
+            'â€¦' => '...',
+            'Â '  => ' ',
+            'Â'   => '',
+        ];
+        $str = strtr($str, $mojibakeMap);
+
+        // 2. Normalisasi karakter Unicode typographic / smart punctuation
+        $unicodeMap = [
+            "\u{2018}" => "'", // Left single quotation mark ‘
+            "\u{2019}" => "'", // Right single quotation mark / typographic apostrophe ’
+            "\u{201A}" => "'", // Single low-9 quotation mark ‚
+            "\u{201B}" => "'", // Single high-reversed-9 quotation mark ‛
+            "\u{02BC}" => "'", // Modifier letter apostrophe ʼ
+            "\u{02BB}" => "'", // Modifier letter turned comma ʻ
+            "\u{0060}" => "'", // Grave accent / Backtick `
+            "\u{00B4}" => "'", // Acute accent ´
+            "\u{201C}" => '"', // Left double quotation mark “
+            "\u{201D}" => '"', // Right double quotation mark ”
+            "\u{201E}" => '"', // Double low-9 quotation mark „
+            "\u{2013}" => '-', // En dash –
+            "\u{2014}" => '-', // Em dash —
+            "\u{2015}" => '-', // Horizontal bar ―
+            "\u{2212}" => '-', // Minus sign −
+            "\u{2026}" => '...', // Horizontal ellipsis …
+            "\u{00A0}" => ' ', // Non-breaking space
+            "\u{200B}" => '',  // Zero-width space
+            "\u{FEFF}" => '',  // Byte order mark
+        ];
+        $str = strtr($str, $unicodeMap);
+
+        // 3. Fallback byte patterns untuk UTF-8 byte sequences mentah
+        $byteMap = [
+            "\xE2\x80\x99" => "'",
+            "\xE2\x80\x98" => "'",
+            "\xE2\x80\x9C" => '"',
+            "\xE2\x80\x9D" => '"',
+            "\xE2\x80\x93" => '-',
+            "\xE2\x80\x94" => '-',
+            "\xE2\x80\xA6" => '...',
+            "\xC2\xA0"     => ' ',
+        ];
+        $str = strtr($str, $byteMap);
+
+        // Bersihkan spasi ganda yang tidak diinginkan
+        $str = preg_replace('/\s+/', ' ', $str);
+
+        return trim($str);
+    }
+
+    /**
      * Format kode Program Studi menjadi nama resmi lengkap sesuai master prodi kampus.
      * Konsisten 100% antara database, tampilan detail admin, dan berkas PDF:
      * - R / RPL: Rekayasa Perangkat Lunak
@@ -204,8 +274,8 @@ class SuratTugasPdfService extends Fpdi
         if (!$prodi) {
             return '-';
         }
-        $clean = trim($prodi);
-        if ($clean === '') {
+        $clean = self::sanitizeText($prodi);
+        if ($clean === '' || $clean === '-') {
             return '-';
         }
         return match (strtoupper($clean)) {
@@ -311,13 +381,14 @@ class SuratTugasPdfService extends Fpdi
             $this->SetFont('Times', '', 9.5);
             $maxLines = 1;
             foreach ($row as $i => $text) {
-                $lines = $this->calculateLines($widths[$i], (string)$text);
+                $printW = ($aligns[$i] === 'L') ? ($widths[$i] - 3.5) : $widths[$i];
+                $lines = $this->calculateLines($printW, (string)$text);
                 if ($lines > $maxLines) {
                     $maxLines = $lines;
                 }
             }
 
-            $rowHeight = max(7.0, ($maxLines * $lineHeight) + 2.5);
+            $rowHeight = max(7.0, ($maxLines * $lineHeight) + 2.6);
 
             // Cek kebutuhan page break sebelum mencetak baris
             if ($this->GetY() + $rowHeight > 268) {
@@ -333,20 +404,21 @@ class SuratTugasPdfService extends Fpdi
             foreach ($row as $i => $text) {
                 $colX = $startX + array_sum(array_slice($widths, 0, $i));
                 $colW = $widths[$i];
+                $printW = ($aligns[$i] === 'L') ? ($colW - 3.5) : $colW;
 
                 $this->Rect($colX, $currentY, $colW, $rowHeight, 'D');
 
-                $cellLines = $this->calculateLines($colW, (string)$text);
+                $cellLines = $this->calculateLines($printW, (string)$text);
                 $textHeight = $cellLines * $lineHeight;
-                $topPadding = max(1.3, ($rowHeight - $textHeight) / 2);
+                $topPadding = max(1.2, ($rowHeight - $textHeight) / 2);
 
                 if ($aligns[$i] === 'L') {
                     // Indent rapi 2mm dari border kiri
                     $this->SetXY($colX + 2.0, $currentY + $topPadding);
-                    $this->MultiCell($colW - 3.5, $lineHeight, (string)$text, 0, 'L');
+                    $this->MultiCell($printW, $lineHeight, (string)$text, 0, 'L');
                 } else {
                     $this->SetXY($colX, $currentY + $topPadding);
-                    $this->MultiCell($colW, $lineHeight, (string)$text, 0, 'C');
+                    $this->MultiCell($printW, $lineHeight, (string)$text, 0, 'C');
                 }
             }
 
@@ -361,7 +433,7 @@ class SuratTugasPdfService extends Fpdi
     {
         $docTitle = 'Surat Tugas ' . $this->letterType;
         if (!empty($submission->judul)) {
-            $cleanJudul = trim(strip_tags((string)$submission->judul));
+            $cleanJudul = self::sanitizeText(strip_tags((string)$submission->judul));
             if ($cleanJudul !== '') {
                 $docTitle .= ' - ' . $cleanJudul;
             }
@@ -371,7 +443,7 @@ class SuratTugasPdfService extends Fpdi
         $this->SetCreator('P3M Politeknik Balekambang Jepara', true);
         $this->SetSubject('Surat Tugas Resmi P3M Politeknik Balekambang Jepara', true);
         if (!empty($submission->nomor_surat)) {
-            $this->SetKeywords('Nomor: ' . trim((string)$submission->nomor_surat), true);
+            $this->SetKeywords('Nomor: ' . self::sanitizeText($submission->nomor_surat), true);
         }
 
         $this->AddPage();
@@ -387,8 +459,8 @@ class SuratTugasPdfService extends Fpdi
         $tableRows = [];
 
         // 1. Ketua Pengusul
-        $ketuaNama = !empty($submission->ketua) ? trim((string)$submission->ketua) : '-';
-        $ketuaNidn = !empty($submission->nidn) ? trim((string)$submission->nidn) : '-';
+        $ketuaNama = !empty($submission->ketua) ? self::sanitizeText($submission->ketua) : '-';
+        $ketuaNidn = !empty($submission->nidn) ? self::sanitizeText($submission->nidn) : '-';
         $ketuaProdi = self::formatProdi($submission->prodi ?? null);
 
         $tableRows[] = [
@@ -408,8 +480,8 @@ class SuratTugasPdfService extends Fpdi
             $rawNim = is_array($item) ? ($item['nim'] ?? null) : ($item->nim ?? null);
             $rawProdi = is_array($item) ? ($item['prodi'] ?? null) : ($item->prodi ?? null);
 
-            $cleanNama = !empty($rawNama) ? trim((string)$rawNama) : '-';
-            $cleanNim = !empty($rawNim) ? trim((string)$rawNim) : '-';
+            $cleanNama = !empty($rawNama) ? self::sanitizeText($rawNama) : '-';
+            $cleanNim = !empty($rawNim) ? self::sanitizeText($rawNim) : '-';
 
             // Lewati jika data ketua tidak sengaja terinput ulang di daftar anggota
             if ($cleanNama !== '-' && strcasecmp($cleanNama, $ketuaNama) === 0) {
@@ -449,7 +521,7 @@ class SuratTugasPdfService extends Fpdi
         $this->Cell(170, 5, $kegiatanIntro, 0, 1, 'L');
 
         // Judul kegiatan UPPERCASE BOLD
-        $cleanJudul = trim(strip_tags((string)($submission->judul ?? '-')));
+        $cleanJudul = self::sanitizeText(strip_tags((string)($submission->judul ?? '-')));
         $this->SetFont('Times', 'B', 10.5);
         $this->MultiCell(170, 4.8, mb_strtoupper($cleanJudul, 'UTF-8'), 0, 'L');
         $this->Ln(1.5);
