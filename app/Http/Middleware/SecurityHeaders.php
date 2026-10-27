@@ -38,17 +38,13 @@ class SecurityHeaders
         // Restrict browser features the application does not use
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
-        // ──────────────────────────────────────────────────────────────
-        // NOT applied here (intentionally):
-        //
-        // Content-Security-Policy — AdminLTE, jQuery, DataTables, and various
-        //   inline scripts/styles have not been fully audited. An aggressive
-        //   CSP would break the admin dashboard.
-        //
-        // Strict-Transport-Security — This application runs on local HTTP
-        //   during development. HSTS must only be enabled on production
-        //   HTTPS environments via web server config or env-conditional logic.
-        // ──────────────────────────────────────────────────────────────
+        // HSTS: Apply when connecting securely or in production (avoids breaking local HTTP)
+        if ($request->isSecure() || app()->isProduction() || str_starts_with((string) config('app.url'), 'https://')) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
+
+        // Neutralize PHP version disclosure header if present
+        $response->headers->remove('X-Powered-By');
 
         return $response;
     }

@@ -1307,105 +1307,6 @@ class DosenController extends Controller
         return redirect()->route('dosen.dash_kpenelitian')->with('success', $successMsg);
     }
 
-    /* detail */
-    public function dajupengab($id)
-    {
-        $user = Auth::user();
-        $pagetitle = 'Pengabdian Masyarakat';
-        $data = p3mModel::with('anggotap3m')->findOrFail($id);
-
-        return view('detail.detail', [
-            'penelitians' => $data,
-            'type' => 'penelitian',
-            'documentType' => 'proposal-pengabdian',
-            'user' => $user,
-            'pagetitle' => $pagetitle
-        ]);
-    }
-
-    public function dajupeneliti($tipe, $id)
-    {
-        $user = Auth::user();
-        $pagetitle = 'Detail Data Proposal';
-        // $tipe = ajuan_penelitianModel::with('anggotap3m')->findOrFail($id);
-        switch ($tipe) {
-            case 'ajupengab':
-                $data = p3mModel::with('anggotap3m')->findOrFail($id);
-                $documentType = 'proposal-pengabdian';
-                break;
-            case 'ajupenel':
-                $data = ajuan_penelitianModel::with('anggotap3m')->findOrFail($id);
-                $documentType = 'proposal-penelitian';
-                break;
-            default:
-                abort(404);
-        }
-
-        return view('detail.detail', [
-            'penelitians' => $data,
-            'type' => 'penelitian',
-            'documentType' => $documentType,
-            'user' => $user,
-            'pagetitle' => $pagetitle
-        ]);
-    }
-
-    public function kumpengneli($tipe, $id)
-    {
-        $user = Auth::user();
-        $pagetitle = 'Detail Data Laporan';
-        // $tipe = ajuan_penelitianModel::with('anggotap3m')->findOrFail($id);
-        switch ($tipe) {
-            case 'kpengeabdian':
-                $data = kum_pengabdianModel::with('anggotap3m')->findOrFail($id);
-                $documentType = 'laporan-pengabdian';
-                break;
-            case 'kpeneliti':
-                $data = kum_penelitianModel::with('anggotap3m')->findOrFail($id);
-                $documentType = 'laporan-penelitian';
-                break;
-
-            default:
-                abort(404);
-        }
-
-        return view('detail.detailk', [
-            'penelitians' => $data,
-            'type' => 'penelitian',
-            'documentType' => $documentType,
-            'user' => $user,
-            'pagetitle' => $pagetitle
-        ]);
-    }
-
-    public function kpengab($id)
-    {
-        $user = Auth::user();
-        $pagetitle = 'Pengabdian Masyarakat';
-        $penelitians = p3mModel::with('anggotap3m')->findOrFail($id);
-
-        return view('detail.detail', [
-            'penelitians' => $penelitians,
-            'user' => $user,
-            'pagetitle' => $pagetitle,
-            'type' => 'pengabdian'
-        ]);
-    }
-
-    public function kteliti($id)
-    {
-        $user = Auth::user();
-        $pagetitle = 'Pengabdian Masyarakat';
-        $penelitians = p3mModel::with('anggotap3m')->findOrFail($id);
-
-        return view('detail.detail', [
-            'penelitians' => $penelitians,
-            'user' => $user,
-            'pagetitle' => $pagetitle,
-            'type' => 'pengabdian'
-        ]);
-    }
-
 
     //hapus proposal pengabdian
     public function deletep3m($id)
@@ -1541,13 +1442,6 @@ class DosenController extends Controller
         return redirect()->route('dosen.dash_kpenelitian')->with('success', 'Data dan file terkait berhasil dihapus!');
     }
 
-    //LOGOUT
-    public function logout()
-    {
-        // dd('oke');
-        Auth::logout();
-        return redirect()->route('tampilan');
-    }
 
     private function storeSubmissionPdf(UploadedFile $file): string
     {

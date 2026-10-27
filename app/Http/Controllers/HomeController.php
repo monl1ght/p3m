@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
@@ -48,108 +47,6 @@ class HomeController extends Controller
         return view('index', compact('data', 'request', 'pagetitle', 'user'));
     }
 
-    public function boot()
-    {
-        View::composer('*', function ($view) {
-            dd('COMPOSER JALAN');
-            $notifikasi = collect();
-
-            // contoh pengajuan pengabdian
-            $pengajuanPengabdian = DB::table('ajupengabdian')
-                ->leftJoin('users', 'ajupengabdian.user_id', '=', 'users.id')
-                ->select(
-                    'ajupengabdian.id',
-                    'users.name as nama_dosen',
-                    'ajupengabdian.judul',
-                    'ajupengabdian.created_at',
-                    DB::raw("'pengajuan_pengabdian' as tipe")
-                )
-                ->latest()
-                ->limit(5)
-                ->get();
-
-            $laporanPengabdian = DB::table('kum_pengabdian_models')
-                ->leftJoin('users', 'kum_pengabdian_models.user_id', '=', 'users.id')
-                ->select(
-                    'kum_pengabdian_models.id',
-                    'users.name as nama_dosen',
-                    'kum_pengabdian_models.judul',
-                    'kum_pengabdian_models.created_at',
-                    DB::raw("'laporan_pengabdian' as tipe")
-                )
-                ->latest()
-                ->limit(5)
-                ->get();
-
-            $pengajuanPenelitian = DB::table('ajuan_penelitian')
-                ->leftJoin('users', 'ajuan_penelitian.user_id', '=', 'users.id')
-                // ->leftJoin('users', 'ajupengabdian.user_id', '=', 'users.id')
-                ->select(
-                    'ajuan_penelitian.id',
-                    'users.name as nama_dosen',
-                    'ajuan_penelitian.judul',
-                    'ajuan_penelitian.created_at',
-                    DB::raw("'pengajuan_penelitian' as tipe")
-                )
-                ->latest()
-                ->limit(5)
-                ->get();
-
-            // contoh laporan penelitian
-            $laporanPenelitian = DB::table('kum_penelitian_models')
-                ->leftJoin('users', 'kum_penelitian_models.user_id', '=', 'users.id')
-                ->select(
-                    'kum_penelitian_models.id',
-                    'users.name as nama_dosen',
-                    'kum_penelitian_models.judul',
-                    'kum_penelitian_models.created_at',
-                    DB::raw("'laporan_penelitian' as tipe")
-                )
-                ->latest()
-                ->limit(5)
-                ->get();
-
-            $notifikasi = $notifikasi
-                ->merge($pengajuanPengabdian)
-                ->merge($laporanPenelitian)
-                ->marge
-                ->sortByDesc('created_at')
-                ->take(5)
-                ->values();
-
-            // 🔥 INI INTINYA
-            $notifikasi = $notifikasi->map(function ($n) {
-
-                switch ($n->tipe) {
-
-                    case 'pengajuan_pengabdian':
-                        $n->link = route('plppm.lpengabdian');
-                        break;
-
-                    case 'pengajuan_penelitian':
-                        $n->link = route('plppm.lpeneleitian');
-                        break;
-
-                    case 'laporan_pengabdian':
-                        $n->link = route('plppm.kpengabdian');
-                        break;
-
-                    case 'laporan_penelitian':
-                        $n->link = route('plppm.kpenelitian');
-                        break;
-                }
-
-                return $n;
-            });
-
-            $view->with([
-                'notifikasi' => $notifikasi,
-                'totalNotif' => $notifikasi->count()
-            ]);
-            // dd('COMPOSER JALAN');
-        });
-    }
-
     public function create()
     {
         $this->checkAdmin();
@@ -165,7 +62,7 @@ class HomeController extends Controller
             'image_base64' => 'nullable|string',
             'email'        => 'required|email|max:255|unique:users,email',
             'name'         => 'required|string|max:255|unique:users,name',
-            'password'     => 'required|min:6',
+            'password'     => ['required', 'string', \Illuminate\Validation\Rules\Password::min(8)],
             'role'         => 'required|in:admin,dosen',
         ], [
             'email.required'    => 'Email wajib diisi.',
@@ -174,7 +71,7 @@ class HomeController extends Controller
             'name.required'     => 'Nama lengkap wajib diisi.',
             'name.unique'       => 'Nama pengguna sudah terdaftar.',
             'password.required' => 'Password wajib diisi.',
-            'password.min'      => 'Password minimal 6 karakter.',
+            'password.min'      => 'Password minimal 8 karakter.',
             'role.required'     => 'Role wajib dipilih.',
             'role.in'           => 'Role yang dipilih tidak valid.',
         ]);
@@ -246,7 +143,7 @@ class HomeController extends Controller
         $validator = Validator::make($request->all(), [
             'email'        => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($find->id)],
             'name'         => ['required', 'string', 'max:255', Rule::unique('users', 'name')->ignore($find->id)],
-            'password'     => 'nullable|min:6',
+            'password'     => ['nullable', 'string', \Illuminate\Validation\Rules\Password::min(8)],
             'image'        => 'nullable|mimes:png,jpg,jpeg,webp,gif|max:5120',
             'image_base64' => 'nullable|string',
             'role'         => 'required|in:admin,dosen',
@@ -256,7 +153,7 @@ class HomeController extends Controller
             'email.unique'   => 'Email sudah digunakan oleh akun lain.',
             'name.required'  => 'Nama lengkap wajib diisi.',
             'name.unique'    => 'Nama pengguna sudah digunakan oleh akun lain.',
-            'password.min'   => 'Password minimal 6 karakter.',
+            'password.min'   => 'Password minimal 8 karakter.',
             'role.required'  => 'Role wajib dipilih.',
             'role.in'        => 'Role yang dipilih tidak valid.',
         ]);

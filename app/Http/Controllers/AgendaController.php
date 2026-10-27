@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AgendaModel;
 use App\Models\User;
+use App\Services\HtmlSanitizer;
 use App\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -84,7 +85,7 @@ class AgendaController extends Controller
         $data['date']       = $request->date;
         $data['time']       = $request->time;
         $data['lokasi']       = $request->lokasi;
-        $data['keterangan']       = $dom->saveHTML();
+        $data['keterangan']   = app(HtmlSanitizer::class)->sanitize($dom->saveHTML());
 
         AgendaModel::create($data);
 
@@ -177,7 +178,7 @@ class AgendaController extends Controller
         $data['date']       = $request->date;
         $data['time']       = $request->time;
         $data['lokasi']       = $request->lokasi;
-        $data['keterangan']       = $dom->saveHTML();
+        $data['keterangan']   = app(HtmlSanitizer::class)->sanitize($dom->saveHTML());
 
         $find->update($data);
 

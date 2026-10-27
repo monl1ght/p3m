@@ -31,7 +31,7 @@ class ViewsController extends Controller
     {
         $pagetitle = 'Panduan P3M';
         $dash = m_dashboard::all();
-        $berita = M_news::orderBy('created_at', 'desc')->get();
+        $berita = M_news::with('user')->orderBy('created_at', 'desc')->get();
         $pengelola = M_Pengelola::all();
         $categories = M_categories::all();
         $tentang = M_tentang::all();
@@ -54,9 +54,6 @@ class ViewsController extends Controller
         $berita = $query->paginate(6)->withQueryString();
         $categories = M_categories::all();
         session()->put('previous_page', url()->previous());
-        if (session()->has('previous_page')) {
-            return view('tampilan.berita', compact('pagetitle', 'berita', 'categories'));
-        }
         return view('tampilan.berita', compact('pagetitle', 'berita', 'categories'));
     }
 
@@ -162,7 +159,7 @@ class ViewsController extends Controller
     {
         $tentang = M_tentang::all();
         $pagetitle = 'Informasi P3M';
-        $berita =  M_news::orderBy('created_at', 'desc')->take(8)->get();
+        $berita = M_news::with('user')->orderBy('created_at', 'desc')->take(8)->get();
         return view('tampilan.tentangp3m', compact('tentang', 'pagetitle', 'berita'));
     }
 
@@ -179,7 +176,7 @@ class ViewsController extends Controller
     public function listagenda($id)
     {
         $pagetitle = 'Berita P3M';
-        $agen = AgendaModel::find($id);
+        $agen = AgendaModel::findOrFail($id);
         $agenda = AgendaModel::orderBy('created_at', 'desc')->take(5)->get();
         return view('tampilan.detailagenda', compact('pagetitle', 'agen', 'agenda'));
     }

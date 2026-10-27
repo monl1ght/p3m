@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\M_tentang;
+use App\Services\HtmlSanitizer;
 use App\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -70,7 +71,7 @@ class TentangController extends Controller
         // $data = [];
         $data['visi']       = $request->visi;
         $data['misi']       = $request->misi;
-        $data['ourbout']       = $dom->saveHTML();
+        $data['ourbout']    = app(HtmlSanitizer::class)->sanitize($dom->saveHTML());
         // $user = Auth::user();
 
         M_tentang::create($data);
@@ -159,7 +160,7 @@ class TentangController extends Controller
         $data = [];
         $data['visi']       = $request->visi;
         $data['misi']       = $request->misi;
-        $data['ourbout']       = $dom->saveHTML();
+        $data['ourbout']    = app(HtmlSanitizer::class)->sanitize($dom->saveHTML());
         // $user = Auth::user();
 
         $find->update($data);

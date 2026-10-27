@@ -25,7 +25,9 @@ route_list.json
 tree_*.txt
 /public/uploud/*
 !/public/uploud/.gitkeep
+!/public/uploud/.htaccess
 /public/uplouds/*
 !/public/uplouds/.gitkeep
+!/public/uplouds/.htaccess
 /scratch
 *-raw.png

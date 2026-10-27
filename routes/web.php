@@ -46,8 +46,8 @@ Route::get('/berita', [ViewsController::class, 'berita'])->name('tampilan.berita
 Route::get('/tampilan/deber/detail/{id}', [ViewsController::class, 'show'])->name('tampilan.detail');
 Route::get('/struktur', [ViewsController::class, 'struktur'])->name('tampilan.struktur');
 Route::get('/panduanp3m', [ViewsController::class, 'panduan'])->name('tampilan.panduan');
-Route::get('/panduanp3m/unduh/{id}', [ViewsController::class, 'unduh'])->name('tampilan.unduh');
-Route::get('/panduan/unduh/{id}', [ViewsController::class, 'unduh'])->name('tampilan.panduan.unduh');
+Route::get('/panduanp3m/unduh/{id}', [ViewsController::class, 'unduh'])->middleware('throttle:60,1')->name('tampilan.unduh');
+Route::get('/panduan/unduh/{id}', [ViewsController::class, 'unduh'])->middleware('throttle:60,1')->name('tampilan.panduan.unduh');
 Route::get('/dokumen', [ViewsController::class, 'dokumen'])->name('tampilan.dokumen');
 Route::get('/jurnal', [ViewsController::class, 'jurnal'])->name('tampilan.jurnal');
 Route::get('/tentang', [ViewsController::class, 'tentangp3m'])->name('tampilan.tentangp3m');
@@ -55,7 +55,7 @@ Route::get('/agenda', [ViewsController::class, 'agenda'])->name('tampilan.agenda
 Route::get('/detailagenda/{id}', [ViewsController::class, 'listagenda'])->name('tampilan.detailagenda');
 Route::get('/penelitian-p3m', [ViewsController::class, 'penelitian'])->name('tampilan.penelitian');
 Route::get('/pengabdian-p3m', [ViewsController::class, 'pengabdian'])->name('tampilan.pengabdian');
-Route::get('/karya-p3m/{type}/{id}/download', [ViewsController::class, 'downloadKarya'])->name('tampilan.download_karya');
+Route::get('/karya-p3m/{type}/{id}/download', [ViewsController::class, 'downloadKarya'])->middleware('throttle:60,1')->name('tampilan.download_karya');
 
 
 //proses login
@@ -323,6 +323,7 @@ Route::middleware('auth')->get('/dokumen-pengajuan/{type}/{id}/download', [Submi
 // Public download for approved reports only
 Route::get('/public/laporan/{type}/{id}/download', [SubmissionDocumentController::class, 'publicDownload'])
     ->whereIn('type', ['laporan-penelitian', 'laporan-pengabdian'])
+    ->middleware('throttle:60,1')
     ->name('submission.public.download');
 
 Route::middleware(['auth'])->get('/Propengabdian/{tipe}/{id}', [ViewlprnController::class, 'dajupeneliti'])->name('detail.detail');
@@ -371,7 +372,6 @@ Route::middleware(['auth'])->get('/Lappengabdian/{tipe}/{id}', [ViewlprnControll
         Route::post('/storekpenelitian', [DosenController::class, 'storekumpulanpenelitian'])->name('dosen.storekumpulanpenelitian');
         Route::get('/editkpenelitian/{id}', [DosenController::class, 'editkumpulanpenelitian'])->name('dosen.edit_kpenliti');
         Route::post('/updatekpenelitian/{id}', [DosenController::class, 'updatekumpulanpenelitian'])->name('dosen.updatekumpulanpenelitian');
-        Route::post('/up_kpenliti/{id}', [DosenController::class, 'updatekumpulanpenelitian']);
         // Route::get('/kddpenelitian/{tipe}/{id}', [DosenController::class, 'kumpengneli'])->name('detail.detailk');
         Route::delete('/deletekpen/{id}', [DosenController::class, 'deletekpen'])->name('dosen.deletekpen');
 

@@ -258,7 +258,7 @@
                     @endif
 
                     <div class="content-body">
-                        {!! nl2br(strip_tags(html_entity_decode($agen->keterangan))) !!}
+                        {!! app(\App\Services\HtmlSanitizer::class)->sanitize($agen->keterangan) !!}
                     </div>
                 </article>
             </div>
